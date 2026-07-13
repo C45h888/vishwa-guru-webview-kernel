@@ -4,305 +4,313 @@
 
 ## Purpose
 
-This roadmap defines the implementation strategy for the Temple Trust Management System.
+This roadmap defines the engineering execution strategy for the Temple Trust Management System.
 
-The project follows a backend-first development methodology where the highest-risk architectural components are implemented and stabilized before public-facing features are introduced.
+Unlike a traditional feature roadmap, this document follows a risk-driven implementation methodology. Each phase exists to eliminate architectural uncertainty before introducing additional functionality. The objective is to progressively construct a stable production platform where every subsequent layer builds upon a verified foundation.
 
-Each phase exists to reduce architectural uncertainty while preserving the principles established in the repository's constitutional documentation.
+Development follows a backend-first philosophy. Financial correctness, database integrity, architectural consistency, and long-term maintainability are considered more important than rapid feature delivery.
 
-The objective is not rapid feature development, but the construction of a reliable, secure, and maintainable production platform.
-
----
-
-# Development Philosophy
-
-Development progresses through progressive stabilization.
-
-Each phase should establish a stable foundation before introducing additional business capabilities.
-
-The implementation order follows this progression:
-
-Architecture
-
-↓
-
-Foundations
-
-↓
-
-Persistence
-
-↓
-
-Financial Processing
-
-↓
-
-Presentation
-
-↓
-
-Administration
-
-This approach minimizes architectural drift while ensuring that business workflows remain stable throughout development.
+Each phase concludes only after its architectural objectives have been satisfied. New functionality should never be introduced while unresolved instability exists within a lower architectural layer.
 
 ---
 
-# Phase 0 — Repository Constitution ✅
+# Phase 0 — Repository Constitution
+
+The first phase establishes the constitutional foundation of the repository.
+
+Before implementation begins, the project defines its engineering philosophy, architectural boundaries, security posture, payment architecture, domain model, and module ownership. The purpose of this phase is to eliminate ambiguity before a single business feature is implemented.
+
+The deliverables of this phase are the constitutional documents that define the repository.
+
+This phase is considered complete.
+
+---
+
+# Phase 0.25 — Pre-Foundation (Architectural Bedrock)
 
 ## Objective
 
-Establish the engineering, architectural, and business foundations of the repository before implementation begins.
+Construct the architectural kernel upon which the remainder of the application will be built.
 
-## Deliverables
+This phase intentionally avoids business implementation. Instead, it establishes the reusable abstractions, contracts, interfaces, and infrastructure that define how every future module will behave.
 
-* README.md
-* ARCHITECTURE.md
-* AGENTS.md
-* PAYMENT_ARCHITECTURE.md
-* SECURITY.md
-* MODULES.md
-* DOMAIN_MODEL.md
-
-**Status:** Complete
+The objective is to ensure that architectural consistency exists before Laravel business modules begin to emerge.
 
 ---
 
-# Phase 0.5 — Foundation Layer
+## Architectural Kernel
 
-## Objective
+The first implementation work inside the repository consists of constructing the application's architectural kernel.
 
-Construct the architectural bedrock that every future module will build upon.
+This includes the Shared module and every reusable abstraction required throughout the remainder of the project.
 
-This phase intentionally contains almost no business logic.
+Examples include common interfaces, base contracts, configuration abstractions, enumerations, value objects, dependency registration, utility classes, and common exceptions.
 
-Instead, it establishes the contracts, abstractions, dependency boundaries, and infrastructure required by the remainder of the application.
-
-Every future implementation should extend these foundations rather than creating new architectural patterns.
+No business logic should exist within this layer.
 
 ---
 
-## Shared Module
+## Payment Foundation
 
-Create the Shared module as the common infrastructure layer.
+The payment architecture should be instantiated before payment providers are integrated.
 
-Responsibilities include:
+This phase establishes the Payment Gateway Contract together with the abstract payment workflow that every provider must satisfy.
 
-* Configuration
-* Common interfaces
-* Enumerations
-* Base exceptions
-* Shared DTOs
-* Utility classes
-* Value objects
+Provider-specific implementations are intentionally deferred.
 
-The Shared module must never contain business logic.
+The objective is to define the financial architecture before connecting external infrastructure.
 
----
+The foundation includes:
 
-## Core Contracts
-
-Define the application's primary contracts.
-
-Examples include:
-
-* Service Contract
-* Repository Contract
 * Payment Gateway Contract
+* Payment Provider abstraction
+* Payment verification contract
+* Failure State abstraction
+* Receipt generation contract
+* Transaction lifecycle definitions
 
-These contracts establish common behavior throughout the repository and provide consistent extension points for future modules.
+No gateway communication should occur during this phase.
 
 ---
 
-## Core Abstractions
+## Persistence Foundation
 
-Create the reusable architectural abstractions used throughout the application.
+The persistence architecture should be established before database implementation begins.
 
-Examples include:
+This includes defining the repository contracts, persistence interfaces, entity contracts, and data access abstractions that every future repository will implement.
 
-* Base Service
-* Base Repository
-* Payment Gateway abstraction
+The objective is to ensure that business services remain independent from persistence implementation.
+
+No migrations or tables are created during this phase.
+
+---
+
+## Runtime Configuration
+
+The application runtime should be prepared before Laravel configuration begins.
+
+This includes:
+
 * Configuration abstraction
+* Environment abstraction
+* Dependency registration
+* Shared configuration objects
+* Infrastructure contracts
 
-The objective is to ensure consistency across all future business modules.
-
----
-
-## Environment Foundation
-
-Configure the operational environment.
-
-Deliverables include:
-
-* Laravel installation
-* Environment configuration
-* Neon PostgreSQL connection
-* Redis connection
-* Application configuration
-* Dependency injection registration
-
-No business workflows should exist during this phase.
-
----
-
-## Initial Repository Structure
-
-Establish the modular repository layout.
-
-Each business module should own its own:
-
-* Controllers
-* Services
-* Repositories
-* Requests
-* Policies
-* Models
-* Routes
-
-This structure becomes the canonical organization of the application.
+This phase defines how the application will operate without yet introducing operational infrastructure.
 
 ---
 
 ## Exit Criteria
 
-Phase 0.5 is complete when:
+Phase 0.25 is complete when:
 
-* The repository compiles successfully.
-* Shared infrastructure is established.
-* Contracts are defined.
-* Core abstractions exist.
-* Neon and Redis are connected.
-* No business logic has been implemented.
+The architectural kernel exists.
+
+All contracts have been defined.
+
+Shared abstractions exist.
+
+Payment abstractions exist.
+
+Persistence abstractions exist.
+
+No business logic has been implemented.
+
+No database schema exists.
+
+No payment provider has been connected.
 
 ---
 
-# Phase 1 — Persistence & Financial Foundation
+# Phase 0.5 — Database Architecture
 
 ## Objective
 
-Implement the application's persistent state and financial processing capabilities.
+Translate the business domain into a deterministic relational model.
 
-This phase introduces the first business logic into the system.
+This phase represents the first major state mutation of the repository.
 
-Financial correctness takes priority over feature completeness.
+The purpose is to transform the concepts defined within DOMAIN_MODEL.md into an authoritative PostgreSQL schema while preserving every business invariant established by the architecture.
 
----
-
-## Database Layer
-
-Design and implement the PostgreSQL schema.
-
-Deliverables include:
-
-* Entity relationships
-* Laravel migrations
-* Repository implementations
-* Seeders
-* Factories
-
-The database should directly reflect the business entities defined within DOMAIN_MODEL.md.
+The database should emerge naturally from the domain model rather than being designed independently.
 
 ---
 
-## Payments Module
+## Domain Translation
 
-Implement the financial subsystem.
+Every business entity defined within the Domain Model should now be translated into persistent state.
 
-Responsibilities include:
+Relationships, constraints, ownership boundaries, and entity lifecycles should be preserved during schema design.
 
-* Payment gateway abstraction
-* Razorpay integration
-* PayPal integration
-* Payment verification
-* Webhook processing
-* Signature validation
-* Payment lifecycle
-* Failure State Manager
-* Receipt generation
-
-Financial integrity remains the primary engineering objective.
+The schema should reflect business semantics rather than implementation convenience.
 
 ---
 
-## Donations Module
+## Schema Construction
 
-Implement the business representation of donations.
+Construct the complete relational model for:
 
-Responsibilities include:
+* Donations
+* Payments
+* Receipts
+* Campaigns
+* Static Pages
+* Gallery
+* Gallery Images
+* Events
+
+Each table should exist because it represents a business concept rather than a technical abstraction.
+
+---
+
+## Persistence Layer
+
+Following schema completion, repository implementations should be created.
+
+Repositories become the exclusive mechanism through which business services access persistent state.
+
+Business logic remains prohibited from directly manipulating persistence.
+
+---
+
+## Database Validation
+
+Before continuing, validate:
+
+* Relationships
+* Constraints
+* Referential integrity
+* Entity ownership
+* Migration consistency
+* Repository behavior
+
+This phase concludes only after the persistence layer faithfully represents the business domain.
+
+---
+
+# Phase 1 — Financial Platform
+
+## Objective
+
+Construct the complete financial subsystem.
+
+The application should become capable of receiving, verifying, processing, and recording financial contributions while preserving deterministic business behavior.
+
+Financial correctness is considered the highest engineering priority.
+
+---
+
+## Payment Provider Integration
+
+Integrate:
+
+* Razorpay
+* PayPal
+
+Each provider implements the previously established Payment Gateway Contract.
+
+The Donations module remains unaware of provider-specific implementation.
+
+---
+
+## Business Workflows
+
+Implement:
 
 * Donation creation
-* Donation categories
 * Campaign association
 * Anonymous donations
-* Donation lifecycle
+* Payment initialization
+* Gateway callbacks
+* Signature verification
+* Receipt generation
+* Payment completion
+* Failure State Manager
 
-Donations communicate with the Payments module exclusively through service contracts.
-
----
-
-## Persistence Validation
-
-Validate that:
-
-* Business entities persist correctly.
-* Payment verification functions correctly.
-* Failure workflows behave deterministically.
-* Duplicate payment protection is operational.
-* Receipts generate successfully.
-
-No frontend implementation begins until these workflows are stable.
+Every workflow must preserve the financial architecture defined within PAYMENT_ARCHITECTURE.md.
 
 ---
 
-## Exit Criteria
+## Failure Architecture
 
-Phase 1 is complete when:
+Implement the dedicated Failure State Manager.
 
-* The database schema is finalized.
-* Payment processing is operational.
-* Donations complete successfully.
-* Receipts generate correctly.
-* Failure workflows have been validated.
-* Financial data persists correctly.
+Failures should transition into isolated recovery workflows rather than contaminating successful business execution.
+
+Recoverable failures should support retry mechanisms.
+
+Terminal failures should preserve operational traceability.
 
 ---
 
-# Phase 2 — Public Website
+## Financial Validation
+
+The financial subsystem should demonstrate:
+
+* Deterministic verification
+* Idempotent payment processing
+* Receipt consistency
+* Failure recovery
+* Duplicate protection
+* Audit generation
+
+Only after financial correctness has been established may frontend development begin.
+
+---
+
+# Phase 2 — Platform Foundation
 
 ## Objective
 
-Expose the stable backend through a clean public-facing website.
+Introduce Laravel as the operational runtime for the previously established architecture.
 
-The frontend remains a presentation layer over previously validated business workflows.
+By this phase, the business architecture already exists.
 
-## Deliverables
+Laravel now becomes the framework responsible for hosting and exposing those capabilities.
 
-* Blade templates
-* Tailwind CSS
-* Alpine.js integration
-* Home page
-* About page
-* Contact page
-* Donate page
-* Certifications page
-* Campaign pages
+The application should now establish:
+
+* Laravel runtime
+* Neon PostgreSQL integration
+* Redis integration
+* Queue configuration
+* Service registration
+* Dependency injection
+* Environment configuration
+
+The framework serves the architecture rather than defining it.
+
+---
+
+# Phase 3 — Public Platform
+
+Once the backend platform has reached operational stability, public presentation may begin.
+
+Blade templates, Tailwind CSS, and Alpine.js should expose already validated business workflows.
+
+Initial public capabilities include:
+
+* Home
+* About
+* Contact
+* Donate
+* Certifications
+* Campaigns
 * Gallery
 * Events
 
-No business logic should be introduced into Blade templates.
+The frontend remains presentation-only.
+
+Business logic continues to reside exclusively within backend services.
 
 ---
 
-# Phase 3 — Administration
+# Phase 4 — Administration
 
-## Objective
+Administrative capabilities are intentionally deferred until the public platform demonstrates operational stability.
 
-Provide administrative capabilities after the public platform has reached operational stability.
-
-Administration is intentionally deferred until the underlying business platform is mature.
-
-## Deliverables
+This phase introduces:
 
 * Authentication
 * Administrative dashboard
@@ -310,48 +318,42 @@ Administration is intentionally deferred until the underlying business platform 
 * CMS management
 * Gallery management
 * Event management
-* Configuration management
 
-Administrators manage content and business operations rather than application structure.
+Administrators manage business content.
+
+They do not modify application architecture.
 
 ---
 
 # Future Evolution
 
-Future development may introduce:
+Only after the core platform has stabilized should future capabilities be considered.
 
+Examples include:
+
+* Albums
 * Volunteer management
-* Album support
 * Advanced reporting
 * Additional payment providers
 * WhatsApp integration
-* SMS notifications
+* SMS
 * Analytics
 * Multi-organization support
 
-These capabilities remain intentionally outside the scope of the initial implementation.
+Future expansion should extend the architecture rather than redefine it.
 
 ---
 
-# Guiding Principles
+# Engineering Directive
 
-Every implementation phase should preserve the following principles:
+Every implementation phase should reduce architectural uncertainty before introducing new functionality.
 
-* Backend before frontend.
-* Business logic before presentation.
-* Verification before persistence.
-* Stability before expansion.
-* Simplicity before abstraction.
-* Financial integrity above implementation speed.
+Financial integrity takes precedence over feature delivery.
 
-No implementation should bypass these principles for short-term convenience.
+Database correctness takes precedence over user interfaces.
 
----
+Business architecture takes precedence over framework implementation.
 
-# Closing Statement
+Stable foundations always precede expansion.
 
-This roadmap intentionally prioritizes architectural stability over rapid feature delivery.
-
-By constructing the repository through progressive layers of responsibility—from foundations to persistence, financial processing, public presentation, and finally administration—the system remains maintainable, predictable, and aligned with the architectural principles established throughout the repository.
-
-Every completed phase should leave the application in a deployable and internally consistent state before the next phase begins.
+The objective of this roadmap is not simply to build a website, but to progressively construct a reliable operational platform whose architectural integrity remains preserved throughout its evolution.
