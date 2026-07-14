@@ -13,26 +13,26 @@ namespace App\Shared\Enums;
  */
 enum LifecycleStage: string
 {
-    case Constitution         = 'constitution';
-    case PreFoundation        = 'pre_foundation';
+    case Constitution = 'constitution';
+    case PreFoundation = 'pre_foundation';
     case DatabaseArchitecture = 'database_architecture';
-    case FinancialPlatform    = 'financial_platform';
-    case PlatformFoundation   = 'platform_foundation';
-    case PublicPlatform       = 'public_platform';
-    case Administration       = 'administration';
-    case Production           = 'production';
+    case FinancialPlatform = 'financial_platform';
+    case PlatformFoundation = 'platform_foundation';
+    case PublicPlatform = 'public_platform';
+    case Administration = 'administration';
+    case Production = 'production';
 
     public function label(): string
     {
         return match ($this) {
-            self::Constitution         => 'Constitution',
-            self::PreFoundation        => 'Pre-Foundation',
+            self::Constitution => 'Constitution',
+            self::PreFoundation => 'Pre-Foundation',
             self::DatabaseArchitecture => 'Database Architecture',
-            self::FinancialPlatform    => 'Financial Platform',
-            self::PlatformFoundation   => 'Platform Foundation',
-            self::PublicPlatform       => 'Public Platform',
-            self::Administration       => 'Administration',
-            self::Production           => 'Production',
+            self::FinancialPlatform => 'Financial Platform',
+            self::PlatformFoundation => 'Platform Foundation',
+            self::PublicPlatform => 'Public Platform',
+            self::Administration => 'Administration',
+            self::Production => 'Production',
         };
     }
 
@@ -42,14 +42,14 @@ enum LifecycleStage: string
     public function phaseNumber(): float
     {
         return match ($this) {
-            self::Constitution         => 0.0,
-            self::PreFoundation        => 0.25,
+            self::Constitution => 0.0,
+            self::PreFoundation => 0.25,
             self::DatabaseArchitecture => 0.5,
-            self::FinancialPlatform    => 1.0,
-            self::PlatformFoundation   => 2.0,
-            self::PublicPlatform       => 3.0,
-            self::Administration       => 4.0,
-            self::Production           => 99.0,
+            self::FinancialPlatform => 1.0,
+            self::PlatformFoundation => 2.0,
+            self::PublicPlatform => 3.0,
+            self::Administration => 4.0,
+            self::Production => 99.0,
         };
     }
 

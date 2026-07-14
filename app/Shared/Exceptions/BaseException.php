@@ -11,11 +11,6 @@ namespace App\Shared\Exceptions;
  */
 class BaseException extends \Exception
 {
-    /**
-     * @param string $message
-     * @param int $code
-     * @param \Throwable|null $previous
-     */
     public function __construct(
         string $message = '',
         int $code = 0,

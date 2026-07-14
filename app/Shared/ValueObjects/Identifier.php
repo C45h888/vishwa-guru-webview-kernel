@@ -21,7 +21,7 @@ final class Identifier implements ValueObjectContract
     public function __construct(
         private readonly string $value,
     ) {
-        if (!UlidGenerator::isValid($value)) {
+        if (! UlidGenerator::isValid($value)) {
             throw new InvalidArgumentException(
                 "Invalid Identifier value: {$value} (must be a valid ULID)"
             );

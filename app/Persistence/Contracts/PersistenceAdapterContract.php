@@ -46,7 +46,8 @@ interface PersistenceAdapterContract
      * Commits on success, rolls back on throw.
      *
      * @template T
-     * @param callable(): T $callback
+     *
+     * @param  callable(): T  $callback
      * @return Result<T>
      */
     public function transaction(callable $callback): Result;

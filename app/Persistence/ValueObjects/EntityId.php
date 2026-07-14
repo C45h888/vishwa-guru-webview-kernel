@@ -27,12 +27,12 @@ final class EntityId
         if (empty($entityType)) {
             throw new InvalidArgumentException('Entity type cannot be empty');
         }
-        if (!preg_match('/^[a-z][a-z0-9_]*$/', $entityType)) {
+        if (! preg_match('/^[a-z][a-z0-9_]*$/', $entityType)) {
             throw new InvalidArgumentException(
                 "Invalid entity type: {$entityType} (must match [a-z][a-z0-9_]*)"
             );
         }
-        if (!UlidGenerator::isValid($ulid)) {
+        if (! UlidGenerator::isValid($ulid)) {
             throw new InvalidArgumentException(
                 "Invalid ULID: {$ulid}"
             );
@@ -52,7 +52,7 @@ final class EntityId
      */
     public static function fromString(string $value): self
     {
-        if (!preg_match(self::PATTERN, $value)) {
+        if (! preg_match(self::PATTERN, $value)) {
             throw new InvalidArgumentException(
                 "Invalid EntityId format: {$value}"
             );
@@ -77,7 +77,7 @@ final class EntityId
 
     public function value(): string
     {
-        return $this->entityType . '_' . $this->ulid;
+        return $this->entityType.'_'.$this->ulid;
     }
 
     public function equals(EntityId $other): bool

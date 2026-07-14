@@ -35,7 +35,7 @@ interface EntityContract
     /**
      * Produce a new instance with the given changes applied.
      *
-     * @param array<string, mixed> $changes
+     * @param  array<string, mixed>  $changes
      */
     public function withChanges(array $changes): static;
 }

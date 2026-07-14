@@ -28,6 +28,19 @@ This phase is considered complete.
 
 # Phase 0.25 — Pre-Foundation (Architectural Bedrock)
 
+**Status: COMPLETE — Phase 0.25 kernel landed on `main` as commit `ba15481`.**
+
+The architectural kernel, all Shared/Payments/Persistence contracts, value
+objects, enums, configuration abstractions, environment abstractions, support
+utilities, exception hierarchy, and dependency-injection bindings exist on disk
+and are exercised by 71 passing unit + feature tests. No business logic, no
+database schema, and no payment provider has been wired — per the Phase 0.25
+exit criteria in this document.
+
+This phase is considered complete.
+
+---
+
 ## Objective
 
 Construct the architectural kernel upon which the remainder of the application will be built.

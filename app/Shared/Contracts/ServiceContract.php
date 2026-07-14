@@ -13,8 +13,6 @@ interface ServiceContract
 {
     /**
      * Determine if the service is ready to operate.
-     *
-     * @return bool
      */
     public function isReady(): bool;
 }

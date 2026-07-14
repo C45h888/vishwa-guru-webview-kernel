@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Persistence\Contracts;
 
+use App\Shared\Contracts\RepositoryContract;
 use App\Shared\ValueObjects\Identifier;
 
 /**
@@ -18,15 +19,13 @@ interface RepositoryRegistryContract
     /**
      * Register a repository for an entity type.
      *
-     * @param string $entityType
-     * @param class-string<RepositoryContract> $repositoryClass
+     * @param  class-string<RepositoryContract>  $repositoryClass
      */
     public function register(string $entityType, string $repositoryClass): void;
 
     /**
      * Resolve the repository class for an entity type.
      *
-     * @param string $entityType
      * @return class-string<RepositoryContract>|null
      */
     public function resolve(string $entityType): ?string;

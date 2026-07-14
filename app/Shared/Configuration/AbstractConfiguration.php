@@ -19,9 +19,13 @@ use App\Shared\Exceptions\ConfigurationException;
  */
 abstract class AbstractConfiguration implements ConfigurationContract
 {
-    public function string(string $key): string
+    public function string(string $key, string $default = ''): string
     {
         $value = $this->lookup($key);
+
+        if ($value === null) {
+            return $default;
+        }
 
         if (! is_string($value)) {
             throw ConfigurationException::invalidType($key, 'string', get_debug_type($value));
@@ -30,9 +34,13 @@ abstract class AbstractConfiguration implements ConfigurationContract
         return $value;
     }
 
-    public function integer(string $key): int
+    public function integer(string $key, int $default = 0): int
     {
         $value = $this->lookup($key);
+
+        if ($value === null) {
+            return $default;
+        }
 
         if (is_int($value)) {
             return $value;
@@ -45,9 +53,13 @@ abstract class AbstractConfiguration implements ConfigurationContract
         throw ConfigurationException::invalidType($key, 'integer', get_debug_type($value));
     }
 
-    public function boolean(string $key): bool
+    public function boolean(string $key, bool $default = false): bool
     {
         $value = $this->lookup($key);
+
+        if ($value === null) {
+            return $default;
+        }
 
         if (is_bool($value)) {
             return $value;

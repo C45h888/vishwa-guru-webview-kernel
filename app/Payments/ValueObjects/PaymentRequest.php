@@ -22,14 +22,13 @@ use InvalidArgumentException;
 final class PaymentRequest
 {
     /**
-     * @param Identifier $donorIdentifier The donor's identifier
-     * @param int $amount Amount in MINOR units (e.g. paise for INR)
-     * @param Currency $currency
-     * @param string $purpose Free-text purpose (e.g. "General Donation")
-     * @param array<string, mixed> $metadata Additional gateway-specific metadata
-     * @param string|null $successUrl Gateway redirect URL on success
-     * @param string|null $failureUrl Gateway redirect URL on failure
-     * @param string|null $idempotencyKey Idempotency key for safe retries
+     * @param  Identifier  $donorIdentifier  The donor's identifier
+     * @param  int  $amount  Amount in MINOR units (e.g. paise for INR)
+     * @param  string  $purpose  Free-text purpose (e.g. "General Donation")
+     * @param  array<string, mixed>  $metadata  Additional gateway-specific metadata
+     * @param  string|null  $successUrl  Gateway redirect URL on success
+     * @param  string|null  $failureUrl  Gateway redirect URL on failure
+     * @param  string|null  $idempotencyKey  Idempotency key for safe retries
      */
     public function __construct(
         private readonly Identifier $donorIdentifier,
@@ -48,7 +47,7 @@ final class PaymentRequest
         }
         if (empty($purpose)) {
             throw new InvalidArgumentException(
-                "Payment purpose cannot be empty"
+                'Payment purpose cannot be empty'
             );
         }
     }

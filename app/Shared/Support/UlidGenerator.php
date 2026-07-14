@@ -12,8 +12,11 @@ namespace App\Shared\Support;
 class UlidGenerator implements IdentifierGenerator
 {
     private const ENCODING = '0123456789ABCDEFGHJKMNPQRSTVWXYZ';
+
     private const ENCODING_LEN = 32;
+
     private const TIME_LEN = 10;
+
     private const RANDOM_LEN = 16;
 
     /**
@@ -26,7 +29,7 @@ class UlidGenerator implements IdentifierGenerator
         $time = self::timeComponent();
         $random = self::randomComponent();
 
-        return $time . $random;
+        return $time.$random;
     }
 
     /**
@@ -40,23 +43,17 @@ class UlidGenerator implements IdentifierGenerator
 
     /**
      * Generate from a specific Unix timestamp (seconds).
-     *
-     * @param int $timestamp
-     * @return string
      */
     public static function generateFromTimestamp(int $timestamp): string
     {
         $time = self::encodeTime($timestamp, self::TIME_LEN);
         $random = self::randomComponent();
 
-        return $time . $random;
+        return $time.$random;
     }
 
     /**
      * Extract the Unix timestamp from a ULID.
-     *
-     * @param string $ulid
-     * @return int
      */
     public static function timestamp(string $ulid): int
     {
@@ -79,9 +76,6 @@ class UlidGenerator implements IdentifierGenerator
 
     /**
      * Validate a ULID format (not uniqueness).
-     *
-     * @param string $ulid
-     * @return bool
      */
     public static function isValid(string $ulid): bool
     {
@@ -109,9 +103,10 @@ class UlidGenerator implements IdentifierGenerator
         $result = '';
         for ($i = $len - 1; $i >= 0; $i--) {
             $mod = $time % self::ENCODING_LEN;
-            $result = self::ENCODING[$mod] . $result;
+            $result = self::ENCODING[$mod].$result;
             $time = intdiv($time, self::ENCODING_LEN);
         }
+
         return $result;
     }
 
@@ -121,6 +116,7 @@ class UlidGenerator implements IdentifierGenerator
         for ($i = 0; $i < self::RANDOM_LEN; $i++) {
             $result .= self::ENCODING[random_int(0, self::ENCODING_LEN - 1)];
         }
+
         return $result;
     }
 }

@@ -17,8 +17,8 @@ use InvalidArgumentException;
 final class Money
 {
     /**
-     * @param int $amountInMinorUnits Amount in the currency's minor unit (paise, cents, etc.)
-     * @param string $currency ISO 4217 three-letter uppercase code
+     * @param  int  $amountInMinorUnits  Amount in the currency's minor unit (paise, cents, etc.)
+     * @param  string  $currency  ISO 4217 three-letter uppercase code
      */
     public function __construct(
         public readonly int $amountInMinorUnits,
@@ -29,7 +29,7 @@ final class Money
                 "Money amount cannot be negative (got {$amountInMinorUnits})"
             );
         }
-        if (!preg_match('/^[A-Z]{3}$/', $currency)) {
+        if (! preg_match('/^[A-Z]{3}$/', $currency)) {
             throw new InvalidArgumentException(
                 "Invalid ISO 4217 currency code: {$currency}"
             );
@@ -42,7 +42,7 @@ final class Money
      */
     public static function fromMajor(string $major, string $currency): self
     {
-        if (!preg_match('/^-?\d+(\.\d{1,2})?$/', $major)) {
+        if (! preg_match('/^-?\d+(\.\d{1,2})?$/', $major)) {
             throw new InvalidArgumentException(
                 "Invalid major-unit string: {$major}"
             );
@@ -53,7 +53,7 @@ final class Money
             $major = substr($major, 1);
         }
 
-        if (!str_contains($major, '.')) {
+        if (! str_contains($major, '.')) {
             $minor = ((int) $major) * 100;
         } else {
             [$whole, $fraction] = explode('.', $major, 2);
@@ -71,6 +71,7 @@ final class Money
     public function add(self $other): self
     {
         $this->assertSameCurrency($other);
+
         return new self($this->amountInMinorUnits + $other->amountInMinorUnits, $this->currency);
     }
 
@@ -83,6 +84,7 @@ final class Money
                 'Subtraction would produce a negative Money'
             );
         }
+
         return new self($result, $this->currency);
     }
 
@@ -93,18 +95,21 @@ final class Money
                 'Multiply factor must be non-negative'
             );
         }
+
         return new self($this->amountInMinorUnits * $factor, $this->currency);
     }
 
     public function greaterThan(self $other): bool
     {
         $this->assertSameCurrency($other);
+
         return $this->amountInMinorUnits > $other->amountInMinorUnits;
     }
 
     public function lessThan(self $other): bool
     {
         $this->assertSameCurrency($other);
+
         return $this->amountInMinorUnits < $other->amountInMinorUnits;
     }
 
@@ -123,6 +128,7 @@ final class Money
     {
         $major = intdiv($this->amountInMinorUnits, 100);
         $minor = $this->amountInMinorUnits % 100;
+
         return sprintf('%d.%02d %s', $major, $minor, $this->currency);
     }
 

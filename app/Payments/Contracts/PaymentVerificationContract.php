@@ -17,26 +17,19 @@ interface PaymentVerificationContract
     /**
      * Verify a webhook callback.
      *
-     * @param array<string, string> $headers HTTP headers from the webhook
-     * @param string $payload Raw request body
+     * @param  array<string, string>  $headers  HTTP headers from the webhook
+     * @param  string  $payload  Raw request body
      * @return Result<array{gateway_order_id: string, gateway_payment_id: string, status: TransactionStatus, amount: int}>
      */
     public function verifyWebhook(array $headers, string $payload): Result;
 
     /**
      * Verify a signature string against expected payload.
-     *
-     * @param string $payload
-     * @param string $signature
-     * @return bool
      */
     public function verifySignature(string $payload, string $signature): bool;
 
     /**
      * Generate a signature for outgoing requests or test fixtures.
-     *
-     * @param string $payload
-     * @return string
      */
     public function generateSignature(string $payload): string;
 }

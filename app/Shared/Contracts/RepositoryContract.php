@@ -12,9 +12,6 @@ interface RepositoryContract
 {
     /**
      * Find an entity by its primary identifier.
-     *
-     * @param int|string $id
-     * @return object|null
      */
     public function find(int|string $id): ?object;
 
@@ -28,33 +25,24 @@ interface RepositoryContract
     /**
      * Create a new entity from the given data.
      *
-     * @param array<string, mixed> $data
-     * @return object
+     * @param  array<string, mixed>  $data
      */
     public function create(array $data): object;
 
     /**
      * Update an existing entity.
      *
-     * @param int|string $id
-     * @param array<string, mixed> $data
-     * @return object
+     * @param  array<string, mixed>  $data
      */
     public function update(int|string $id, array $data): object;
 
     /**
      * Delete an entity by its primary identifier.
-     *
-     * @param int|string $id
-     * @return bool
      */
     public function delete(int|string $id): bool;
 
     /**
      * Check whether an entity exists.
-     *
-     * @param int|string $id
-     * @return bool
      */
     public function exists(int|string $id): bool;
 }

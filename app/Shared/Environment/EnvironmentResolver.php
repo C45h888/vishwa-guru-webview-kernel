@@ -7,7 +7,6 @@ namespace App\Shared\Environment;
 use App\Shared\Contracts\EnvironmentContract;
 use App\Shared\Enums\EnvironmentType;
 use App\Shared\Exceptions\ConfigurationException;
-use Illuminate\Support\Facades\Crypt;
 
 /**
  * Default implementation of {@see EnvironmentContract}.
@@ -25,6 +24,33 @@ final class EnvironmentResolver implements EnvironmentContract
         $this->type = EnvironmentType::fromAppEnv(
             (string) config('app.env', 'production'),
         );
+    }
+
+    public function environment(): string
+    {
+        return (string) config('app.env', 'production');
+    }
+
+    public function is(string|array $environments): bool
+    {
+        $current = $this->environment();
+
+        if (is_string($environments)) {
+            return $current === $environments;
+        }
+
+        foreach ($environments as $env) {
+            if ($current === $env) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public function get(string $key, mixed $default = null): mixed
+    {
+        return env($key, $default);
     }
 
     public function type(): EnvironmentType

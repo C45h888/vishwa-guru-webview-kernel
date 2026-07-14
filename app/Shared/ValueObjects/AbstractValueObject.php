@@ -13,7 +13,7 @@ use App\Shared\Contracts\ValueObjectContract;
 abstract class AbstractValueObject implements ValueObjectContract
 {
     /**
-     * @param static $other
+     * @param  static  $other
      */
     public function equals(ValueObjectContract $other): bool
     {

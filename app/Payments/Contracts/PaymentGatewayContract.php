@@ -34,8 +34,6 @@ interface PaymentGatewayContract
      * Verify a payment via the gateway's verification API.
      * Used as the authoritative source of payment truth.
      *
-     * @param string $gatewayOrderId
-     * @param string|null $gatewayPaymentId
      * @return Result<TransactionStatus>
      */
     public function verify(string $gatewayOrderId, ?string $gatewayPaymentId = null): Result;

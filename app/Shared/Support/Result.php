@@ -14,7 +14,8 @@ final class Result
 {
     /**
      * @template U
-     * @param U $value
+     *
+     * @param  U  $value
      * @return Result<U>
      */
     public static function success(mixed $value): Result
@@ -24,8 +25,8 @@ final class Result
 
     /**
      * @template U
-     * @param string $error
-     * @param U|null $value
+     *
+     * @param  U|null  $value
      * @return Result<U>
      */
     public static function failure(string $error, mixed $value = null): Result
@@ -46,7 +47,7 @@ final class Result
 
     public function isFailure(): bool
     {
-        return !$this->ok;
+        return ! $this->ok;
     }
 
     /**
@@ -64,7 +65,8 @@ final class Result
 
     /**
      * @template U
-     * @param U $default
+     *
+     * @param  U  $default
      * @return T|U
      */
     public function valueOr(mixed $default): mixed
@@ -74,14 +76,23 @@ final class Result
 
     /**
      * @template U
-     * @param callable(T): U $map
+     *
+     * @param  callable(T): U  $map
      * @return Result<U>
      */
     public function map(callable $map): Result
     {
         if ($this->ok) {
-            return Result::success($map($this->value));
+            /** @var U $mapped */
+            $mapped = $map($this->value);
+            /** @var Result<U> $result */
+            $result = Result::success($mapped);
+
+            return $result;
         }
-        return Result::failure($this->error ?? 'Unknown error');
+        /** @var Result<U> $result */
+        $result = Result::failure($this->error ?? 'Unknown error');
+
+        return $result;
     }
 }

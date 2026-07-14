@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Console;
 
+use Illuminate\Console\Command;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
 
@@ -12,7 +13,7 @@ class Kernel extends ConsoleKernel
     /**
      * Register console commands.
      *
-     * @var array<int, class-string<\Illuminate\Console\Command>>
+     * @var array<int, class-string<Command>>
      */
     protected $commands = [];
 
@@ -29,6 +30,6 @@ class Kernel extends ConsoleKernel
      */
     protected function commands(): void
     {
-        $this->load(__DIR__ . '/../../routes');
+        $this->load(__DIR__.'/../../routes');
     }
 }

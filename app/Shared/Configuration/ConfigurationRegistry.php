@@ -12,6 +12,12 @@ use App\Shared\Contracts\ConfigurationContract;
  * Lets the application access configuration across logical
  * sub-systems (shared, app, payments, donations, etc.) without
  * coupling the consumer to Laravel's config() helper.
+ *
+ * Each namespace resolves to a contract that prefixes all keys
+ * with the namespace, e.g.:
+ *
+ *   $registry->namespace('app')->string('env')
+ *     === config('app.env')
  */
 final class ConfigurationRegistry
 {
@@ -22,9 +28,10 @@ final class ConfigurationRegistry
 
     public function __construct()
     {
-        // Bootstrap with the default Laravel-backed contract.
-        $this->contracts['shared'] = new LaravelConfiguration;
-        $this->contracts['app'] = new LaravelConfiguration;
+        // Default contracts: both namespaced to the empty root
+        // (no prefix added).
+        $this->contracts['shared'] = new NamespacedConfiguration('');
+        $this->contracts['app'] = new NamespacedConfiguration('app');
     }
 
     /**
@@ -40,7 +47,7 @@ final class ConfigurationRegistry
      */
     public function namespace(string $name): ConfigurationContract
     {
-        if (!isset($this->contracts[$name])) {
+        if (! isset($this->contracts[$name])) {
             throw new \InvalidArgumentException(
                 "No configuration registered for namespace [{$name}]"
             );

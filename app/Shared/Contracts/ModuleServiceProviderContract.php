@@ -12,15 +12,11 @@ interface ModuleServiceProviderContract
 {
     /**
      * Return the fully qualified module namespace.
-     *
-     * @return string
      */
     public function moduleNamespace(): string;
 
     /**
      * Return the base path to the module directory.
-     *
-     * @return string
      */
     public function modulePath(): string;
 }

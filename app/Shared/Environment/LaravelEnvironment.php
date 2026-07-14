@@ -54,10 +54,10 @@ class LaravelEnvironment implements EnvironmentContract
         $env = $this->environment();
 
         $this->cachedType = match (strtolower($env)) {
-            'production'  => EnvironmentType::Production,
-            'testing'     => EnvironmentType::Testing,
-            'ci'          => EnvironmentType::CI,
-            default       => EnvironmentType::Local,
+            'production' => EnvironmentType::Production,
+            'testing' => EnvironmentType::Testing,
+            'ci' => EnvironmentType::CI,
+            default => EnvironmentType::Local,
         };
 
         return $this->cachedType;

@@ -15,7 +15,7 @@ namespace App\Shared\Exceptions;
 final class ValidationFailedException extends DomainException
 {
     /**
-     * @param array<string, list<string>> $violations
+     * @param  array<string, list<string>>  $violations
      */
     public function __construct(
         string $message,
@@ -38,7 +38,7 @@ final class ValidationFailedException extends DomainException
     }
 
     /**
-     * @param array<string, list<string>> $violations
+     * @param  array<string, list<string>>  $violations
      */
     public function withViolations(array $violations): self
     {
