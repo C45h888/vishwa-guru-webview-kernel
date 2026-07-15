@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Payments\Contracts;
 
-use App\Payments\Enums\Currency;
+use App\Payments\Domain\Enums\Currency;
 
 /**
  * Marker + capability declaration for a payment provider.

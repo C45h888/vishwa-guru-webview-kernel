@@ -1,0 +1,292 @@
+{
+  "branch": "phase-0.5-db (from .neon)",
+  "ran_at": "2026-07-15T10:34:49.326Z",
+  "total": 35,
+  "passed": 35,
+  "failed": 0,
+  "probes": [
+    {
+      "ran_at": "2026-07-15T10:34:40.387Z",
+      "id": "h1",
+      "name": "currencies — INR/USD/EUR",
+      "kind": "happy",
+      "status": "pass"
+    },
+    {
+      "ran_at": "2026-07-15T10:34:40.639Z",
+      "id": "h2",
+      "name": "payment_providers — razorpay + paypal",
+      "kind": "happy",
+      "status": "pass"
+    },
+    {
+      "ran_at": "2026-07-15T10:34:40.907Z",
+      "id": "h3",
+      "name": "donors — full PII + anonymized",
+      "kind": "happy",
+      "status": "pass"
+    },
+    {
+      "ran_at": "2026-07-15T10:34:41.135Z",
+      "id": "h4",
+      "name": "campaign — active, INR",
+      "kind": "happy",
+      "status": "pass"
+    },
+    {
+      "ran_at": "2026-07-15T10:34:41.385Z",
+      "id": "h5",
+      "name": "idempotency_keys — donation + payment",
+      "kind": "happy",
+      "status": "pass"
+    },
+    {
+      "ran_at": "2026-07-15T10:34:41.632Z",
+      "id": "h6",
+      "name": "donation — non-anonymous, INR 1000, completed",
+      "kind": "happy",
+      "status": "pass"
+    },
+    {
+      "ran_at": "2026-07-15T10:34:41.884Z",
+      "id": "h7",
+      "name": "payment — captured INR 1000",
+      "kind": "happy",
+      "status": "pass"
+    },
+    {
+      "ran_at": "2026-07-15T10:34:42.194Z",
+      "id": "h8",
+      "name": "file_assets — receipt PDF + 80G cert",
+      "kind": "happy",
+      "status": "pass"
+    },
+    {
+      "ran_at": "2026-07-15T10:34:42.444Z",
+      "id": "h9",
+      "name": "receipt — generated",
+      "kind": "happy",
+      "status": "pass"
+    },
+    {
+      "ran_at": "2026-07-15T10:34:42.661Z",
+      "id": "h10",
+      "name": "donations UPDATE → completed (no-op, already completed)",
+      "kind": "happy",
+      "status": "pass"
+    },
+    {
+      "ran_at": "2026-07-15T10:34:42.870Z",
+      "id": "h11",
+      "name": "payments UPDATE → settled",
+      "kind": "happy",
+      "status": "pass"
+    },
+    {
+      "ran_at": "2026-07-15T10:34:43.105Z",
+      "id": "h12",
+      "name": "receipts UPDATE → delivered",
+      "kind": "happy",
+      "status": "pass"
+    },
+    {
+      "ran_at": "2026-07-15T10:34:43.347Z",
+      "id": "h13",
+      "name": "audit_events — append-only INSERT",
+      "kind": "happy",
+      "status": "pass"
+    },
+    {
+      "ran_at": "2026-07-15T10:34:43.584Z",
+      "id": "n01",
+      "name": "currencies.minor_unit_digits > 4 → CHECK (23514)",
+      "kind": "negative",
+      "status": "pass",
+      "expected_sqlstate": "23514",
+      "observed_sqlstate": "23514"
+    },
+    {
+      "ran_at": "2026-07-15T10:34:43.814Z",
+      "id": "n02",
+      "name": "donor with no contact AND not anonymized → CHECK (23514)",
+      "kind": "negative",
+      "status": "pass",
+      "expected_sqlstate": "23514",
+      "observed_sqlstate": "23514"
+    },
+    {
+      "ran_at": "2026-07-15T10:34:44.042Z",
+      "id": "n03",
+      "name": "donations.is_anonymous=true with PII snapshots → CHECK (23514)",
+      "kind": "negative",
+      "status": "pass",
+      "expected_sqlstate": "23514",
+      "observed_sqlstate": "23514"
+    },
+    {
+      "ran_at": "2026-07-15T10:34:44.279Z",
+      "id": "n04",
+      "name": "donations.amount_minor <= 0 → CHECK (23514)",
+      "kind": "negative",
+      "status": "pass",
+      "expected_sqlstate": "23514",
+      "observed_sqlstate": "23514"
+    },
+    {
+      "ran_at": "2026-07-15T10:34:44.496Z",
+      "id": "n05",
+      "name": "donations state=completed with completed_at IS NULL → CHECK (23514)",
+      "kind": "negative",
+      "status": "pass",
+      "expected_sqlstate": "23514",
+      "observed_sqlstate": "23514"
+    },
+    {
+      "ran_at": "2026-07-15T10:34:44.717Z",
+      "id": "n06",
+      "name": "donations state=failed with failed_at IS NULL → CHECK (23514)",
+      "kind": "negative",
+      "status": "pass",
+      "expected_sqlstate": "23514",
+      "observed_sqlstate": "23514"
+    },
+    {
+      "ran_at": "2026-07-15T10:34:44.939Z",
+      "id": "n07",
+      "name": "payments status=refunded with refund=0 → CHECK (23514)",
+      "kind": "negative",
+      "status": "pass",
+      "expected_sqlstate": "23514",
+      "observed_sqlstate": "23514"
+    },
+    {
+      "ran_at": "2026-07-15T10:34:45.179Z",
+      "id": "n08",
+      "name": "payments refund > captured → CHECK (23514)",
+      "kind": "negative",
+      "status": "pass",
+      "expected_sqlstate": "23514",
+      "observed_sqlstate": "23514"
+    },
+    {
+      "ran_at": "2026-07-15T10:34:45.409Z",
+      "id": "n09",
+      "name": "payments status=settled with settled_at IS NULL → CHECK (23514)",
+      "kind": "negative",
+      "status": "pass",
+      "expected_sqlstate": "23514",
+      "observed_sqlstate": "23514"
+    },
+    {
+      "ran_at": "2026-07-15T10:34:45.640Z",
+      "id": "n10",
+      "name": "failure_states retry_count > max_retries → CHECK (23514)",
+      "kind": "negative",
+      "status": "pass",
+      "expected_sqlstate": "23514",
+      "observed_sqlstate": "23514"
+    },
+    {
+      "ran_at": "2026-07-15T10:34:45.854Z",
+      "id": "n11",
+      "name": "idempotency_keys expires_at <= created_at → CHECK (23514)",
+      "kind": "negative",
+      "status": "pass",
+      "expected_sqlstate": "23514",
+      "observed_sqlstate": "23514"
+    },
+    {
+      "ran_at": "2026-07-15T10:34:46.084Z",
+      "id": "n12",
+      "name": "file_assets.file_size_bytes <= 0 → CHECK (23514)",
+      "kind": "negative",
+      "status": "pass",
+      "expected_sqlstate": "23514",
+      "observed_sqlstate": "23514"
+    },
+    {
+      "ran_at": "2026-07-15T10:34:46.310Z",
+      "id": "h-prep-n13",
+      "name": "static_pages — first homepage",
+      "kind": "happy",
+      "status": "pass"
+    },
+    {
+      "ran_at": "2026-07-15T10:34:46.536Z",
+      "id": "n13",
+      "name": "static_pages second is_homepage=true → EXCLUDE (23P01)",
+      "kind": "negative",
+      "status": "pass",
+      "expected_sqlstate": "23P01",
+      "observed_sqlstate": "23P01"
+    },
+    {
+      "ran_at": "2026-07-15T10:34:46.780Z",
+      "id": "h-prep-n14",
+      "name": "webhook_events — first event",
+      "kind": "happy",
+      "status": "pass"
+    },
+    {
+      "ran_at": "2026-07-15T10:34:47.052Z",
+      "id": "n14",
+      "name": "webhook_events duplicate (provider_code, provider_event_id) → UNIQUE (23505)",
+      "kind": "negative",
+      "status": "pass",
+      "expected_sqlstate": "23505",
+      "observed_sqlstate": "23505"
+    },
+    {
+      "ran_at": "2026-07-15T10:34:47.293Z",
+      "id": "n15",
+      "name": "donations.campaign_id nonexistent → FK (23503)",
+      "kind": "negative",
+      "status": "pass",
+      "expected_sqlstate": "23503",
+      "observed_sqlstate": "23503"
+    },
+    {
+      "ran_at": "2026-07-15T10:34:47.537Z",
+      "id": "n16",
+      "name": "receipts.donation_id nonexistent → FK (23503)",
+      "kind": "negative",
+      "status": "pass",
+      "expected_sqlstate": "23503",
+      "observed_sqlstate": "23503"
+    },
+    {
+      "ran_at": "2026-07-15T10:34:47.992Z",
+      "id": "n17",
+      "name": "soft-delete + reuse slug → partial unique allows",
+      "kind": "negative",
+      "status": "pass",
+      "expected": "no_error"
+    },
+    {
+      "ran_at": "2026-07-15T10:34:48.268Z",
+      "id": "c01",
+      "name": "DELETE campaign with donations → RESTRICT (23001)",
+      "kind": "negative",
+      "status": "pass",
+      "expected_sqlstate": "23001",
+      "observed_sqlstate": "23001"
+    },
+    {
+      "ran_at": "2026-07-15T10:34:48.870Z",
+      "id": "c02",
+      "name": "hero_banner DELETE CASCADES hero_banner_pages → junction rows removed",
+      "kind": "cascade",
+      "status": "pass",
+      "expected": "cascade_clean",
+      "cascade_rows_removed": 1
+    },
+    {
+      "ran_at": "2026-07-15T10:34:49.326Z",
+      "id": "c03",
+      "name": "campaign.cover_image_file_id = SET NULL on file_assets DELETE",
+      "kind": "cascade",
+      "status": "pass",
+      "expected": "set_null"
+    }
+  ]
+}

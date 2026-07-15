@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Payments\Contracts;
 
-use App\Payments\Enums\Currency;
-use App\Payments\Enums\TransactionStatus;
-use App\Payments\ValueObjects\PaymentRequest;
+use App\Payments\Domain\Enums\Currency;
+use App\Payments\Domain\Enums\TransactionStatus;
+use App\Payments\Domain\ValueObjects\PaymentRequest;
 use App\Shared\Support\Result;
 use App\Shared\ValueObjects\Identifier;
 
@@ -61,4 +61,35 @@ interface PaymentGatewayContract
      * Whether this gateway supports the given currency.
      */
     public function supports(Currency $currency): bool;
+
+    /**
+     * Whether this gateway is currently enabled. Mirrors the
+     * `enabled` column on the `payment_providers` row and the
+     * PaymentProvider enum's isEnabled() but is adapter-controlled
+     * because some adapters may disable themselves at runtime
+     * (e.g. sandbox-only Razorpay keys).
+     */
+    public function enabled(): bool;
+
+    /**
+     * The minimum amount (in MINOR units of the gateway's primary
+     * currency) this gateway accepts. Used by the
+     * PaymentProviderSelector to filter the candidate pool.
+     */
+    public function minimumAmount(): int;
+
+    /**
+     * The maximum amount (in MINOR units of the gateway's primary
+     * currency) this gateway accepts per single transaction. Used
+     * by the PaymentProviderSelector to filter the candidate pool.
+     */
+    public function maximumAmount(): int;
+
+    /**
+     * Selection priority for the PaymentProviderSelector. Lower
+     * values are selected first. Mirrors the PaymentProvider enum's
+     * priority() but is adapter-controlled so per-environment
+     * overrides are possible without changing domain code.
+     */
+    public function priority(): int;
 }

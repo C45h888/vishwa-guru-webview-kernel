@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Payments\Contracts;
 
-use App\Payments\Enums\TransactionStatus;
+use App\Payments\Domain\Enums\TransactionStatus;
 use App\Shared\Support\Result;
 
 /**
