@@ -28,6 +28,7 @@ final class ReceiptDraft
         private readonly string $contentHash,
         private readonly ?string $deliveryChannel = null,
         private readonly ?string $deliveryAddress = null,
+        private readonly ?string $amountInWords = null,
     ) {
         if (empty($receiptNumber)) {
             throw new InvalidArgumentException('ReceiptDraft receiptNumber cannot be empty');
@@ -92,6 +93,11 @@ final class ReceiptDraft
         return $this->deliveryAddress;
     }
 
+    public function amountInWords(): ?string
+    {
+        return $this->amountInWords;
+    }
+
     public function isDelivered(): bool
     {
         return $this->deliveryChannel !== null && $this->deliveryAddress !== null;
@@ -111,6 +117,34 @@ final class ReceiptDraft
             'content_hash' => $this->contentHash,
             'delivery_channel' => $this->deliveryChannel,
             'delivery_address' => $this->deliveryAddress,
+            'amount_in_words' => $this->amountInWords,
         ];
+    }
+
+    /**
+     * Factory for building a ReceiptDraft from the renderer pipeline.
+     */
+    public static function fromRenderer(
+        Identifier $transactionId,
+        Identifier $donationId,
+        string $receiptNumber,
+        Identifier $fileAssetId,
+        DateTimeImmutable $issuedAt,
+        string $contentHash,
+        ?string $amountInWords,
+        ?string $deliveryChannel = null,
+        ?string $deliveryAddress = null,
+    ): self {
+        return new self(
+            transactionId: $transactionId,
+            donationId: $donationId,
+            receiptNumber: $receiptNumber,
+            fileAssetId: $fileAssetId,
+            issuedAt: $issuedAt,
+            contentHash: $contentHash,
+            deliveryChannel: $deliveryChannel,
+            deliveryAddress: $deliveryAddress,
+            amountInWords: $amountInWords,
+        );
     }
 }

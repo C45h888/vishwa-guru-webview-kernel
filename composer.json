@@ -9,7 +9,10 @@
         "php": "^8.2",
         "ext-pdo": "*",
         "laravel/framework": "^10.0",
-        "laravel/tinker": "^2.9"
+        "laravel/tinker": "^2.9",
+        "razorpay/razorpay": "~2.0",
+        "paypal/paypal-checkout-sdk": "*",
+        "barryvdh/laravel-dompdf": "^2.0"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",

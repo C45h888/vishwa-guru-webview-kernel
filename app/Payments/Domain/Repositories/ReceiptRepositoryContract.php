@@ -60,4 +60,12 @@ interface ReceiptRepositoryContract
      * Whether a receipt exists for the given transaction.
      */
     public function existsForTransaction(EntityId $transactionId): bool;
+
+    /**
+     * Find the highest receipt_number issued in a fiscal year.
+     * Used by ReceiptNumberAllocator to issue the next sequential id.
+     *
+     * @return string|null e.g. "TR-2026-000042" or null if none yet
+     */
+    public function findMaxReceiptNumberForFY(int $fiscalYear): ?string;
 }

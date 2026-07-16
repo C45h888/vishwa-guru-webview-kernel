@@ -14,7 +14,6 @@ use App\Payments\Domain\Exceptions\WebhookVerificationFailedException;
 use App\Payments\Domain\Repositories\AuditEventRepositoryContract;
 use App\Payments\Domain\Repositories\IdempotencyKeyRepositoryContract;
 use App\Payments\Domain\Repositories\PaymentRepositoryContract;
-use App\Payments\Domain\Repositories\DonationRepositoryContract;
 use App\Payments\Domain\Repositories\WebhookEventRepositoryContract;
 use App\Payments\Domain\ValueObjects\PaymentVerification;
 use App\Shared\Support\Clock;
@@ -53,15 +52,18 @@ use InvalidArgumentException;
  * The pipeline returns Result<PaymentVerification>. Stage results
  * are attached to the VerificationContextDTO for downstream
  * observability (Pass 1.4 admin console reads them).
+ *
+ * Non-final so unit tests can substitute a recording stub via
+ * inheritance; production code resolves through DI and never sees
+ * a subclass.
  */
-final class PaymentVerificationService
+class PaymentVerificationService
 {
     /**
      * @param  iterable<PaymentVerificationContract>  $verifiers
      */
     public function __construct(
         private readonly PaymentRepositoryContract $payments,
-        private readonly DonationRepositoryContract $donations,
         private readonly IdempotencyKeyRepositoryContract $idempotency,
         private readonly WebhookEventRepositoryContract $webhookEvents,
         private readonly AuditEventRepositoryContract $auditLog,
@@ -70,6 +72,7 @@ final class PaymentVerificationService
     ) {}
 
     /**
+     * @phpstan-return Result<PaymentVerification>|Result<null>
      * @return Result<PaymentVerification>
      */
     public function verify(VerificationContextDTO $context): Result
@@ -116,11 +119,11 @@ final class PaymentVerificationService
         }
 
         $sigPayload = $sigResult->value();
-        $gatewayOrderId = (string) ($sigPayload['gateway_order_id'] ?? '');
-        $gatewayPaymentId = (string) ($sigPayload['gateway_payment_id'] ?? '');
-        $status = $sigPayload['status'] ?? null;
-        $amount = (int) ($sigPayload['amount'] ?? 0);
-        $currency = $sigPayload['currency'] ?? null;
+        $gatewayOrderId = (string) $sigPayload['gateway_order_id'];
+        $gatewayPaymentId = (string) $sigPayload['gateway_payment_id'];
+        $status = $sigPayload['status'];
+        $amount = (int) $sigPayload['amount'];
+        $currency = (string) $sigPayload['currency'];
 
         if ($gatewayOrderId === '' || ! $status instanceof TransactionStatus || $amount <= 0) {
             return $this->fail(
@@ -166,6 +169,26 @@ final class PaymentVerificationService
             );
         }
 
+        // Use the idempotency repository as a side-channel: a
+        // non-expired idempotency key for this provider_event_id
+        // means the same gateway callback has been processed
+        // before (handles webhook redelivery races that the
+        // findByGatewayOrderId lookup misses).
+        if ($payload->providerEventId() !== '') {
+            $active = $this->idempotency->isActive(
+                $payload->providerEventId(),
+                $provider->value,
+            );
+            if ($active) {
+                throw DuplicatePaymentException::idempotencyKeyReused(
+                    $payload->providerEventId(),
+                    'already-processed',
+                );
+            }
+        }
+
+        $method = isset($sigPayload['method']) ? (string) $sigPayload['method'] : null;
+
         $verification = new PaymentVerification(
             provider: $provider,
             gatewayOrderId: $gatewayOrderId,
@@ -174,7 +197,7 @@ final class PaymentVerificationService
             amountMinor: $amount,
             currency: $context->expectedCurrency(),
             verifiedAt: $this->clock->now(),
-            method: isset($sigPayload['method']) ? (string) $sigPayload['method'] : null,
+            method: $method,
             metadata: [
                 'stage_results' => $context->stageResults(),
                 'expected_idempotency_key' => $context->expectedIdempotencyKey(),
@@ -282,6 +305,7 @@ final class PaymentVerificationService
     }
 
     /**
+     * @phpstan-return Result<null>
      * @return Result<PaymentVerification>
      */
     private function fail(

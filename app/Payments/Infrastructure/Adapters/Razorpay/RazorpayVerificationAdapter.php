@@ -1,0 +1,112 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Payments\Infrastructure\Adapters\Razorpay;
+
+use App\Payments\Contracts\PaymentVerificationContract;
+use App\Payments\Domain\Enums\TransactionStatus;
+use App\Payments\Domain\Exceptions\WebhookVerificationFailedException;
+use App\Shared\Contracts\ConfigurationContract;
+use App\Shared\Support\Result;
+
+/**
+ * Razorpay implementation of PaymentVerificationContract.
+ * Handles webhook signature verification for Razorpay callbacks.
+ */
+final class RazorpayVerificationAdapter implements PaymentVerificationContract
+{
+    public function __construct(
+        private RazorpayClient $client,
+        private ConfigurationContract $config,
+    ) {}
+
+    /**
+     * Verify a Razorpay webhook callback.
+     */
+    public function verifyWebhook(array $headers, string $payload): Result
+    {
+        $signature = $headers['x-razorpay-signature'] ?? null;
+
+        if ($signature === null) {
+            return Result::failure(
+                WebhookVerificationFailedException::missingSignature('razorpay', '')->getMessage(),
+            );
+        }
+
+        $webhookSecret = (string) $this->config->get(
+            'payments.providers.razorpay.webhook_secret',
+            '',
+        );
+
+        if ($webhookSecret === '') {
+            return Result::failure(
+                WebhookVerificationFailedException::malformedPayload(
+                    'razorpay',
+                    'Webhook secret not configured',
+                )->getMessage(),
+            );
+        }
+
+        if (! $this->client->verifyWebhookSignature($payload, $signature, $webhookSecret)) {
+            return Result::failure(
+                WebhookVerificationFailedException::invalidSignature('razorpay', '')->getMessage(),
+            );
+        }
+
+        $body = json_decode($payload, true) ?? [];
+        $payloadPayment = $body['payload']['payment']['entity'] ?? [];
+        $payloadOrder = $body['payload']['order']['entity'] ?? [];
+
+        return Result::success([
+            'gateway_order_id' => (string) ($payloadOrder['id'] ?? ''),
+            'gateway_payment_id' => (string) ($payloadPayment['id'] ?? ''),
+            'status' => $this->mapStatus((string) ($payloadPayment['status'] ?? '')),
+            'amount' => (int) ($payloadPayment['amount'] ?? 0),
+            'currency' => (string) ($payloadPayment['currency'] ?? 'INR'),
+            'method' => (string) ($payloadPayment['method'] ?? ''),
+        ]);
+    }
+
+    /**
+     * Verify a signature string against a payload.
+     */
+    public function verifySignature(string $payload, string $signature): bool
+    {
+        $webhookSecret = (string) $this->config->get(
+            'payments.providers.razorpay.webhook_secret',
+            '',
+        );
+
+        return $this->client->verifyWebhookSignature($payload, $signature, $webhookSecret);
+    }
+
+    /**
+     * Generate a signature for outgoing requests or test fixtures.
+     */
+    public function generateSignature(string $payload): string
+    {
+        $webhookSecret = (string) $this->config->get(
+            'payments.providers.razorpay.webhook_secret',
+            '',
+        );
+
+        return hash_hmac('sha256', $payload, $webhookSecret);
+    }
+
+    /**
+     * Map Razorpay payment status to TransactionStatus.
+     */
+    private function mapStatus(string $razorpayStatus): TransactionStatus
+    {
+        return match (strtolower($razorpayStatus)) {
+            'created', 'attempted' => TransactionStatus::INITIALIZED,
+            'authorized' => TransactionStatus::AUTHORIZED,
+            'captured' => TransactionStatus::CAPTURED,
+            'refunded' => TransactionStatus::REFUNDED,
+            'failed' => TransactionStatus::FAILED,
+            'pending' => TransactionStatus::PENDING,
+            default => TransactionStatus::PENDING,
+        };
+    }
+}

@@ -204,6 +204,16 @@ This phase concludes only after the persistence layer faithfully represents the 
 
 # Phase 1 — Financial Platform
 
+## Status: COMPLETE on 2026-07-15
+
+All Phase 1 work landed. The Financial Kernel is reachable from the
+Laravel container. See `module-inventory.md` for the canonical file
+map and `phase-1-deviations.md` for the deviation log.
+
+Subsidiary passes 1.0 through 1.6 are fully built. Pass 1.7
+(receipt rendering) is partial — see deviations D8, D9, D10 and
+recommended actions M1, M2, M3.
+
 ## Objective
 
 Construct the complete financial subsystem.

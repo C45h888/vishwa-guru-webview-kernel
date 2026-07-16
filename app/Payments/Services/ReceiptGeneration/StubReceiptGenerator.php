@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Payments\Services\ReceiptGeneration;
 
 use App\Payments\Contracts\ReceiptGenerationContract;
+use App\Payments\Domain\ValueObjects\ReceiptDraft;
+use App\Persistence\ValueObjects\EntityId;
 use App\Shared\Contracts\EnvironmentContract;
 use App\Shared\Support\Clock;
 use App\Shared\Support\Result;
@@ -12,8 +14,7 @@ use App\Shared\ValueObjects\Identifier;
 
 /**
  * Concrete ReceiptGenerationContract implementation used while the
- * PDF rendering pipeline is being staged (Q3 — receipt PDF rendering
- * is deferred to a later pass).
+ * PDF rendering pipeline is being staged.
  *
  * The generator DOES produce:
  *   - a valid receipt_number matching the schema constraint TR-YYYY-{shortId}
@@ -35,6 +36,11 @@ final class StubReceiptGenerator implements ReceiptGenerationContract
         private readonly EnvironmentContract $environment,
     ) {}
 
+    /**
+     * Phase 0.25 surface — UNCHANGED.
+     *
+     * @return Result<array{receipt_number: string, issued_at: string, download_url: string, content_hash: string}>
+     */
     public function generate(Identifier $transactionId): Result
     {
         $issuedAt = $this->clock->now();
@@ -57,6 +63,40 @@ final class StubReceiptGenerator implements ReceiptGenerationContract
             'download_url' => $downloadUrl,
             'content_hash' => $contentHash,
         ]);
+    }
+
+    /**
+     * Pass 1.7 surface — stub draft for testing.
+     *
+     * @return Result<ReceiptDraft>
+     */
+    public function draft(Identifier $transactionId): Result
+    {
+        $issuedAt = $this->clock->now();
+        $receiptNumber = $this->receiptNumber($transactionId);
+
+        $contentHash = $this->hash([
+            'transaction_id' => $transactionId->value(),
+            'receipt_number' => $receiptNumber,
+            'issued_at' => $issuedAt->format(DATE_ATOM),
+        ]);
+
+        // Stub fileAssetId — not a real file_assets row in this pass
+        $fileAssetId = EntityId::generate('file_asset');
+
+        $draft = ReceiptDraft::fromRenderer(
+            transactionId: $transactionId,
+            donationId: new Identifier('donor_stub_' . $transactionId->value()),
+            receiptNumber: $receiptNumber,
+            fileAssetId: new Identifier($fileAssetId->value()),
+            issuedAt: $issuedAt,
+            contentHash: $contentHash,
+            amountInWords: null,
+            deliveryChannel: null,
+            deliveryAddress: null,
+        );
+
+        return Result::success($draft);
     }
 
     public function receiptNumber(Identifier $transactionId): string

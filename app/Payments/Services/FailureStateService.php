@@ -170,6 +170,7 @@ class FailureStateService
      * re-running handleWebhook(). This method only governs the
      * bookkeeping (retry counter, nextRetryAt, audit).
      *
+     * @phpstan-return Result<FailureState>|Result<null>
      * @return Result<FailureState>
      */
     public function retry(
@@ -254,6 +255,7 @@ class FailureStateService
      * Used by operator actions and by paths that recover outside the
      * gateway (e.g. manual reconciliation).
      *
+     * @phpstan-return Result<FailureState>|Result<null>
      * @return Result<FailureState>
      */
     public function markResolved(
@@ -298,6 +300,7 @@ class FailureStateService
      * to terminal after retries are exhausted. Idempotent on
      * resolved failures.
      *
+     * @phpstan-return Result<FailureState>|Result<null>
      * @return Result<FailureState>
      */
     public function escalate(

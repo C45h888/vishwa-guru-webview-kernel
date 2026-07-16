@@ -45,6 +45,7 @@ return [
         App\Providers\AppServiceProvider::class,
         App\Providers\RouteServiceProvider::class,
         App\Shared\Providers\SharedServiceProvider::class,
+        App\Payments\Providers\PaymentsServiceProvider::class,
     ])->toArray(),
 
     /*

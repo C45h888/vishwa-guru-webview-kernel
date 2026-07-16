@@ -16,22 +16,30 @@ final class Result
      * @template U
      *
      * @param  U  $value
+     * @phpstan-return self<U>
      * @return Result<U>
      */
     public static function success(mixed $value): Result
     {
-        return new Result(true, $value, null);
+        /** @var Result<U> $result */
+        $result = new Result(true, $value, null);
+
+        return $result;
     }
 
     /**
      * @template U
      *
      * @param  U|null  $value
+     * @phpstan-return self<U>
      * @return Result<U>
      */
     public static function failure(string $error, mixed $value = null): Result
     {
-        return new Result(false, $value, $error);
+        /** @var Result<U> $result */
+        $result = new Result(false, $value, $error);
+
+        return $result;
     }
 
     private function __construct(

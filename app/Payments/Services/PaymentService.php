@@ -4,18 +4,17 @@ declare(strict_types=1);
 
 namespace App\Payments\Services;
 
-use App\Payments\Domain\Repositories\AuditEventRepositoryContract;
-use App\Payments\Domain\Repositories\DonationRepositoryContract;
-use App\Payments\Domain\Repositories\PaymentRepositoryContract;
 use App\Payments\Domain\ValueObjects\DonationIntent;
 use App\Payments\Domain\ValueObjects\WebhookPayload;
-use App\Shared\Support\Clock;
-use App\Shared\Support\IdentifierGenerator;
 use App\Shared\Support\Result;
 use App\Shared\ValueObjects\Identifier;
 
 /**
  * Stable, public API surface for the Payments domain.
+ *
+ * Non-final so unit tests can substitute a recording stub via
+ * inheritance; production code resolves through DI and never sees
+ * a subclass.
  *
  * Other domains (Donations, Admin, future Console) import
  * PaymentService instead of the PaymentOrchestrator directly. This
@@ -32,11 +31,6 @@ final class PaymentService
 {
     public function __construct(
         private readonly PaymentOrchestrator $orchestrator,
-        private readonly PaymentRepositoryContract $payments,
-        private readonly DonationRepositoryContract $donations,
-        private readonly AuditEventRepositoryContract $auditLog,
-        private readonly Clock $clock,
-        private readonly IdentifierGenerator $ids,
     ) {}
 
     /**

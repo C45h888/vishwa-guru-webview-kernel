@@ -72,7 +72,6 @@ final class PaymentVerificationServiceTest extends TestCase
 
         $service = new PaymentVerificationService(
             payments: $payments,
-            donations: $this->createMock(DonationRepositoryContract::class),
             idempotency: $this->createMock(IdempotencyKeyRepositoryContract::class),
             webhookEvents: $webhookEvents,
             auditLog: $audit,
@@ -109,7 +108,6 @@ final class PaymentVerificationServiceTest extends TestCase
 
         $service = new PaymentVerificationService(
             payments: $this->createMock(PaymentRepositoryContract::class),
-            donations: $this->createMock(DonationRepositoryContract::class),
             idempotency: $this->createMock(IdempotencyKeyRepositoryContract::class),
             webhookEvents: $webhookEvents,
             auditLog: $audit,
@@ -146,7 +144,6 @@ final class PaymentVerificationServiceTest extends TestCase
 
         $service = new PaymentVerificationService(
             payments: $payments,
-            donations: $this->createMock(DonationRepositoryContract::class),
             idempotency: $this->createMock(IdempotencyKeyRepositoryContract::class),
             webhookEvents: $webhookEvents,
             auditLog: $audit,
@@ -188,7 +185,6 @@ final class PaymentVerificationServiceTest extends TestCase
 
         $service = new PaymentVerificationService(
             payments: $payments,
-            donations: $this->createMock(DonationRepositoryContract::class),
             idempotency: $this->createMock(IdempotencyKeyRepositoryContract::class),
             webhookEvents: $webhookEvents,
             auditLog: $audit,
@@ -230,7 +226,6 @@ final class PaymentVerificationServiceTest extends TestCase
 
         $service = new PaymentVerificationService(
             payments: $this->createMock(PaymentRepositoryContract::class),
-            donations: $this->createMock(DonationRepositoryContract::class),
             idempotency: $this->createMock(IdempotencyKeyRepositoryContract::class),
             webhookEvents: $webhookEvents,
             auditLog: $audit,

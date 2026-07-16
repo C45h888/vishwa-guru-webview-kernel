@@ -43,6 +43,7 @@ final class TransactionCoordinator
      * @template T
      *
      * @param  callable(): T  $callback
+     * @phpstan-return Result<T>|Result<null>
      * @return Result<T>
      */
     public function execute(callable $callback): Result

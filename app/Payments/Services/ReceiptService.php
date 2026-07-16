@@ -9,6 +9,7 @@ use App\Payments\Domain\Entities\Receipt;
 use App\Payments\Domain\Enums\ReceiptDeliveryState;
 use App\Payments\Domain\Exceptions\PaymentVerificationFailedException;
 use App\Payments\Domain\Exceptions\ReceiptGenerationFailedException;
+use App\Payments\Domain\Repositories\DonationRepositoryContract;
 use App\Payments\Domain\Repositories\PaymentRepositoryContract;
 use App\Payments\Domain\Repositories\ReceiptRepositoryContract;
 use App\Payments\Domain\StateMachines\ReceiptStateMachine;
@@ -16,7 +17,6 @@ use App\Payments\Domain\StateMachines\StateTransitionEvent;
 use App\Payments\Domain\ValueObjects\ReceiptDraft;
 use App\Persistence\ValueObjects\EntityId;
 use App\Shared\Support\Clock;
-use App\Shared\Support\IdentifierGenerator;
 use App\Shared\Support\Result;
 use App\Shared\ValueObjects\Identifier;
 
@@ -42,17 +42,21 @@ use App\Shared\ValueObjects\Identifier;
  *   file_asset_id as a placeholder EntityId so the Receipt row is
  *   fully wired. When FileAssetRepositoryContract lands, the service
  *   gains a real file_asset insert step in issue().
+ *
+ * Non-final so unit tests can substitute a recording stub via
+ * inheritance; production code resolves through DI and never sees
+ * a subclass.
  */
-final class ReceiptService
+class ReceiptService
 {
     public function __construct(
         private readonly ReceiptRepositoryContract $receipts,
         private readonly PaymentRepositoryContract $payments,
+        private readonly DonationRepositoryContract $donations,
         private readonly FailureStateService $failureStateService,
         private readonly ReceiptGenerationContract $receiptGenerator,
         private readonly ReceiptStateMachine $receiptStateMachine,
         private readonly Clock $clock,
-        private readonly IdentifierGenerator $ids,
     ) {}
 
     /**
@@ -96,45 +100,47 @@ final class ReceiptService
             }
         }
 
-        $generated = $this->receiptGenerator->generate($transactionId);
-        if ($generated->isFailure()) {
+        $draft = $this->receiptGenerator->draft($transactionId);
+        if ($draft->isFailure()) {
             return $this->escalateFailure(
                 $transactionId,
                 'receipt.issue',
                 'generator_failed',
-                (string) $generated->error(),
+                (string) $draft->error(),
             );
         }
 
-        $payload = $generated->value();
-        if (! isset($payload['receipt_number'], $payload['content_hash'], $payload['issued_at'])) {
-            return $this->escalateFailure(
-                $transactionId,
-                'receipt.issue',
-                'generator_payload_malformed',
-                'Receipt generator returned an incomplete payload',
-            );
-        }
+        /** @var ReceiptDraft $d */
+        $d = $draft->value();
 
-        // Pass 1.3 placeholder fileAssetId. Pass 1.4 replaces this
-        // with a real file_assets insert via FileAssetRepositoryContract.
-        $placeholderFileAssetId = EntityId::fromString(
-            $this->ids->next(),
-        );
+        $donation = $this->donations->findById($payment->donationId());
+        $campaignId = $donation?->campaignId() ?? EntityId::generate('campaign');
+        $campaignTitleSnapshot = 'Temple donation';
+        $donorName = $donation?->donorNameSnapshot() ?? 'Anonymous';
 
         $receipt = Receipt::issue(
             donationId: $payment->donationId(),
-            transactionId: $payment->id(),
-            fileAssetId: $placeholderFileAssetId,
-            receiptNumber: (string) $payload['receipt_number'],
-            contentHash: (string) $payload['content_hash'],
-            issuedAt: new \DateTimeImmutable((string) $payload['issued_at']),
-            deliveryChannel: null,
-            deliveryAddress: null,
-            metadata: [
-                'download_url' => (string) ($payload['download_url'] ?? ''),
-            ],
-            id: EntityId::fromString($this->ids->next()),
+            paymentId: $payment->id(),
+            campaignId: $campaignId,
+            receiptNumber: $d->receiptNumber(),
+            campaignTitleSnapshot: $campaignTitleSnapshot,
+            donorName: $donorName,
+            amountMinor: $payment->amountMinor(),
+            currency: $payment->currency(),
+            contentHash: $d->contentHash(),
+            donorEmail: $donation?->donorEmailSnapshot(),
+            donorPan: $donation?->donorPanSnapshot(),
+            donorAddress: $donation?->donorAddressSnapshot(),
+            amountInWords: $d->amountInWords(),
+            isTaxDeductible: true,
+            tax80gEligible: false,
+            receiptFileId: EntityId::fromString($d->fileAssetId()->value()),
+            certificate80gFileId: null,
+            deliveryChannel: $d->deliveryChannel(),
+            deliveryAddress: $d->deliveryAddress(),
+            deliveryMetadata: [],
+            metadata: [],
+            id: EntityId::generate('receipt'),
         );
 
         $this->receipts->save($receipt);
@@ -145,6 +151,7 @@ final class ReceiptService
     /**
      * Apply a delivery transition to a persisted Receipt.
      *
+     * @phpstan-return Result<Receipt>|Result<null>
      * @return Result<Receipt>
      */
     public function markDelivered(
@@ -160,17 +167,10 @@ final class ReceiptService
             return Result::failure('receipt_not_found: id='.$receiptId->value());
         }
 
-        $event = $this->eventForDeliveryState($state);
-        if ($event === null) {
-            return Result::failure(
-                'unsupported_delivery_state: '.$state->value,
-            );
-        }
-
         try {
             $transitioned = $receipt->transitionDelivery(
                 machine: $this->receiptStateMachine,
-                event: $event,
+                event: $this->eventForDeliveryState($state),
                 context: [
                     'channel' => $channel,
                     'address' => $address,
@@ -225,14 +225,13 @@ final class ReceiptService
         );
     }
 
-    private function eventForDeliveryState(ReceiptDeliveryState $state): ?StateTransitionEvent
+    private function eventForDeliveryState(ReceiptDeliveryState $state): StateTransitionEvent
     {
         return match ($state) {
             ReceiptDeliveryState::DELIVERED => StateTransitionEvent::DELIVERY_DISPATCHED,
             ReceiptDeliveryState::FAILED => StateTransitionEvent::DELIVERY_FAILED,
             ReceiptDeliveryState::BOUNCED => StateTransitionEvent::DELIVERY_BOUNCED,
             ReceiptDeliveryState::PENDING => StateTransitionEvent::DELIVERY_REDISPATCHED,
-            default => null,
         };
     }
 }

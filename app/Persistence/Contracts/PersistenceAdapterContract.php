@@ -61,4 +61,21 @@ interface PersistenceAdapterContract
      * The adapter identifier (unique per registry).
      */
     public function identifier(): Identifier;
+
+    /**
+     * Execute a SQL query and return all rows as associative arrays.
+     * Use for SELECT statements.
+     *
+     * @param  array<string, scalar|null>  $params
+     * @return Result<array<int, array<string, mixed>>>
+     */
+    public function query(string $sql, array $params = []): Result;
+
+    /**
+     * Execute a write statement (INSERT/UPDATE/DELETE) and return affected row count.
+     *
+     * @param  array<string, scalar|null>  $params
+     * @return Result<int>
+     */
+    public function execute(string $sql, array $params = []): Result;
 }

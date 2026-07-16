@@ -19,7 +19,7 @@ interface PaymentVerificationContract
      *
      * @param  array<string, string>  $headers  HTTP headers from the webhook
      * @param  string  $payload  Raw request body
-     * @return Result<array{gateway_order_id: string, gateway_payment_id: string, status: TransactionStatus, amount: int}>
+     * @return Result<array{gateway_order_id: string, gateway_payment_id: string, status: TransactionStatus, amount: int, currency: string, method?: string}>
      */
     public function verifyWebhook(array $headers, string $payload): Result;
 

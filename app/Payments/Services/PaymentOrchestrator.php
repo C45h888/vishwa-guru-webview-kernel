@@ -37,6 +37,10 @@ use DateTimeImmutable;
 /**
  * The conductor of the Financial Kernel.
  *
+ * Non-final so unit tests can substitute a recording stub via
+ * inheritance; production code resolves through DI and never sees
+ * a subclass.
+ *
  * Owns the canonical payment workflow:
  *   1. initialize(DonationIntent) → Donation(draft) → gateway.initialize()
  *      → Payment(INITIALIZED) persisted in a single transaction.
@@ -59,10 +63,9 @@ use DateTimeImmutable;
  * Every operation returns Result<...>. Callers (controllers in
  * Pass 2+) decide how to surface a failure to the operator or donor.
  */
-final class PaymentOrchestrator
+class PaymentOrchestrator
 {
     public function __construct(
-        private readonly PaymentService $paymentService,
         private readonly ReceiptService $receiptService,
         private readonly FailureStateService $failureStateService,
         private readonly PaymentProviderSelector $selector,
@@ -93,6 +96,7 @@ final class PaymentOrchestrator
      * Steps 3-5 happen inside a single transaction so a gateway
      * failure leaves no orphan Donation row.
      *
+     * @phpstan-return Result<PaymentResult>|Result<Donor|null>|Result<null>
      * @return Result<PaymentResult>
      */
     public function initialize(DonationIntent $intent): Result
@@ -149,7 +153,7 @@ final class PaymentOrchestrator
         }
 
         $gatewayPayload = $gatewayResult->value();
-        $gatewayOrderId = (string) ($gatewayPayload['order_id'] ?? '');
+        $gatewayOrderId = (string) $gatewayPayload['order_id'];
         if ($gatewayOrderId === '') {
             return Result::failure('gateway_response_missing_order_id');
         }
@@ -223,6 +227,7 @@ final class PaymentOrchestrator
     }
 
     /**
+     * @phpstan-return Result<Payment>|Result<null>
      * @return Result<Payment>
      */
     public function handleWebhook(WebhookPayload $payload): Result
@@ -364,12 +369,16 @@ final class PaymentOrchestrator
             );
         }
 
-        return Result::success($commit->value());
+        /** @var Result<Payment> $commit */
+        $commit = Result::success($commit->value());
+
+        return $commit;
     }
 
     /**
      * Refund a payment in full or partially.
      *
+     * @phpstan-return Result<Payment>|Result<PaymentGatewayContract>|Result<null>
      * @return Result<Payment>
      */
     public function refund(Identifier $transactionId, int $amountMinor): Result
@@ -381,7 +390,7 @@ final class PaymentOrchestrator
         }
 
         $payment = $this->payments->findById(
-            EntityId::fromString($transactionId->value()),
+            new EntityId('payment', $transactionId->value()),
         );
         if ($payment === null) {
             return Result::failure(
@@ -444,12 +453,13 @@ final class PaymentOrchestrator
     }
 
     /**
+     * @phpstan-return Result<TransactionStatus>|Result<PaymentGatewayContract>|Result<null>
      * @return Result<TransactionStatus>
      */
     public function getStatus(Identifier $transactionId): Result
     {
         $payment = $this->payments->findById(
-            EntityId::fromString($transactionId->value()),
+            new EntityId('payment', $transactionId->value()),
         );
         if ($payment === null) {
             return Result::failure(
@@ -481,6 +491,7 @@ final class PaymentOrchestrator
      * donations.donor_id IS NULL). Returns the persisted Donor
      * entity for identified donors.
      *
+     * @phpstan-return Result<Donor>|Result<null>
      * @return Result<Donor|null>
      */
     private function resolveDonor(DonorIdentity $identity): Result
@@ -533,6 +544,7 @@ final class PaymentOrchestrator
     /**
      * Resolve the PaymentGatewayContract for a payment's provider.
      *
+     * @phpstan-return Result<PaymentGatewayContract>|Result<null>
      * @return Result<PaymentGatewayContract>
      */
     private function resolveGatewayFor(Payment $payment): Result

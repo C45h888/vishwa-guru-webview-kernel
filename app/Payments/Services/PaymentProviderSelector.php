@@ -12,6 +12,10 @@ use App\Payments\Domain\ValueObjects\PaymentIntent;
 /**
  * Selects the best PaymentGatewayContract for a PaymentIntent.
  *
+ * Non-final so unit tests can substitute a recording stub via
+ * inheritance; production code resolves through DI and never sees
+ * a subclass.
+ *
  * Selection is a deterministic, side-effect-free pipeline. The
  * selector does not call any gateway; it only consults the
  * PaymentGatewayContract capability surface that each adapter
@@ -38,7 +42,7 @@ use App\Payments\Domain\ValueObjects\PaymentIntent;
  * Gateways are injected as iterable<PaymentGatewayContract>. The
  * container tags them by provider code (Pass 1.6 wires the tag).
  */
-final class PaymentProviderSelector
+class PaymentProviderSelector
 {
     /**
      * @param  iterable<PaymentGatewayContract>  $gateways
