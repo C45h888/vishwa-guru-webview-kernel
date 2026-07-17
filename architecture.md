@@ -239,6 +239,36 @@ Application services validate and verify business operations before persistence 
 
 No financial information should be committed until verification has completed successfully.
 
+## Neon PostgreSQL Connection
+
+The application targets [Neon](https://neon.tech) as its production PostgreSQL provider. The runtime ships a dedicated `neon` connection preset in `config/database.php` that enforces `sslmode=require` and sets `application_name=temple-trust` for query observability.
+
+### Role Separation
+
+Three Neon roles are defined in code as `App\Persistence\Neon\ValueObjects\NeonRole`:
+
+| Role | Grants | Used by | Doctrine rationale |
+|---|---|---|---|
+| `Owner` | DDL (CREATE/ALTER/DROP) + CREATE EXTENSION | `php artisan migrate` | Schema migrations require DDL. Never used at runtime. |
+| `App` | SELECT/INSERT/UPDATE/DELETE on domain tables | Runtime HTTP requests | Least privilege — runtime has no DDL rights. |
+| `Reader` | SELECT only | Future read replicas / reporting | V2 feature; reserved for V1. |
+
+Roles are granted at the Neon console under **Settings → Roles**. The active role is parsed from the `NEON_ROLE` env key and surfaced in `php artisan temple:neon:ping` output. **Using `owner` at runtime violates least-privilege** — the runtime must run as `app`.
+
+### Extensions
+
+The canonical schema installs three PostgreSQL extensions via `CREATE EXTENSION IF NOT EXISTS`:
+
+- `pgcrypto` — cryptographic functions (UUIDs, digests)
+- `citext` — case-insensitive text (donor emails)
+- `btree_gist` — enables `EXCLUDE` constraints (used by `static_pages.is_homepage`)
+
+These are installed by the schema migration (`database/migrations/2026_07_16_000001_create_v1_schema_postgres.php` running `schema-neon/V1-schema.sql`). The `Owner` role must have `CREATE EXTENSION` privilege. The runtime probe (`temple:neon:ping` and `/health` JSON) verifies these extensions are present and reports `neon` subsystem health accordingly.
+
+### Connection Preset Doctrine
+
+The `config/database.php` `neon` block is the only sanctioned way to reach production data. It is bound at runtime via `DB_CONNECTION=neon`. The `pgsql` block is reserved for local development (Docker Postgres without TLS). The static `'sslmode' => 'prefer'` that previously lived in the `pgsql` block has been removed — it silently downgraded `sslmode=require` when a Neon `DATABASE_URL` was used.
+
 ---
 
 # File Storage Strategy
@@ -426,3 +456,77 @@ The following rules apply throughout the repository:
 The Temple Trust Management System is intended to become the operational software platform supporting the trust's day-to-day activities. The architecture therefore prioritizes reliability, financial integrity, security, and long-term maintainability over unnecessary complexity.
 
 Every feature added to the system should reinforce these architectural principles. Contributions should extend the existing design rather than circumvent it, ensuring that the application remains coherent, understandable, and dependable throughout its lifetime.
+
+
+---
+
+# Runtime Wiring — Phase 2
+
+This section documents how the framework pieces connect at runtime. It
+exists so future agents can answer "what runs at boot, in what order,
+with what side-effects?" without grep-diving.
+
+## Provider boot order
+
+The provider list in `bootstrap/providers.php` is the source of truth.
+Order is significant — later providers may depend on bindings declared
+by earlier ones.
+
+| # | Provider | Owns |
+|---|---|---|
+| 1 | `App\Providers\AppServiceProvider` | Application-wide bindings (currently empty placeholder) |
+| 2 | `App\Shared\Providers\SharedServiceProvider` | ConfigurationContract, EnvironmentContract, Clock, IdentifierGenerator, ConfigurationRegistry |
+| 3 | `App\Persistence\Providers\PersistenceServiceProvider` | PersistenceAdapterContract → LaravelDbAdapter, RepositoryRegistryContract |
+| 4 | `App\Runtime\Providers\RuntimeServiceProvider` | HealthProbes, HealthCheckAggregator, BootProbe, EnvValidator, KernelSnapshot, RuntimeStatusCommand, EnvironmentListCommand, HealthController, PingController, FailureRouter |
+| 5 | `App\Redis\Providers\RedisServiceProvider` | RedisConnectorContract → LaravelRedisConnector |
+| 6+ | (Future module providers) | Payments, Donations, Notifications, CMS, Gallery, Events |
+
+Doctrine rule: when adding a new module provider, APPEND it to the list
+without reordering existing entries. Existing bindings must remain
+stable.
+
+## Database connections
+
+| Connection | Driver | Purpose | Env vars |
+|---|---|---|---|
+| `pgsql` (default) | PostgreSQL via PDO | Neon PostgreSQL — authoritative store | DATABASE_URL or DB_HOST/PORT/etc. |
+| `sqlite` | SQLite in-memory | Testing only | DB_CONNECTION=sqlite, DB_DATABASE=:memory: |
+| `redis.default` | phpredis | App keys (idempotency, webhook dedupe, locks) | REDIS_HOST, REDIS_DB=0 |
+| `redis.cache` | phpredis | Laravel Cache::* facade | REDIS_CACHE_DB=1 |
+| `redis.queue` | phpredis | Laravel Queue::* facade | REDIS_QUEUE_DB=2 |
+| `redis.session` | phpredis | Reserved for Phase 4 | REDIS_SESSION_DB=3 |
+
+## Cache store resolution
+
+`config/cache.php` default = `redis`. The phpunit.xml override is `array`
+for testing isolation. The fallback chain (Redis down → file cache)
+happens at the Laravel CacheManager level — service code does not need
+to handle it.
+
+## Queue connection resolution
+
+`config/queue.php` default = `redis`. The phpunit.xml override is `sync`.
+Failed-job tracking uses the `database-uuids` driver (writes to the
+`failed_jobs` table; migration lands with the first Phase 1 closure
+job class).
+
+## Health and introspection endpoints
+
+| Endpoint | Purpose | Implemented by |
+|---|---|---|
+| `GET /health` | Subsystem readiness (DB, cache, queue) | Runtime/Http/Controllers/HealthController |
+| `GET /api/v1/ping` | Process liveness (no subsystem checks) | Runtime/Http/Controllers/PingController |
+
+| Command | Purpose |
+|---|---|
+| `php artisan temple:runtime` | Print runtime status table; exits non-zero if any subsystem probe fails |
+| `php artisan temple:env` | Print required env keys per environment |
+| `php artisan temple:redis:info` | Dump Redis INFO + keyspace stats for one or all configured connections. Scheduled every minute via `app/Console/Kernel.php`. |
+
+## Failure routing
+
+Every failure in the Runtime module flows through `FailureRouter`. No
+class in the runtime tree instantiates a handler directly — handlers
+are bound by the FailureRouter and dispatched based on `FailureKind`.
+See `app/Runtime/Failure/` for the full state machine and routing
+membrane.

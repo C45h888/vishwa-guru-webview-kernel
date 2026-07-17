@@ -19,10 +19,20 @@ class Kernel extends ConsoleKernel
 
     /**
      * Define the application's command schedule.
+     *
+     * Phase 2: dumps Redis INFO to the log every minute so ops can see
+     * memory pressure, connection count, and keyspace growth without
+     * needing to ssh into the Redis box. Doctrine: prefer pulling
+     * diagnostics into the application log over exposing Redis CLI
+     * to operators.
      */
     protected function schedule(Schedule $schedule): void
     {
-        //
+        $schedule->command('temple:redis:info --all-connections --keyspace')
+            ->everyMinute()
+            ->withoutOverlapping()
+            ->runInBackground()
+            ->appendOutputTo(storage_path('logs/redis-info.log'));
     }
 
     /**

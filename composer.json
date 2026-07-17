@@ -8,6 +8,7 @@
     "require": {
         "php": "^8.2",
         "ext-pdo": "*",
+        "ext-redis": "*",
         "laravel/framework": "^10.0",
         "laravel/tinker": "^2.9",
         "razorpay/razorpay": "~2.0",

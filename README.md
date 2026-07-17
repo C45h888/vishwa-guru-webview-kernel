@@ -188,6 +188,70 @@ The application should remain portable across deployment environments with minim
 
 ---
 
+# Neon Setup
+
+The application targets [Neon](https://neon.tech) PostgreSQL as its production database. The runtime ships with a dedicated `neon` connection preset in `config/database.php` that forces `sslmode=require` and sets `application_name=temple-trust` for query observability.
+
+## One-time Neon project setup
+
+1. Create a Neon project at <https://console.neon.tech>.
+2. Copy the connection string from the Neon console → **Connection Details** → **Connection string**.
+3. The string looks like:
+   ```
+   postgresql://neondb_owner:secret@ep-cool-name-123456.us-east-2.aws.neon.tech/neondb?sslmode=require
+   ```
+4. Add to your `.env` (DO NOT commit the real secret):
+   ```bash
+   DATABASE_URL=postgresql://neondb_owner:REAL_SECRET@ep-YOUR-BRANCH.region.aws.neon.tech/neondb?sslmode=require&channel_binding=require
+   DB_CONNECTION=neon
+   ```
+5. Set `NEON_BRANCH` (e.g. `main`) and `NEON_ROLE` (`app` for runtime, `owner` for migrations).
+
+## Apply the canonical schema
+
+The schema lives at `schema-neon/V1-schema.sql`. The Laravel migration `database/migrations/2026_07_16_000001_create_v1_schema_postgres.php` loads it via `DB::unprepared()`. To apply:
+
+```bash
+DB_CONNECTION=neon php artisan migrate
+```
+
+The schema's `CREATE EXTENSION IF NOT EXISTS` statements install `pgcrypto`, `citext`, and `btree_gist`. If your Neon role lacks `CREATE EXTENSION` permission, Postgres returns a clear error — grant the privilege or use the Neon **Owner** role for migrations.
+
+## Verify the connection
+
+```bash
+php artisan temple:neon:ping
+```
+
+Outputs a table with: host, database, username, role, SSL mode, channel binding, application name, pool status, and probe results (reachability, SSL active, role, extensions, server version). Exit code `0` = healthy; `1` = investigate.
+
+For a quick liveness check without Neon-specific concerns:
+
+```bash
+curl http://localhost:8000/health | jq '.subsystems.neon'
+```
+
+## Role separation (recommended)
+
+| Role | Grants | Used by |
+|---|---|---|
+| `owner` | DDL (CREATE/ALTER/DROP), CREATE EXTENSION | `php artisan migrate` |
+| `app` | SELECT/INSERT/UPDATE/DELETE on domain tables | Runtime requests |
+| `reader` | SELECT only | Future read replicas |
+
+Grant at the Neon console under **Settings → Roles**. The role in use is determined by the `NEON_ROLE` env key and surfaced in `temple:neon:ping` output. **Never** use `owner` for runtime — it violates least-privilege.
+
+## SSL / TLS
+
+Neon requires SSL. The `neon` connection preset enforces `sslmode=require`. For stricter verification:
+
+- `sslmode=verify-ca` — validate the server's certificate against a CA bundle
+- `sslmode=verify-full` — additionally validate the hostname
+
+The `temple:neon:ping` probe reports whether the active connection is using SSL via `SHOW ssl`.
+
+---
+
 # Project Philosophy
 
 The objective of this repository is not merely to produce a functioning website but to establish a maintainable software platform capable of serving the operational needs of a temple trust for many years.

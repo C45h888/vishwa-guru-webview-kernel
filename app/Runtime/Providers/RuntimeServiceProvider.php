@@ -6,12 +6,14 @@ namespace App\Runtime\Providers;
 
 use App\Runtime\Console\Commands\EnvironmentListCommand;
 use App\Runtime\Console\Commands\RuntimeStatusCommand;
+use App\Persistence\Neon\Console\NeonPingCommand;
 use App\Runtime\Diagnostics\CacheHealthProbe;
 use App\Runtime\Diagnostics\DatabaseHealthProbe;
 use App\Runtime\Diagnostics\HealthCheckAggregator;
 use App\Runtime\Diagnostics\HealthProbe;
 use App\Runtime\Diagnostics\KernelSnapshotFactory;
 use App\Runtime\Diagnostics\QueueHealthProbe;
+use App\Persistence\Neon\Diagnostics\NeonDiagnosticsProbe;
 use App\Runtime\Failure\Contracts\FailureReportingContract;
 use App\Runtime\Failure\FailureRouter;
 use App\Runtime\Failure\Handlers\BootFailureHandler;
@@ -79,10 +81,16 @@ final class RuntimeServiceProvider extends ServiceProvider
         $app->bind(DatabaseHealthProbe::class);
         $app->bind(CacheHealthProbe::class);
         $app->bind(QueueHealthProbe::class);
+        $app->bind(NeonDiagnosticsProbe::class);
 
         // Tag the concrete probe classes for the aggregator's iterable dependency.
         $app->tag(
-            [DatabaseHealthProbe::class, CacheHealthProbe::class, QueueHealthProbe::class],
+            [
+                DatabaseHealthProbe::class,
+                CacheHealthProbe::class,
+                QueueHealthProbe::class,
+                NeonDiagnosticsProbe::class,
+            ],
             'runtime.health_probe',
         );
 
@@ -127,6 +135,7 @@ final class RuntimeServiceProvider extends ServiceProvider
             $this->commands([
                 RuntimeStatusCommand::class,
                 EnvironmentListCommand::class,
+                NeonPingCommand::class,
             ]);
         }
     }
@@ -154,6 +163,7 @@ final class RuntimeServiceProvider extends ServiceProvider
             DatabaseHealthProbe::class,
             CacheHealthProbe::class,
             QueueHealthProbe::class,
+            NeonDiagnosticsProbe::class,
             HealthCheckAggregator::class,
             // Failure
             FailureStateMachine::class,
@@ -169,6 +179,7 @@ final class RuntimeServiceProvider extends ServiceProvider
             // Console
             RuntimeStatusCommand::class,
             EnvironmentListCommand::class,
+            NeonPingCommand::class,
         ];
     }
 }

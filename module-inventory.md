@@ -108,6 +108,45 @@ depends on it. Nothing in Shared depends on anything outside Shared.
 |---|---|
 | `LaravelDbAdapter.php` | Laravel DB-backed PersistenceAdapterContract |
 
+## Providers — `app/Persistence/Providers/`
+
+| File | Bindings |
+|---|---|
+| `PersistenceServiceProvider.php` | `PersistenceAdapterContract → LaravelDbAdapter`, `RepositoryRegistryContract → RepositoryRegistry`, `NeonConnectionConfig` (singleton) |
+
+## Neon PostgreSQL Integration — `app/Persistence/Neon/` (Phase 2)
+
+Vendor-specific concerns for Neon. The generic `PersistenceAdapterContract` stays bound to `LaravelDbAdapter` — Neon-specific checks live in their own bounded context.
+
+### Value Objects — `app/Persistence/Neon/ValueObjects/`
+
+| File | Purpose |
+|---|---|
+| `NeonRole.php` | Enum: Owner (DDL), App (RW), Reader (RO). Doctrine-documented role separation. |
+| `NeonConnectionConfig.php` | Immutable VO parsed from `DATABASE_URL` + `DB_*` env keys. **Password never included.** |
+
+### Diagnostics — `app/Persistence/Neon/Diagnostics/`
+
+| File | Purpose |
+|---|---|
+| `NeonDiagnosticsProbe.php` | Implements `Runtime\Diagnostics\HealthProbe`. 5 checks: reachability, SSL active, role, extensions (pgcrypto/citext/btree_gist), server version. Never throws. |
+
+### Console — `app/Persistence/Neon/Console/`
+
+| File | Purpose |
+|---|---|
+| `NeonPingCommand.php` | `php artisan temple:neon:ping`. Prints 9-row metadata table + probe result. Exit 0 healthy / 1 fail. Reports failures via `Runtime\Failure\Contracts\FailureReportingContract`. |
+
+### Wiring
+
+`NeonDiagnosticsProbe` is tagged `runtime.health_probe` in `RuntimeServiceProvider`. This causes it to be picked up by `HealthCheckAggregator` and surface in:
+- `GET /health` JSON (under `subsystems.neon`)
+- `php artisan temple:runtime` table
+
+### Connection Preset
+
+`config/database.php` defines a `neon` connection block that forces `sslmode=require` and sets `application_name=temple-trust`. Select via `DB_CONNECTION=neon`.
+
 ---
 
 # Payments Module — `app/Payments/` (PHASE 1 COMPLETE)
@@ -401,3 +440,88 @@ Most material:
 - [ ] Refund UX in admin — deferred to Phase 4
 - [ ] webhooks CSRF / origin verification beyond signature — out of
       Phase 1 scope
+
+---
+
+# Redis Module — `app/Redis/`
+
+Phase 2 introduces the Redis substrate as a runtime dependency. The Redis
+module is a self-contained domain over the Redis substrate — it owns the
+connector contract and the operational command, but does NOT own the
+Cache/Queue/Session facades (those are Laravel's responsibility).
+
+Doctrine alignment: services depend on the `RedisConnectorContract`, never
+on `Illuminate\Support\Facades\Redis`. Same boundary pattern as
+`PersistenceAdapterContract` for the SQL layer.
+
+## Contracts — `app/Redis/Contracts/`
+
+| File | Purpose |
+|---|---|
+| `RedisConnectorContract.php` | Single entry point: connection(name), ping(name), configuredDatabases() |
+
+## Enums — `app/Redis/Enums/`
+
+| File | Cases | DB # | Laravel config key |
+|---|---|---|---|
+| `RedisDatabase.php` | Default, Cache, Queue, Session | 0, 1, 2, 3 | `database.redis.{default,cache,queue,session}` |
+
+## Infrastructure — `app/Redis/Infrastructure/`
+
+| File | Purpose |
+|---|---|
+| `LaravelRedisConnector.php` | The canonical `RedisConnectorContract` impl. Wraps `Illuminate\Contracts\Redis\Factory`. ping() swallows throwables — doctrine-critical for fail-open cache paths. |
+
+## Console — `app/Redis/Console/Commands/`
+
+| File | Command | Purpose |
+|---|---|---|
+| `RedisInfoCommand.php` | `php artisan temple:redis:info` | Dumps Redis INFO + keyspace stats for one or all configured connections. Scheduled to run every minute via `app/Console/Kernel.php` to `storage/logs/redis-info.log`. |
+
+## Provider — `app/Redis/Providers/`
+
+| File | Bindings |
+|---|---|
+| `RedisServiceProvider.php` | `RedisConnectorContract → LaravelRedisConnector` (singleton). Registered in `bootstrap/providers.php` after `RuntimeServiceProvider`. |
+
+## Configuration — `config/database.php`
+
+The `redis` block declares four connection presets:
+
+| Connection | DB | Env vars | Used by |
+|---|---|---|---|
+| `default` | 0 | REDIS_DB, REDIS_HOST, REDIS_PASSWORD, REDIS_TIMEOUT (1.5s), REDIS_READ_TIMEOUT (0.5s) | App-level keys: idempotency fast-path, webhook dedupe, locks |
+| `cache`   | 1 | REDIS_CACHE_DB | `Illuminate\Support\Facades\Cache` (when CACHE_STORE=redis) |
+| `queue`   | 2 | REDIS_QUEUE_DB, REDIS_QUEUE_TIMEOUT (5s), REDIS_QUEUE_READ_TIMEOUT (30s) | `Illuminate\Support\Facades\Queue` (when QUEUE_CONNECTION=redis) |
+| `session` | 3 | REDIS_SESSION_DB | Reserved for Phase 4 admin auth (not wired in Phase 2) |
+
+Global prefix: `REDIS_PREFIX=temple_trust_` (configurable).
+
+## Runtime defaults
+
+- `CACHE_STORE=redis` outside testing (phpunit.xml overrides to `array`)
+- `QUEUE_CONNECTION=redis` outside testing (phpunit.xml overrides to `sync`)
+- `SESSION_DRIVER=file` in Phase 2; flips to `redis` in Phase 4
+
+## Domain use cases (Phase 1 closure, not Phase 2)
+
+| Use case | Pattern | TTL | Where it lives |
+|---|---|---|---|
+| Donation idempotency fast-path | `SET NX EX` | 24h | Inside donation creation service |
+| Webhook dedupe | `SET NX EX` | 7d | Inside webhook controller |
+| Donation state locks | Postgres `SELECT FOR UPDATE` | n/a | NOT in Redis — DB authoritative |
+| Receipt PDF cache | Laravel Storage (filesystem/S3) | n/a | NOT in Redis — wrong tool |
+
+## Infrastructure files (Phase 2)
+
+| File | Purpose |
+|---|---|
+| `Dockerfile` | php:8.3-cli + ext-redis via `docker-php-ext-install redis`; also installs ext-pdo_pgsql, ext-intl, ext-zip, ext-bcmath, opcache |
+| `docker-compose.yml` | Local dev stack: Redis 7-alpine (AOF on, requirepass=dev), Postgres 15-alpine, PHP app |
+
+## Validation — `scripts/phase-2-redis-probes.php`
+
+Mirrors `phase-0.5-validation-report.json`. Probes the Redis substrate at
+runtime: extension loaded, contract resolves, four DBs configured, all four
+PING succeed, Cache::put round-trip, idempotency SET NX, webhook SET NX EX,
+configured prefix, optional connect-timeout probe.

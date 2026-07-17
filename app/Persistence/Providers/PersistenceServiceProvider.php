@@ -8,6 +8,8 @@ use App\Persistence\Contracts\PersistenceAdapterContract;
 use App\Persistence\Contracts\RepositoryRegistryContract;
 use App\Persistence\Infrastructure\LaravelDbAdapter;
 use App\Persistence\Infrastructure\RepositoryRegistry;
+use App\Persistence\Neon\ValueObjects\NeonConnectionConfig;
+use App\Shared\Contracts\ConfigurationContract;
 use Illuminate\Support\ServiceProvider;
 
 /**
@@ -41,6 +43,16 @@ final class PersistenceServiceProvider extends ServiceProvider
         // Phase 1 PaymentsServiceProvider::boot() depends on this being
         // resolvable — see [phase-1-deviations.md] note about the latent defect.
         $this->app->singleton(RepositoryRegistryContract::class, RepositoryRegistry::class);
+
+        // AXIS B — Neon-specific value objects.
+        // Singleton: parsed once per request from ConfigurationContract.
+        // Used by NeonDiagnosticsProbe (which reads it for the role + sslmode)
+        // and by NeonPingCommand (which prints the metadata).
+        $this->app->singleton(NeonConnectionConfig::class, function ($app) {
+            return NeonConnectionConfig::fromConfig(
+                $app->make(ConfigurationContract::class),
+            );
+        });
     }
 
     public function boot(): void
@@ -58,6 +70,7 @@ final class PersistenceServiceProvider extends ServiceProvider
         return [
             PersistenceAdapterContract::class,
             RepositoryRegistryContract::class,
+            NeonConnectionConfig::class,
         ];
     }
 }

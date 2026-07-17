@@ -1,0 +1,112 @@
+# =====================================================================
+# Temple Trust Management System — Local Development Stack
+# =====================================================================
+#
+# Purpose:  Stand up the runtime substrate for local development.
+#           Brings up Redis (Phase 2), Postgres (Phase 0.5 schema),
+#           and the PHP runtime (Phase 2 Dockerfile).
+#
+# Doctrine: this stack is for LOCAL DEV ONLY. Production runs against
+#           Neon PostgreSQL + hosted Redis (REDIS_URL/DATABASE_URL).
+#           Do not deploy this docker-compose to a server.
+#
+# Usage:
+#   docker compose up -d          # start all services
+#   docker compose down           # stop
+#   docker compose down -v        # stop + wipe volumes (fresh state)
+#
+# Connection details (override via .env):
+#   Postgres:  localhost:5432, db=temple_trust, user=temple_trust
+#   Redis:     localhost:6379, password=dev (AOF on, durable across restarts)
+#   PHP app:   localhost:8000
+#
+# =====================================================================
+
+services:
+  # ── Redis (Phase 2 — fast-path cache + queue + idempotency) ────────
+  redis:
+    image: redis:7-alpine
+    container_name: temple-trust-redis
+    restart: unless-stopped
+    command:
+      - redis-server
+      - --requirepass
+      - ${REDIS_PASSWORD:-dev}
+      - --appendonly
+      - yes
+      - --appendfsync
+      - everysec
+      - --maxmemory
+      - 256mb
+      - --maxmemory-policy
+      - allkeys-lru
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD:-dev}", "--no-auth-warning", "PING"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 2s
+
+  # ── PostgreSQL (Phase 0.5 — Neon-shaped local schema) ───────────────
+  postgres:
+    image: postgres:15-alpine
+    container_name: temple-trust-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_DATABASE:-temple_trust}
+      POSTGRES_USER: ${DB_USERNAME:-temple_trust}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-dev}
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME:-temple_trust} -d ${DB_DATABASE:-temple_trust}"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  # ── PHP runtime (Phase 2 — Dockerfile builds ext-redis + extensions) ─
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: temple-trust-app
+    restart: unless-stopped
+    working_dir: /app
+    volumes:
+      - .:/app
+    ports:
+      - "8000:8000"
+    environment:
+      # These pass through to .env; the container reads from /app/.env
+      DB_CONNECTION: pgsql
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_DATABASE: ${DB_DATABASE:-temple_trust}
+      DB_USERNAME: ${DB_USERNAME:-temple_trust}
+      DB_PASSWORD: ${DB_PASSWORD:-dev}
+      REDIS_HOST: redis
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-dev}
+      REDIS_PORT: 6379
+      CACHE_STORE: redis
+      QUEUE_CONNECTION: redis
+    depends_on:
+      redis:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    command: >
+      sh -c "composer install --no-interaction --prefer-dist &&
+             php artisan migrate --force &&
+             php artisan serve --host=0.0.0.0 --port=8000"
+
+volumes:
+  redis-data:
+    name: temple-trust-redis-data
+  postgres-data:
+    name: temple-trust-postgres-data
