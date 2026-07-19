@@ -17,58 +17,77 @@ return [
         //     production (handles connection storm burst). Use the direct
         //     endpoint (port 5432, no -pooler suffix) for migrations or
         //     bulk DDL where connection lifetime is long.
-        //   - Laravel's PostgresConnector reads sslmode / channel_binding
-        //     directly from the URL query string, so sslmode=require and
-        //     channel_binding=require in the URL are honoured automatically.
+        //   - Laravel's PostgresConnector reads sslmode from the explicit
+        //     config key below and forwards it on the PDO DSN
+        //     (PostgresConnector::addSslOptions).
         //   - application_name is set here so Neon console / pg_stat_activity
         //     shows "temple-trust" instead of "psql" as the connected app.
         //
-        // NEON MIGRATIONS (php artisan migrate):
-        //   Use the DIRECT endpoint (no -pooler suffix) for migrations so
-        //   PgBouncer pool churn does not affect schema apply. You can
-        //   temporarily set DATABASE_URL to the non-pooled URL just for
-        //   the migrate run, or set DB_CONNECTION_URL for the migrate env.
+        // For SSL strictness levels, see the comment on 'sslmode' below.
         // ════════════════════════════════════════════════════════════════════
+        // ─── Canonical config (Phase A & B completion) ──────────────────────
+        // Laravel's parseUrlConfig merges URL-parsed values into the config
+        // but does NOT override discrete values. So when DB_HOST is unset
+        // (Neon mode — host comes from DATABASE_URL), the host stays null
+        // and the URL parse path fills it in. When DB_HOST IS set (local
+        // mode — `postgres`), Laravel uses that.
         'pgsql' => [
             'driver'           => 'pgsql',
             'url'              => env('DATABASE_URL'),
-            'host'             => env('DB_HOST', '127.0.0.1'),
-            'port'             => env('DB_PORT', '5432'),
-            'database'         => env('DB_DATABASE', 'temple_trust'),
-            'username'         => env('DB_USERNAME', 'temple_trust'),
-            'password'         => env('DB_PASSWORD', ''),
+            'host'             => env('DB_HOST') ?: null,
+            'port'             => env('DB_PORT') ?: null,
+            'database'         => env('DB_DATABASE') ?: null,
+            'username'         => env('DB_USERNAME') ?: null,
+            'password'         => env('DB_PASSWORD') ?: null,
             'charset'          => env('DB_CHARSET', 'utf8'),
             'prefix'           => env('DB_PREFIX', ''),
             'prefix_indexes'   => true,
             'search_path'      => 'public',
             'application_name' => 'temple-trust',
+
+            // Laravel 10's PostgresConnector::addSslOptions() detects the
+            // top-level `sslmode` key and appends ";sslmode=<value>" to the
+            // PDO DSN. This is THE correct Laravel-10-native path.
+            //
+            // For Postgres SSL strictness levels:
+            //   'disable'    → no SSL (NEVER use for Neon — will be rejected)
+            //   'allow'      → prefer plain, fallback to SSL
+            //   'prefer'     → try SSL, fall back to plain
+            //   'require'    → REQUIRE SSL (Neon minimum)
+            //   'verify-ca'  → REQUIRE + verify CA cert
+            //   'verify-full'→ REQUIRE + verify CA + verify hostname
+            //
+            // Neon enforces sslmode=require; we set it as the hard default.
+            // Override via DB_SSLMODE env var (set to empty for local Docker
+            // Postgres without TLS).
+            'sslmode'          => env('DB_SSLMODE', 'require') ?: null,
         ],
 
-        // Alias — DB_CONNECTION=neon is accepted but maps to the same pgsql
-        // block above. Having the alias lets teams migrate incrementally without
-        // requiring an immediate .env change everywhere. Prefer DB_CONNECTION=pgsql
-        // in new setups.
+        // Alias — DB_CONNECTION=neon maps to the same pgsql block above.
+        // Both blocks share the same sslmode forwarding logic via env().
+        // The 'neon' block exists for legacy .env files that already set
+        // DB_CONNECTION=neon and for teams that prefer the explicit name.
         'neon' => [
             'driver'           => 'pgsql',
             'url'              => env('DATABASE_URL'),
-            'host'             => env('DB_HOST', '127.0.0.1'),
-            'port'             => env('DB_PORT', '5432'),
-            'database'         => env('DB_DATABASE', 'neondb'),
-            'username'         => env('DB_USERNAME', 'neondb_owner'),
-            'password'         => env('DB_PASSWORD', ''),
+            'host'             => env('DB_HOST') ?: null,
+            'port'             => env('DB_PORT') ?: null,
+            'database'         => env('DB_DATABASE', 'neondb') ?: null,
+            'username'         => env('DB_USERNAME', 'neondb_owner') ?: null,
+            'password'         => env('DB_PASSWORD') ?: null,
             'charset'          => env('DB_CHARSET', 'utf8'),
             'prefix'           => env('DB_PREFIX', ''),
             'prefix_indexes'   => true,
             'search_path'      => 'public',
-            'sslmode'          => 'require',
             'application_name' => 'temple-trust',
+            'sslmode'          => env('DB_SSLMODE', 'require') ?: null,
         ],
 
         'sqlite' => [
             'driver'              => 'sqlite',
             'url'                 => env('DATABASE_URL'),
             'database'            => env('DB_DATABASE', database_path('database.sqlite')),
-            'prefix'             => '',
+            'prefix'              => '',
             'foreign_key_constraints' => env('DB_FOREIGN_KEYS', true),
         ],
     ],

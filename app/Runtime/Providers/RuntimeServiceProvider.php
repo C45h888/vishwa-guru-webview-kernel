@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Runtime\Providers;
 
+use App\Persistence\Contracts\PersistenceAdapterContract;
 use App\Runtime\Console\Commands\EnvironmentListCommand;
 use App\Runtime\Console\Commands\RuntimeStatusCommand;
 use App\Persistence\Neon\Console\NeonPingCommand;
@@ -26,11 +27,9 @@ use App\Runtime\Http\Controllers\PingController;
 use App\Runtime\Validation\BootProbe;
 use App\Runtime\Validation\EnvValidator;
 use Illuminate\Contracts\Cache\Repository as CacheRepository;
-use Illuminate\Database\ConnectionInterface;
 use Illuminate\Foundation\Application;
 use Illuminate\Queue\QueueManager;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\ServiceProvider;
 
@@ -67,11 +66,16 @@ final class RuntimeServiceProvider extends ServiceProvider
         // ════════════════════════════════════════════════════════════════
         // Diagnostics — runtime snapshot + health probes + aggregator
         // ════════════════════════════════════════════════════════════════
+        // KernelSnapshotFactory now depends on PersistenceAdapterContract
+        // (NOT DB::connection directly). The persistence contract is bound
+        // by PersistenceServiceProvider to LaravelDbAdapter, which receives
+        // an injected ConnectionInterface. Doctrine: kernel code depends on
+        // contracts, never on facades.
         $app->singleton(KernelSnapshotFactory::class, function ($app) {
             return new KernelSnapshotFactory(
                 $app->make(\App\Shared\Contracts\ConfigurationContract::class),
                 $app->make(\App\Shared\Contracts\EnvironmentContract::class),
-                DB::connection(),
+                $app->make(PersistenceAdapterContract::class),
                 Cache::store(),
                 // Resolve the QueueManager directly. The previous expression
                 // `Queue::connection()->getQueueManager()` was wrong on every

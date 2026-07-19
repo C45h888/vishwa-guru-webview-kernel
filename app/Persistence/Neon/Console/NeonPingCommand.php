@@ -11,7 +11,7 @@ use App\Runtime\Failure\Contracts\FailureReportingContract;
 use App\Runtime\Failure\Enums\FailureKind;
 use App\Runtime\Failure\Enums\FailureState;
 use App\Runtime\Failure\ValueObjects\FailureRecord;
-use App\Shared\Support\Identifier;
+use App\Shared\ValueObjects\Identifier;
 use DateTimeImmutable;
 use Illuminate\Console\Command;
 

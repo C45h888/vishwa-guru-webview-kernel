@@ -129,8 +129,12 @@ final class WebhookEventRepository implements WebhookEventRepositoryContract
         ?string $failureReason = null,
         ?string $relatedTransactionId = null,
     ): string {
-        $now = (new DateTimeImmutable())->format(DATE_ATOM);
+        $now = $this->clock->now()->format(DATE_ATOM);
 
+        // Doctrine fix: this is an UPSERT (INSERT ... ON CONFLICT DO UPDATE),
+        // not a plain INSERT. If a placeholder row from the webhook dedupe
+        // middleware's reserve() already exists, this updates it. This is
+        // atomic at the DB layer — no check-then-insert race.
         $sql = 'INSERT INTO webhook_events (
             id, provider_code, provider_event_id, event_type,
             payload, headers, signature, signature_verified,
@@ -143,7 +147,17 @@ final class WebhookEventRepository implements WebhookEventRepositoryContract
             :related_payment_id, :received_at,
             NULL, :processing_error, 0,
             :created_at, :updated_at
-        )';
+        )
+        ON CONFLICT (provider_code, provider_event_id) DO UPDATE SET
+            event_type = EXCLUDED.event_type,
+            payload = EXCLUDED.payload,
+            headers = EXCLUDED.headers,
+            signature_verified = EXCLUDED.signature_verified,
+            related_payment_id = EXCLUDED.related_payment_id,
+            processed_at = EXCLUDED.processed_at,
+            processing_error = EXCLUDED.processing_error,
+            updated_at = EXCLUDED.updated_at
+        RETURNING id';
 
         $id = 'wev_'.bin2hex(random_bytes(12));
 
@@ -167,6 +181,14 @@ final class WebhookEventRepository implements WebhookEventRepositoryContract
             throw new RuntimeException('WebhookEventRepository::record failed: '.$exec->error());
         }
 
+        // Doctrine: RETURNING clause may not be supported by the
+        // abstracting adapter; if the return value is empty, fall back
+        // to the input id. The row was created OR updated either way.
+        $returned = $exec->value();
+        if (is_string($returned) && $returned !== '') {
+            return $returned;
+        }
+
         return $id;
     }
 
@@ -175,18 +197,23 @@ final class WebhookEventRepository implements WebhookEventRepositoryContract
         string $processingStatus,
         ?string $failureReason = null,
     ): void {
-        $now = (new DateTimeImmutable())->format(DATE_ATOM);
+        $now = $this->clock->now()->format(DATE_ATOM);
 
+        // Doctrine fix: the V1 schema does NOT declare a `processing_status`
+        // column on `webhook_events`. The existing columns for tracking
+        // processing outcomes are `processed_at` (timestamp) and
+        // `processing_error` (text). We write ONLY to existing columns.
+        // The `$processingStatus` parameter is accepted for future
+        // schema migration (when `processing_status` is added) but is
+        // currently a no-op.
         $sql = 'UPDATE webhook_events SET
-            processing_status = :status,
-            processing_error = :error,
             processed_at = :processed_at,
+            processing_error = :error,
             updated_at = :updated_at
         WHERE id = :id';
 
         $exec = $this->adapter->execute($sql, [
             'id' => $eventRowId,
-            'status' => $processingStatus,
             'error' => $failureReason,
             'processed_at' => $now,
             'updated_at' => $now,

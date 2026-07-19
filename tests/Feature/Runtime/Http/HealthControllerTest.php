@@ -53,9 +53,9 @@ final class HealthControllerTest extends TestCase
             return new KernelSnapshotFactory(
                 $app->make(ConfigurationContract::class),
                 $app->make(EnvironmentContract::class),
-                DB::connection(),
+                $app->make(\App\Persistence\Contracts\PersistenceAdapterContract::class),
                 Cache::store(),
-                Queue::connection()->getQueueManager() ?? app(QueueManager::class),
+                $app->make(QueueManager::class),
                 $app->make(Application::class),
             );
         });
@@ -103,6 +103,12 @@ final class HealthControllerTest extends TestCase
             public function execute(string $sql, array $params = []): \App\Shared\Support\Result
             {
                 return \App\Shared\Support\Result::success(0);
+            }
+            public function connectionMetadata(): \App\Shared\Support\Result
+            {
+                return \App\Shared\Support\Result::success([
+                    'driver' => 'sqlite', 'identifier' => 'fake', 'is_connected' => false,
+                ]);
             }
         };
         $this->app->instance(PersistenceAdapterContract::class, $failing);

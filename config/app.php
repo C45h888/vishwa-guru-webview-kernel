@@ -48,7 +48,7 @@ return [
         App\Persistence\Providers\PersistenceServiceProvider::class,
         App\Runtime\Providers\RuntimeServiceProvider::class,
         App\Redis\Providers\RedisServiceProvider::class,
-        App\Queue\Providers\QueueServiceProvider::class,
+        // QueueServiceProvider registered in bootstrap/providers.php (Laravel 10+).
         App\Payments\Providers\PaymentsServiceProvider::class,
     ])->toArray(),
 

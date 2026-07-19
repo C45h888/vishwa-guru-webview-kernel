@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace App\Runtime\Diagnostics;
 
+use App\Persistence\Contracts\PersistenceAdapterContract;
 use App\Shared\Contracts\ConfigurationContract;
 use App\Shared\Contracts\EnvironmentContract;
 use App\Shared\Enums\EnvironmentType;
 use DateTimeImmutable;
 use Illuminate\Contracts\Cache\Repository as CacheRepository;
-use Illuminate\Database\ConnectionInterface;
 use Illuminate\Queue\QueueManager;
 
 /**
@@ -46,7 +46,7 @@ final class KernelSnapshot
     public static function capture(
         ConfigurationContract $config,
         EnvironmentContract $env,
-        ConnectionInterface $connection,
+        PersistenceAdapterContract $persistence,
         CacheRepository $cache,
         QueueManager $queue,
         string $laravelVersion,
@@ -58,7 +58,7 @@ final class KernelSnapshot
             phpVersion: PHP_VERSION,
             laravelVersion: $laravelVersion,
             environment: $env->type(),
-            dbDriver: $connection->getDriverName(),
+            dbDriver: $persistence->driver(),
             cacheStore: $cache->getStore() instanceof \Illuminate\Cache\ArrayStore
                 ? 'array'
                 : (method_exists($cache, 'getDefaultDriver') ? $cache->getDefaultDriver() : 'unknown'),

@@ -90,12 +90,18 @@ final class NeonConnectionConfig
             $sslmode = $config->get('database.connections.pgsql.sslmode');
         }
 
-        // Connection pool detection: Neon PgBouncer sets ?pgbouncer=true
-        // on the DATABASE_URL.
+        // Connection pool detection. Two signals:
+        //   1. PgBouncer query param (?pgbouncer=true) — generic Postgres tell
+        //   2. `-pooler` substring in hostname — Neon's canonical pooled endpoint
+        //      (hostnames like `ep-xxx-pooler.aws.neon.tech`). This is the
+        //      standard Neon's pooled connection string from the Console.
         $isPooled = false;
         if (is_array($parsed) && isset($parsed['query'])) {
             parse_str($parsed['query'], $queryFlags);
             $isPooled = isset($queryFlags['pgbouncer']) && $queryFlags['pgbouncer'] !== 'false';
+        }
+        if (! $isPooled && is_array($parsed) && isset($parsed['host'])) {
+            $isPooled = str_contains((string) $parsed['host'], '-pooler');
         }
 
         // Application name is set in config (we always set it for the

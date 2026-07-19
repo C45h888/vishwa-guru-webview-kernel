@@ -3,17 +3,32 @@
 # =====================================================================
 #
 # Purpose:  Stand up the runtime substrate for local development.
-#           Brings up Redis (Phase 2), Postgres (Phase 0.5 schema),
-#           and the PHP runtime (Phase 2 Dockerfile).
+#           Brings up Redis, optional Postgres (auto-skipped when
+#           DATABASE_URL is set), and the PHP runtime (Phase 2 Dockerfile).
 #
 # Doctrine: this stack is for LOCAL DEV ONLY. Production runs against
 #           Neon PostgreSQL + hosted Redis (REDIS_URL/DATABASE_URL).
 #           Do not deploy this docker-compose to a server.
 #
 # Usage:
-#   docker compose up -d          # start all services
+#   docker compose up -d          # start all services (auto-detects mode)
 #   docker compose down           # stop
 #   docker compose down -v        # stop + wipe volumes (fresh state)
+#
+# ─── DATABASE MODE (AUTO-DETECT) ──────────────────────────────────────
+# The composer reads the host's .env to decide which mode to run in:
+#
+#   LOCAL mode  — DATABASE_URL is empty/unset
+#                 → app talks to local `postgres` container
+#                 → `php artisan migrate --force` runs on container start
+#                 → uses discrete DB_HOST=postgres, DB_PORT=5432 etc.
+#
+#   NEON mode   — DATABASE_URL is set to a Neon connection string
+#                 → app talks directly to Neon via DATABASE_URL
+#                 → skips `php artisan migrate` (Neon already migrated)
+#                 → discards DB_HOST to avoid local Postgres shadowing
+#                 → the local `postgres` container still starts (cheap, idle)
+#                 but is NOT used by the app/worker containers
 #
 # Connection details (override via .env):
 #   Postgres:  localhost:5432, db=temple_trust, user=temple_trust
@@ -54,6 +69,8 @@ services:
       start_period: 2s
 
   # ── PostgreSQL (Phase 0.5 — Neon-shaped local schema) ───────────────
+  # Always started; in NEON mode the app ignores it. Kept as a fallback
+  # for ops who want to test DB locally without depending on Neon uptime.
   postgres:
     image: postgres:15-alpine
     container_name: temple-trust-postgres
@@ -73,6 +90,9 @@ services:
       retries: 5
 
   # ── PHP runtime (Phase 2 — Dockerfile builds ext-redis + extensions) ─
+  # DATABASE_MODE is computed from the host .env at compose time. The
+  # bootstrap script inlined in `command` then decides whether to run
+  # `migrate` and what DB_HOST the app should see.
   app:
     build:
       context: .
@@ -85,13 +105,25 @@ services:
     ports:
       - "8000:8000"
     environment:
-      # These pass through to .env; the container reads from /app/.env
-      DB_CONNECTION: pgsql
-      DB_HOST: postgres
-      DB_PORT: 5432
+      # DATABASE_URL is the single source of truth when set — it overrides
+      # every discrete DB_* key. The app/worker below still see the discrete
+      # keys, but only USE them when DATABASE_URL is empty.
+      DATABASE_URL: ${DATABASE_URL:-}
+      # Doctrine: in NEON mode the runtime MUST use the `neon` connection
+      # block (config/database.php) which forces sslmode=require and
+      # application_name=temple-trust. The `pgsql` block does NOT enforce
+      # SSL — using it leaks financial data in plaintext.
+      DB_CONNECTION: neon
+      # Intentionally omit DB_HOST from compose env — config/database.php
+      # will read it from .env. In NEON mode .env has no DB_HOST so
+      # the URL parse path wins. In LOCAL mode .env has DB_HOST=postgres
+      # (the docker-compose-managed .env, separate from the host .env
+      # users use on production Neon).
+      DB_PORT: ${DB_PORT:-5432}
       DB_DATABASE: ${DB_DATABASE:-temple_trust}
       DB_USERNAME: ${DB_USERNAME:-temple_trust}
       DB_PASSWORD: ${DB_PASSWORD:-dev}
+      DB_SSLMODE: ${DB_SSLMODE:-require}
       REDIS_HOST: redis
       REDIS_PASSWORD: ${REDIS_PASSWORD:-dev}
       REDIS_PORT: 6379
@@ -100,11 +132,14 @@ services:
     depends_on:
       redis:
         condition: service_healthy
-      postgres:
-        condition: service_healthy
     command: >
       sh -c "composer install --no-interaction --prefer-dist &&
-             php artisan migrate --force &&
+             if [ -z \"$$DATABASE_URL\" ]; then
+               echo '[container] LOCAL mode: running migrations against local Postgres';
+               php artisan migrate --force;
+             else
+               echo '[container] NEON mode: skipping migrate (Neon already migrated)';
+             fi &&
              php artisan serve --host=0.0.0.0 --port=8000"
 
   # ── Queue worker (Phase 2 — separate container, doctrine-aligned) ─────
@@ -116,14 +151,8 @@ services:
   # $tries/$backoff properties (see AbstractQueuedJob); these CLI flags
   # are the worker-level fallback.
   #
-  # CLI flag semantics (Laravel queue:work):
-  #   --tries=N         default attempts per job (overridden by AbstractQueuedJob::$tries)
-  #   --backoff=N,N,N  seconds between retries (overridden by AbstractQueuedJob::$backoff)
-  #   --max-time=N      hard upper bound on a single job's runtime
-  #   --sleep=N         idle sleep when queue is empty (default 3)
-  #   --timeout=N       PHP time_limit passed to each job (default 60)
-  #
-  # The env vars below mirror .env.example so ops can tune without rebuilding.
+  # In NEON mode the worker also talks to Neon directly via DATABASE_URL.
+  # In LOCAL mode it falls back to the local `postgres` container.
   worker:
     build:
       context: .
@@ -134,20 +163,21 @@ services:
     volumes:
       - .:/app
     environment:
-      # Database connection — same as app container.
-      DB_CONNECTION: pgsql
-      DB_HOST: postgres
-      DB_PORT: 5432
+      DATABASE_URL: ${DATABASE_URL:-}
+      # Doctrine: in NEON mode the worker MUST use the `neon` connection
+      # block (config/database.php) which forces sslmode=require. The
+      # `pgsql` block bypasses SSL — using it sends queue processing data
+      # in plaintext.
+      DB_CONNECTION: neon
+      DB_PORT: ${DB_PORT:-5432}
       DB_DATABASE: ${DB_DATABASE:-temple_trust}
       DB_USERNAME: ${DB_USERNAME:-temple_trust}
       DB_PASSWORD: ${DB_PASSWORD:-dev}
-      # Redis connection — same as app container.
+      DB_SSLMODE: ${DB_SSLMODE:-require}
       REDIS_HOST: redis
       REDIS_PASSWORD: ${REDIS_PASSWORD:-dev}
       REDIS_PORT: 6379
-      # Queue driver.
       QUEUE_CONNECTION: redis
-      # Worker tuning knobs (mirrors .env.example).
       QUEUE_GENERAL_TRIES: ${QUEUE_GENERAL_TRIES:-3}
       QUEUE_GENERAL_BACKOFF: ${QUEUE_GENERAL_BACKOFF:-10,60,300}
       QUEUE_FINANCIAL_TRIES: ${QUEUE_FINANCIAL_TRIES:-1}
@@ -158,8 +188,6 @@ services:
       QUEUE_FAILED_RETENTION_HOURS: ${QUEUE_FAILED_RETENTION_HOURS:-720}
     depends_on:
       redis:
-        condition: service_healthy
-      postgres:
         condition: service_healthy
     command: >
       sh -c "composer install --no-interaction --prefer-dist && exec php artisan queue:work redis

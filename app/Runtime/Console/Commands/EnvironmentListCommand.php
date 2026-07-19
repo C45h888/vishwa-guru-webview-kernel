@@ -11,7 +11,7 @@ use App\Runtime\Failure\ValueObjects\FailureRecord;
 use App\Runtime\Validation\EnvValidator;
 use App\Shared\Contracts\EnvironmentContract;
 use App\Shared\Enums\EnvironmentType;
-use App\Shared\Support\Identifier;
+use App\Shared\ValueObjects\Identifier;
 use DateTimeImmutable;
 use Illuminate\Console\Command;
 

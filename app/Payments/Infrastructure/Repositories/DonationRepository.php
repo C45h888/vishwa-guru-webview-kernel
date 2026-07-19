@@ -111,9 +111,17 @@ final class DonationRepository implements DonationRepositoryContract
             'donor_email_snapshot' => $row['donor_email_snapshot'],
             'donor_phone_snapshot' => $row['donor_phone_snapshot'],
             'donor_pan_snapshot' => $row['donor_pan_snapshot'],
-            'donor_address_snapshot' => is_string($row['donor_address_snapshot'])
-                ? $row['donor_address_snapshot']
-                : json_encode($row['donor_address_snapshot'] ?? [], JSON_THROW_ON_ERROR),
+            // Doctrine: preserve NULL for JSONB columns. The previous
+            // `?? []` fallback encoded null → '[]', which violated the
+            // `donations_anonymous_no_pii` CHECK constraint (it requires
+            // NULL, not empty array). When a non-null array is provided
+            // (e.g. {'city': 'Mumbai'}), it must be JSON-encoded as text
+            // so PDO sends a valid JSON literal to the JSONB column.
+            'donor_address_snapshot' => $row['donor_address_snapshot'] === null
+                ? null
+                : (is_string($row['donor_address_snapshot'])
+                    ? $row['donor_address_snapshot']
+                    : json_encode($row['donor_address_snapshot'], JSON_THROW_ON_ERROR)),
             'amount_minor' => $row['amount_minor'],
             'currency_code' => $row['currency_code'],
             'is_anonymous' => $row['is_anonymous'],
@@ -122,9 +130,11 @@ final class DonationRepository implements DonationRepositoryContract
             'internal_notes' => $row['internal_notes'],
             'state' => $row['state'],
             'idempotency_key' => $row['idempotency_key'],
-            'metadata' => is_string($row['metadata'])
-                ? $row['metadata']
-                : json_encode($row['metadata'] ?? [], JSON_THROW_ON_ERROR),
+            'metadata' => $row['metadata'] === null
+                ? null
+                : (is_string($row['metadata'])
+                    ? $row['metadata']
+                    : json_encode($row['metadata'], JSON_THROW_ON_ERROR)),
             'submitted_at' => $row['submitted_at'],
             'payment_initiated_at' => $row['payment_initiated_at'],
             'payment_verified_at' => $row['payment_verified_at'],
@@ -185,9 +195,17 @@ final class DonationRepository implements DonationRepositoryContract
             'donor_email_snapshot' => $row['donor_email_snapshot'],
             'donor_phone_snapshot' => $row['donor_phone_snapshot'],
             'donor_pan_snapshot' => $row['donor_pan_snapshot'],
-            'donor_address_snapshot' => is_string($row['donor_address_snapshot'])
-                ? $row['donor_address_snapshot']
-                : json_encode($row['donor_address_snapshot'] ?? [], JSON_THROW_ON_ERROR),
+            // Doctrine: preserve NULL for JSONB columns. The previous
+            // `?? []` fallback encoded null → '[]', which violated the
+            // `donations_anonymous_no_pii` CHECK constraint (it requires
+            // NULL, not empty array). When a non-null array is provided
+            // (e.g. {'city': 'Mumbai'}), it must be JSON-encoded as text
+            // so PDO sends a valid JSON literal to the JSONB column.
+            'donor_address_snapshot' => $row['donor_address_snapshot'] === null
+                ? null
+                : (is_string($row['donor_address_snapshot'])
+                    ? $row['donor_address_snapshot']
+                    : json_encode($row['donor_address_snapshot'], JSON_THROW_ON_ERROR)),
             'amount_minor' => $row['amount_minor'],
             'currency_code' => $row['currency_code'],
             'is_anonymous' => $row['is_anonymous'],
@@ -196,9 +214,11 @@ final class DonationRepository implements DonationRepositoryContract
             'internal_notes' => $row['internal_notes'],
             'state' => $row['state'],
             'idempotency_key' => $row['idempotency_key'],
-            'metadata' => is_string($row['metadata'])
-                ? $row['metadata']
-                : json_encode($row['metadata'] ?? [], JSON_THROW_ON_ERROR),
+            'metadata' => $row['metadata'] === null
+                ? null
+                : (is_string($row['metadata'])
+                    ? $row['metadata']
+                    : json_encode($row['metadata'], JSON_THROW_ON_ERROR)),
             'submitted_at' => $row['submitted_at'],
             'payment_initiated_at' => $row['payment_initiated_at'],
             'payment_verified_at' => $row['payment_verified_at'],

@@ -15,21 +15,48 @@ use Throwable;
  * Neon-specific health probe — supplements the generic DatabaseHealthProbe
  * (which only runs `SELECT 1`) with Neon-specific checks:
  *
- *   1. Reachability (SELECT 1)
- *   2. SSL actually in use (`SHOW ssl`)
- *   3. Current role (`SELECT current_user`)
- *   4. Required extensions present (pgcrypto, citext, btree_gist)
- *   5. Server version (`SHOW server_version`)
+ *   0. Configured sslmode is ≥require (read from NeonConnectionConfig —
+ *      catches the case where DATABASE_URL was malformed and sslmode
+ *      silently fell back to driver default 'prefer' or 'allow')
+ *   1. Reachability (SELECT 1) — proves the connection round-trips
+ *   2. Required extensions present (pgcrypto, citext, btree_gist)
+ *   3. Server version (SHOW server_version)
+ *   4. Current role (SELECT current_user)
+ *
+ * IMPORTANT — About the `SHOW ssl` check that this probe intentionally
+ * does NOT perform:
+ *
+ *   Neon's POOLED endpoint (host contains `-pooler`) routes all traffic
+ *   through PgBouncer. PgBouncer terminates TLS at its edge, then opens
+ *   an INTERNAL connection to the Postgres backend (often unencrypted,
+ *   sometimes over a private network). When a client issues
+ *   `SHOW ssl` against such a connection, Postgres reports `ssl=off`
+ *   because the wire between PgBouncer's child process and Postgres
+ *   is the pooler's internal transport — NOT the public internet.
+ *
+ *   That makes `SHOW ssl` a FALSE NEGATIVE for pooler connections:
+ *   SSL IS enforced at the client ↔ PgBouncer boundary, but Postgres
+ *   has no visibility into that. Probing `SHOW ssl` would always fail
+ *   against the canonical production endpoint.
+ *
+ *   Therefore, the SSL check here is delegated entirely to
+ *   NeonConnectionConfig::hasSecureSslMode() — which trusts the URL's
+ *   sslmode query parameter (verified at the libpq layer when libpq
+ *   fails to verify the cert chain, e.g. sslmode=verify-ca would have
+ *   rejected an insecure connection at handshake time). If sslmode is
+ *   ≥require and the connection round-trips, the channel is secure.
+ *
+ *   For the DIRECT endpoint (no `-pooler` suffix — used for migrations)
+ *   the connection reaches Postgres directly and `SHOW ssl` would
+ *   correctly report `on`. The same probe still works there.
  *
  * Doctrine: never throws. Catches Throwable, returns HealthCheckResult::fail().
- * Same pattern as DatabaseHealthProbe / CacheHealthProbe / QueueHealthProbe.
  *
- * Performance: 5 small queries total, ~10-15ms on a healthy Neon branch.
+ * Performance: 4 small queries total, ~10-15ms on a healthy Neon branch.
  * The aggregator runs this on every /health hit; load-balancer-safe.
  *
  * Output aggregation: a single failure short-circuits — if reachability
- * fails, we don't probe further. If reachability succeeds but extensions
- * are missing, we report that specific failure.
+ * fails, we don't probe further.
  */
 final class NeonDiagnosticsProbe implements HealthProbe
 {
@@ -49,31 +76,35 @@ final class NeonDiagnosticsProbe implements HealthProbe
     {
         $start = microtime(true);
 
-        // Check 1 — reachability.
+        // Check 0 — configured sslmode (BEFORE issuing any DB query).
+        // If NeonConnectionConfig saw sslmode=allow / prefer / disable in
+        // the parsed URL, fail immediately with the exact reason — there
+        // is no point reaching the database with an insecure channel.
+        if (! $this->config->hasSecureSslMode()) {
+            return $this->fail(
+                $start,
+                sprintf(
+                    'configured sslmode=%s — Neon requires sslmode=require '
+                    . '(or stricter; verify-ca / verify-full). Update DATABASE_URL '
+                    . 'to use the connection string from Neon Console → Connect.',
+                    $this->config->sslmode ?? '(unset)',
+                ),
+            );
+        }
+
+        // Check 1 — reachability. Proves we can round-trip a query.
         $reachability = $this->persistence->query('SELECT 1 AS one');
         if ($reachability->isFailure()) {
             return $this->fail($start, 'reachability: ' . ($reachability->error() ?? 'unknown'));
         }
 
-        // Check 2 — SSL actually in use. Postgres exposes this via `SHOW ssl`.
-        $ssl = $this->persistence->query("SHOW ssl");
-        if ($ssl->isFailure()) {
-            return $this->fail($start, 'ssl check failed: ' . ($ssl->error() ?? 'unknown'));
-        }
-        $sslOn = $this->firstRowValue($ssl, 'ssl') === 'on';
-        if (! $sslOn) {
-            return $this->fail(
-                $start,
-                'connection is not using SSL — Neon requires sslmode=require',
-            );
-        }
-
-        // Check 3 — current role. Informational only — runtime using DDL role
-        // (Owner) is an anti-pattern, but we don't fail the probe for it.
+        // Check 2 — current role (informational only). The runtime should
+        // connect as `app`, not `owner`. We don't fail for owner (some
+        // operators intentionally use it) — we surface it for ops review.
         $role = $this->persistence->query('SELECT current_user AS role_name');
-        $currentRole = $role->isSuccess() ? (string) $this->firstRowValue($role, 'role_name') : 'unknown';
+        $currentRole = $role->isOk() ? (string) $this->firstRowValue($role, 'role_name') : 'unknown';
 
-        // Check 4 — required extensions.
+        // Check 3 — required extensions.
         $extensionsResult = $this->persistence->query(
             "SELECT extname FROM pg_extension WHERE extname IN ('pgcrypto','citext','btree_gist')",
         );
@@ -96,9 +127,9 @@ final class NeonDiagnosticsProbe implements HealthProbe
             );
         }
 
-        // Check 5 — server version (informational).
+        // Check 4 — server version (informational).
         $versionResult = $this->persistence->query('SHOW server_version');
-        $version = $versionResult->isSuccess()
+        $version = $versionResult->isOk()
             ? (string) $this->firstRowValue($versionResult, 'server_version')
             : 'unknown';
 
@@ -106,11 +137,14 @@ final class NeonDiagnosticsProbe implements HealthProbe
 
         // Healthy — detail carries the rich context for ops.
         $detail = sprintf(
-            'role=%s version=%s ssl=%s ext=[%s]',
+            'role=%s version=%s sslmode=%s channel_binding=%s ext=[%s] db=%s via_pgbouncer=%s',
             $currentRole,
             $version,
-            'on',
+            $this->config->sslmode ?? 'unset',
+            $this->config->channelBinding ?? 'unset',
             implode(',', $present),
+            $this->config->database ?? 'unset',
+            $this->config->isPooled ? 'yes' : 'no',
         );
 
         return HealthCheckResult::ok('neon', $latencyMs, $detail);

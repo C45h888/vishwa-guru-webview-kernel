@@ -400,7 +400,7 @@ Email
 
 Caching and Queues
 
-Redis (introduced when required)
+Redis (4 logical DBs: app=0, cache=1, queue=2, session=3; `ext-redis` PHP extension required)
 
 ---
 

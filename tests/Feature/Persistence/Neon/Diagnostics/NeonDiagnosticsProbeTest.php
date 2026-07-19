@@ -77,6 +77,21 @@ final class NeonDiagnosticsProbeTest extends TestCase
             {
                 return Result::success(0);
             }
+
+            public function connectionMetadata(): Result
+            {
+                return Result::success([
+                    'driver' => 'pgsql',
+                    'identifier' => 'fake',
+                    'is_connected' => true,
+                    'database' => 'neondb',
+                    'host' => 'ep-fake.neon.tech',
+                    'port' => 5432,
+                    'username' => 'neondb_owner',
+                    'application_name' => 'temple-trust',
+                    'sslmode' => 'require',
+                ]);
+            }
         };
 
         $this->app->instance(PersistenceAdapterContract::class, $adapter);
@@ -186,6 +201,21 @@ final class NeonDiagnosticsProbeTest extends TestCase
             public function execute(string $sql, array $params = []): Result
             {
                 return Result::success(0);
+            }
+
+            public function connectionMetadata(): Result
+            {
+                return Result::success([
+                    'driver' => 'pgsql',
+                    'identifier' => 'fake',
+                    'is_connected' => true,
+                    'database' => 'neondb',
+                    'host' => 'ep-fake.neon.tech',
+                    'port' => 5432,
+                    'username' => 'neondb_owner',
+                    'application_name' => 'temple-trust',
+                    'sslmode' => 'require',
+                ]);
             }
         };
 

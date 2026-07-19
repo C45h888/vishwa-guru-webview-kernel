@@ -11,7 +11,7 @@ use App\Runtime\Failure\Handlers\CommandFailureHandler;
 use App\Runtime\Failure\Handlers\HttpFailureHandler;
 use App\Runtime\Failure\Handlers\ProbeFailureHandler;
 use App\Shared\Support\Clock;
-use App\Shared\Support\Identifier;
+use App\Shared\ValueObjects\Identifier;
 
 /**
  * The runtime kernel's inference model + routing membrane + deterministic

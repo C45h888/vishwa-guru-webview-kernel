@@ -127,6 +127,34 @@ final class InMemoryAdapter implements PersistenceAdapterContract
     }
 
     /**
+     * Type-surface reflection for the in-memory SQLite adapter.
+     *
+     * Mirrors LaravelDbAdapter::connectionMetadata() but without a
+     * configured host/port (in-memory SQLite has none). Used by tests
+     * to verify the adapter binding shape.
+     *
+     * @return Result<array<string, mixed>>
+     */
+    public function connectionMetadata(): Result
+    {
+        try {
+            return Result::success([
+                'driver'           => 'sqlite',
+                'identifier'       => (string) $this->identifier(),
+                'is_connected'     => $this->pdo !== null,
+                'database'         => ':memory:',
+                'host'             => null,
+                'port'             => null,
+                'username'         => null,
+                'application_name' => 'temple-trust-tests',
+                'sslmode'          => null,
+            ]);
+        } catch (\Throwable $e) {
+            return Result::failure('connection_metadata_failed: '.$e->getMessage());
+        }
+    }
+
+    /**
      * @param  array<string, scalar|null>  $params
      * @return Result<array<int, array<string, mixed>>>
      */

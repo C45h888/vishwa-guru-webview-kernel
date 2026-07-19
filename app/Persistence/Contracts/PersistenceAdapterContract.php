@@ -63,6 +63,23 @@ interface PersistenceAdapterContract
     public function identifier(): Identifier;
 
     /**
+     * Type-surface reflection: introspective snapshot of the active
+     * connection WITHOUT issuing a DB query. Lets the kernel reason
+     * about the DB (driver, identity, liveness, configurable metadata)
+     * without coupling to a framework facade.
+     *
+     * - Production: returns {driver:"pgsql", identifier:"laravel-db",
+     *   is_connected:true, host, database, username, ssl, application_name}.
+     * - Tests: SQLite → {driver:"sqlite", is_connected:true}.
+     *
+     * Doctrine: never throws. Adapter-side failures are returned as
+     * Result::failure so kernel callers branch uniformly.
+     *
+     * @return Result<array<string, mixed>>
+     */
+    public function connectionMetadata(): Result;
+
+    /**
      * Execute a SQL query and return all rows as associative arrays.
      * Use for SELECT statements.
      *

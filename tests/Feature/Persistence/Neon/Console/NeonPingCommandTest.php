@@ -88,6 +88,15 @@ final class NeonPingCommandTest extends TestCase
             {
                 return Result::success(0);
             }
+
+            public function connectionMetadata(): Result
+            {
+                return Result::success([
+                    'driver' => 'pgsql', 'identifier' => 'fake', 'is_connected' => true,
+                    'sslmode' => 'require', 'database' => 'neondb',
+                    'application_name' => 'temple-trust',
+                ]);
+            }
         };
 
         $this->app->instance(PersistenceAdapterContract::class, $adapter);

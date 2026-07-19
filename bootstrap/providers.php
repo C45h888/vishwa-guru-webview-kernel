@@ -13,8 +13,12 @@
 |   1. AppServiceProvider         — application-wide bindings
 |   2. SharedServiceProvider      — base contracts and abstractions
 |   3. PersistenceServiceProvider — kernel-level persistence contracts
-|   4. RuntimeServiceProvider     — runtime infrastructure (health, env,
-|                                   failure state machine, commands)
+|                                   (PersistenceAdapterContract → LaravelDbAdapter,
+|                                    RepositoryRegistryContract → RepositoryRegistry,
+|                                    NeonConnectionConfig, etc.)
+|   4. RuntimeServiceProvider     — runtime infrastructure (health env,
+|                                   failure state machine, commands,
+|                                   health probes, idempotency middleware)
 |   5. RedisServiceProvider       — Redis connector contract wiring
 |                                   (DB 0 app / 1 cache / 2 queue / 3 session)
 |   6. QueueServiceProvider       — Queue connector contract wiring
@@ -33,5 +37,6 @@ return [
     App\Persistence\Providers\PersistenceServiceProvider::class,
     App\Runtime\Providers\RuntimeServiceProvider::class,
     App\Redis\Providers\RedisServiceProvider::class,
+    App\Queue\Providers\QueueServiceProvider::class,
     App\Payments\Providers\PaymentsServiceProvider::class,
 ];

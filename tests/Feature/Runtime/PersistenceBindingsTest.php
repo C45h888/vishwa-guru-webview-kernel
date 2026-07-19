@@ -55,7 +55,7 @@ final class PersistenceBindingsTest extends TestCase
         $result = $adapter->query('SELECT 1 AS one');
 
         $this->assertInstanceOf(Result::class, $result);
-        $this->assertTrue($result->isSuccess(), 'SELECT 1 should succeed against sqlite :memory:');
+        $this->assertTrue($result->isOk(), 'SELECT 1 should succeed against sqlite :memory:');
 
         $rows = $result->value();
         $this->assertCount(1, $rows);

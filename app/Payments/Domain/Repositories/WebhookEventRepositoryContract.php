@@ -62,6 +62,21 @@ interface WebhookEventRepositoryContract
     /**
      * Record a webhook event with its processing outcome.
      *
+     * Doctrine: idempotent upsert. If a row with the same
+     * (provider_code, provider_event_id) already exists (e.g. from a
+     * prior `reserve()` call from the webhook dedupe middleware, or a
+     * prior `record()` call), this method UPDATES the existing row
+     * rather than failing on UNIQUE violation. This is atomic at the
+     * DB layer (`INSERT ... ON CONFLICT DO UPDATE`).
+     *
+     * The reserve-then-record pattern means:
+     *   - The middleware's reserve() establishes "we own this slot"
+     *     atomically (Layer 3 dedupe gate).
+     *   - The service's record() then upserts the full payload into
+     *     that same row (placeholder → full data).
+     *   - The race window between the two is closed: the UNIQUE
+     *     constraint ensures only one row per (provider, event_id).
+     *
      * @param  array<string, mixed>  $payload
      * @param  array<string, string>  $headers
      */

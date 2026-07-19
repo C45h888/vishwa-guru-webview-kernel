@@ -123,6 +123,41 @@ final class LaravelDbAdapter implements PersistenceAdapterContract
 
     public function identifier(): Identifier
     {
-        return new Identifier('laravel-db');
+        return Identifier::generate();
+    }
+
+    /**
+     * Type-surface reflection — rich connection metadata without a DB query.
+     *
+     * Returns what the kernel needs to introspect the connection:
+     *   - driver: e.g. "pgsql" / "sqlite"
+     *   - identifier: stable adapter handle (always "laravel-db" for this impl)
+     *   - is_connected: best-effort liveness (does not ping the DB)
+     *   - database / host: from the resolved PDO connection (may be null)
+     *   - application_name: surfaced for Neon ops dashboards
+     *
+     * Doctrine: never throws. Returns Result::failure on introspection error.
+     *
+     * @return Result<array<string, mixed>>
+     */
+    public function connectionMetadata(): Result
+    {
+        try {
+            $config = $this->connection->getConfig();
+
+            return Result::success([
+                'driver'           => $this->connection->getDriverName(),
+                'identifier'       => (string) $this->identifier(),
+                'is_connected'     => $this->isConnected(),
+                'database'         => $this->connection->getDatabaseName(),
+                'host'             => is_string($config['host'] ?? null) ? $config['host'] : null,
+                'port'             => is_int($config['port'] ?? null) ? $config['port'] : (is_string($config['port'] ?? null) ? (int) $config['port'] : null),
+                'username'         => is_string($config['username'] ?? null) ? $config['username'] : null,
+                'application_name' => is_string($config['application_name'] ?? null) ? $config['application_name'] : null,
+                'sslmode'          => is_string($config['sslmode'] ?? null) ? $config['sslmode'] : null,
+            ]);
+        } catch (\Throwable $e) {
+            return Result::failure('connection_metadata_failed: '.$e->getMessage());
+        }
     }
 }

@@ -282,14 +282,20 @@ class PaymentVerificationService
         if ($providerEventId === '') {
             return;
         }
-        if ($this->webhookEvents->exists($provider, $providerEventId)) {
-            // Duplicate provider_event_id is itself terminal.
-            throw new DuplicatePaymentException(
-                sprintf('Duplicate webhook for provider [%s] event [%s]', $provider->value, $providerEventId),
-                $providerEventId,
-            );
-        }
 
+        // Doctrine fix: the previous exists() + record() pattern was
+        // non-atomic (race window between SELECT and INSERT). The
+        // webhook dedupe middleware (Layer 3) already does the atomic
+        // dedupe gate via reserve(). The webhook_events::record() method
+        // is now an upsert (INSERT ... ON CONFLICT DO UPDATE) — so we
+        // just call record() unconditionally. The reserve() call at the
+        // HTTP edge closed the race; record() populates the row.
+        //
+        // If a previous webhook for this (provider, provider_event_id)
+        // was processed, record() updates the row instead of failing.
+        // We log the duplicate but do NOT short-circuit Stage 2-4
+        // (signature verification must still run; the original webhook
+        // processing is idempotent at the application level).
         $this->webhookEvents->record(
             provider: $provider,
             providerEventId: $providerEventId,

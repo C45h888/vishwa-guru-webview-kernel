@@ -101,6 +101,12 @@ final class HealthProbeTest extends TestCase
             {
                 return \App\Shared\Support\Result::success(0);
             }
+            public function connectionMetadata(): \App\Shared\Support\Result
+            {
+                return \App\Shared\Support\Result::success([
+                    'driver' => 'sqlite', 'identifier' => 'spy', 'is_connected' => true,
+                ]);
+            }
         };
 
         $this->app->instance(PersistenceAdapterContract::class, $spy);
@@ -135,6 +141,12 @@ final class HealthProbeTest extends TestCase
             public function execute(string $sql, array $params = []): \App\Shared\Support\Result
             {
                 return \App\Shared\Support\Result::success(0);
+            }
+            public function connectionMetadata(): \App\Shared\Support\Result
+            {
+                return \App\Shared\Support\Result::success([
+                    'driver' => 'sqlite', 'identifier' => 'failing', 'is_connected' => false,
+                ]);
             }
         };
 
