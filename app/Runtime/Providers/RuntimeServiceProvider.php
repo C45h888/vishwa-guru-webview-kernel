@@ -73,7 +73,13 @@ final class RuntimeServiceProvider extends ServiceProvider
                 $app->make(\App\Shared\Contracts\EnvironmentContract::class),
                 DB::connection(),
                 Cache::store(),
-                Queue::connection()->getQueueManager() ?? $app->make(QueueManager::class),
+                // Resolve the QueueManager directly. The previous expression
+                // `Queue::connection()->getQueueManager()` was wrong on every
+                // driver — `Illuminate\Contracts\Queue\Queue` does not expose
+                // `getQueueManager()`. The QueueManager singleton is bound by
+                // Laravel's QueueServiceProvider, so $app->make resolves it
+                // correctly for sync, redis, database, sqs, and beanstalkd.
+                $app->make(QueueManager::class),
                 $app->make(Application::class),
             );
         });

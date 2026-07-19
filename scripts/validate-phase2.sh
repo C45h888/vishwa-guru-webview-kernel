@@ -188,7 +188,40 @@ else
         check_fail "RuntimeServiceProviderTest failed"
     fi
 
-    # 3g. Full suite
+    # 3g. Neon integration (Phase 2 G+H)
+    echo -e "  ${YELLOW}→${NC} Phase G+H: Neon probes + diagnostics..."
+    if vendor/bin/phpunit --filter='Persistence.Neon' 2>&1 | tail -3 | grep -q "OK\|Tests:"; then
+        check_pass "Neon integration tests pass"
+    else
+        check_fail "Neon integration tests failed"
+    fi
+
+    # 3h. Phase 1 closure (FileAssetRepository — the critical path that
+    # was broken before Phase I)
+    echo -e "  ${YELLOW}→${NC} Phase I: Phase 1 closure (FileAssetRepository)..."
+    if vendor/bin/phpunit --filter=FileAssetRepositoryTest 2>&1 | tail -3 | grep -q "OK\|Tests:"; then
+        check_pass "FileAssetRepositoryTest passes"
+    else
+        check_fail "FileAssetRepositoryTest failed"
+    fi
+
+    # 3i. Redis env hardening (Phase 2b J)
+    echo -e "  ${YELLOW}→${NC} Phase J: Redis env keys..."
+    if vendor/bin/phpunit --filter=RedisEnvKeysTest 2>&1 | tail -3 | grep -q "OK\|Tests:"; then
+        check_pass "RedisEnvKeysTest passes"
+    else
+        check_fail "RedisEnvKeysTest failed"
+    fi
+
+    # 3j. Existing Redis module tests (Bindings + CacheFallback)
+    echo -e "  ${YELLOW}→${NC} Redis module tests..."
+    if vendor/bin/phpunit --filter='Tests.Feature.Redis' 2>&1 | tail -3 | grep -q "OK\|Tests:"; then
+        check_pass "Redis module tests pass"
+    else
+        check_fail "Redis module tests failed"
+    fi
+
+    # 3k. Full suite
     echo -e "  ${YELLOW}→${NC} Full suite..."
     if vendor/bin/phpunit 2>&1 | tail -10 | grep -q "OK\|Tests:"; then
         check_pass "Full PHPUnit suite passes"

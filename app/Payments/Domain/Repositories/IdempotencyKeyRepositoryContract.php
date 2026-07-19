@@ -16,9 +16,26 @@ use DateTimeImmutable;
  *
  * Each idempotency key has a TTL (schema: idempotency_keys.expires_at).
  * Expired keys are deleted by a background worker and MAY be reused.
+ *
+ * The atomic `reserve()` primitive (added in Phase 0 of the HTTP
+ * Idempotency-Key middleware work) is used by the inbound HTTP
+ * middleware as the DB fallback when Redis SETEX is unavailable.
+ * The Doctrine is: SETEX is a speedup; the DB UNIQUE constraint is
+ * the source of truth.
  */
 interface IdempotencyKeyRepositoryContract
 {
+    /**
+     * Atomically reserve a key + scope. Returns true if we own this
+     * slot, false if duplicate or backend unreachable.
+     *
+     * Doctrine:
+     *   - MUST NOT throw. Failure is reported via false.
+     *   - Atomic at the DB layer (INSERT ... ON CONFLICT DO NOTHING).
+     *   - Caller owns the key naming convention.
+     */
+    public function reserve(string $key, string $scope, int $ttlSeconds): bool;
+
     /**
      * Find an idempotency key by its string value.
      *

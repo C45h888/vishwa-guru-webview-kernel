@@ -73,7 +73,7 @@ final class RuntimeStatusCommand extends Command
             // Surface the unhealthy-system failure to the runtime router
             // so it is logged + classified per the failure doctrine.
             $this->failureRouter->report(new FailureRecord(
-                id: \App\Shared\Support\Identifier::generate(),
+                id: \App\Shared\ValueObjects\Identifier::generate(),
                 kind: FailureKind::CommandFailed,
                 origin: self::class,
                 message: 'temple:runtime detected unhealthy subsystems',

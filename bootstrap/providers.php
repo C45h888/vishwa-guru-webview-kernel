@@ -17,7 +17,12 @@
 |                                   failure state machine, commands)
 |   5. RedisServiceProvider       — Redis connector contract wiring
 |                                   (DB 0 app / 1 cache / 2 queue / 3 session)
-|   6. (Future) module providers  — Payments, Donations, ...
+|   6. QueueServiceProvider       — Queue connector contract wiring
+|                                   (Laravel queue manager; failed_jobs +
+|                                    jobs + job_batches tables in postgres)
+|   7. PaymentsServiceProvider    — Phase 1 Financial Kernel (9 repos,
+|                                    gateway triads, state machines)
+|   8. (Future) module providers  — Donations, CMS, Gallery, Events, ...
 |
 | Future phases must extend this list without reordering existing entries.
 */
@@ -28,4 +33,5 @@ return [
     App\Persistence\Providers\PersistenceServiceProvider::class,
     App\Runtime\Providers\RuntimeServiceProvider::class,
     App\Redis\Providers\RedisServiceProvider::class,
+    App\Payments\Providers\PaymentsServiceProvider::class,
 ];

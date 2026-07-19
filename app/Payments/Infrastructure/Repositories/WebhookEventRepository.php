@@ -7,14 +7,86 @@ namespace App\Payments\Infrastructure\Repositories;
 use App\Payments\Domain\Enums\PaymentProvider;
 use App\Payments\Domain\Repositories\WebhookEventRepositoryContract;
 use App\Persistence\Contracts\PersistenceAdapterContract;
+use App\Shared\Support\Clock;
+use App\Shared\Support\IdentifierGenerator;
 use DateTimeImmutable;
 use RuntimeException;
+use Throwable;
 
 final class WebhookEventRepository implements WebhookEventRepositoryContract
 {
     public function __construct(
         private readonly PersistenceAdapterContract $adapter,
+        private readonly Clock $clock = new \App\Shared\Support\SystemClock(),
+        private readonly IdentifierGenerator $ids = new \App\Shared\Support\UlidGenerator(),
     ) {}
+
+    /**
+     * Atomically reserve a (provider, provider_event_id) slot.
+     *
+     * Inserts a MINIMAL placeholder row (event_type='pending', payload='{}',
+     * headers='{}', signature_verified=false) with a generated ULID id and
+     * TTL'd expires_at. The full webhook controller will call `record()`
+     * AFTER signature verification with the real payload.
+     *
+     * Doctrine:
+     *   - INSERT ... ON CONFLICT (provider_code, provider_event_id) DO NOTHING.
+     *   - Returns true if 1 row was inserted (we own this slot).
+     *   - Returns false if 0 rows were inserted (duplicate — UNIQUE violation
+     *     converted to DO NOTHING) or if the DB call failed.
+     *   - Never throws. Throwable → return false.
+     */
+    public function reserve(
+        PaymentProvider $provider,
+        string $providerEventId,
+        int $ttlSeconds,
+    ): bool {
+        try {
+            $now = $this->clock->now();
+            $expiresAt = $now->modify('+' . $ttlSeconds . ' seconds');
+            $id = 'wev_' . $this->ids->next();
+
+            $sql = 'INSERT INTO webhook_events (
+                        id, provider_code, provider_event_id, event_type,
+                        payload, headers, signature_verified,
+                        related_payment_id, received_at,
+                        processed_at, processing_error, retry_count,
+                        created_at, updated_at, expires_at
+                    ) VALUES (
+                        :id, :provider_code, :provider_event_id, :event_type,
+                        :payload, :headers, :signature_verified,
+                        NULL, :received_at,
+                        NULL, NULL, 0,
+                        :created_at, :updated_at, :expires_at
+                    )
+                    ON CONFLICT (provider_code, provider_event_id) DO NOTHING';
+
+            $params = [
+                'id'                 => $id,
+                'provider_code'      => $provider->value,
+                'provider_event_id'  => $providerEventId,
+                'event_type'         => 'pending',
+                'payload'            => '{}',
+                'headers'            => '{}',
+                'signature_verified' => '0',
+                'received_at'        => $now->format(DATE_ATOM),
+                'created_at'         => $now->format(DATE_ATOM),
+                'updated_at'         => $now->format(DATE_ATOM),
+                'expires_at'         => $expiresAt->format(DATE_ATOM),
+            ];
+
+            $result = $this->adapter->execute($sql, $params);
+            if ($result->isFailure()) {
+                return false;
+            }
+
+            // Doctrine: `execute()` returns the number of affected rows.
+            // For ON CONFLICT DO NOTHING: 1 = we own this slot, 0 = duplicate.
+            return (int) $result->value() === 1;
+        } catch (Throwable) {
+            return false;
+        }
+    }
 
     /**
      * @return array<string, mixed>|null

@@ -59,5 +59,7 @@ class Kernel extends HttpKernel
     protected $middlewareAliases = [
         'auth' => Authenticate::class,
         'throttle' => ThrottleRequests::class,
+        'idempotency' => \App\Http\Middleware\IdempotencyMiddleware::class,
+        'webhook-dedupe' => \App\Http\Middleware\WebhookDedupeMiddleware::class,
     ];
 }

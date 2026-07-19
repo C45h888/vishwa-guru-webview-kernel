@@ -35,7 +35,9 @@ use App\Payments\Infrastructure\Adapters\Razorpay\RazorpayClient;
 use App\Payments\Infrastructure\Adapters\Razorpay\RazorpayClientFactory;
 use App\Payments\Infrastructure\Adapters\Razorpay\RazorpayProviderAdapter;
 use App\Payments\Infrastructure\Adapters\Razorpay\RazorpayVerificationAdapter;
-use App\Payments\Infrastructure\Persistence\LaravelDbAdapter;
+// Note: PaymentsServiceProvider does NOT bind PersistenceAdapterContract —
+// PersistenceServiceProvider owns that binding. Doctrine: one binding per
+// interface, owned by the canonical provider.
 use App\Payments\Infrastructure\Repositories\AuditEventRepository;
 use App\Payments\Infrastructure\Repositories\DonationRepository;
 use App\Payments\Infrastructure\Repositories\DonorRepository;
@@ -94,10 +96,11 @@ final class PaymentsServiceProvider extends ServiceProvider
         $app->singleton(ReceiptStateMachine::class);
 
         // ════════════════════════════════════════════════════════════════
-        // AXIS A — Persistence adapter (default = LaravelDbAdapter)
-        // Tests rebind to InMemoryAdapter via bootstrap test overrides.
+        // AXIS A — Persistence adapter binding is owned by
+        // PersistenceServiceProvider. We do not re-bind it here.
+        // Doctrine: one binding per interface; kernel-level wiring
+        // lives in the kernel provider, not in domain providers.
         // ════════════════════════════════════════════════════════════════
-        $app->singleton(PersistenceAdapterContract::class, LaravelDbAdapter::class);
 
         // ════════════════════════════════════════════════════════════════
         // AXIS A — Client factories (Razorpay + PayPal)
@@ -234,6 +237,69 @@ final class PaymentsServiceProvider extends ServiceProvider
         $registry->register(Donor::ENTITY_TYPE,           DonorRepository::class);
         $registry->register(Receipt::ENTITY_TYPE,         ReceiptRepository::class);
         $registry->register(FailureState::ENTITY_TYPE,    FailureStateRepository::class);
+
+        // Cross-cutting entities (no dedicated entity classes — these are
+        // table-keyed repositories used by orchestrators).
+        $registry->register('idempotency_key', IdempotencyKeyRepository::class);
+        $registry->register('webhook_event',   WebhookEventRepository::class);
+        $registry->register('audit_event',     AuditEventRepository::class);
+        $registry->register('file_asset',      FileAssetRepository::class);
+    }
+
+    /**
+     * Declares all services this provider registers. Required so the
+     * provider is visible to `php artisan` introspection and the container
+     * optimizer. Without this, deferred loading fails silently.
+     *
+     * @return array<int, class-string>
+     */
+    public function provides(): array
+    {
+        return [
+            // State machines
+            PaymentStateMachine::class,
+            DonationStateMachine::class,
+            ReceiptStateMachine::class,
+            // Client factories
+            RazorpayClientFactory::class,
+            PayPalClientFactory::class,
+            // Client wrappers
+            RazorpayClient::class,
+            PayPalClient::class,
+            // Gateway adapters (Razorpay triad)
+            RazorpayAdapter::class,
+            RazorpayVerificationAdapter::class,
+            RazorpayProviderAdapter::class,
+            // Gateway adapters (PayPal triad)
+            PayPalAdapter::class,
+            PayPalVerificationAdapter::class,
+            PayPalProviderAdapter::class,
+            // Gateway adapters (InMemory triad)
+            InMemoryGatewayAdapter::class,
+            InMemoryVerificationAdapter::class,
+            InMemoryProviderAdapter::class,
+            // Repositories
+            PaymentRepositoryContract::class,
+            DonationRepositoryContract::class,
+            DonorRepositoryContract::class,
+            ReceiptRepositoryContract::class,
+            FailureStateRepositoryContract::class,
+            IdempotencyKeyRepositoryContract::class,
+            WebhookEventRepositoryContract::class,
+            AuditEventRepositoryContract::class,
+            FileAssetRepositoryContract::class,
+            // Services
+            ReceiptGenerationContract::class,
+            PaymentProviderSelector::class,
+            PaymentService::class,
+            PaymentOrchestrator::class,
+            PaymentVerificationService::class,
+            ReceiptService::class,
+            FailureStateService::class,
+            TransactionCoordinator::class,
+            // Registry contract (we depend on it in boot())
+            RepositoryRegistryContract::class,
+        ];
     }
 
     /**

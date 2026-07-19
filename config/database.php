@@ -6,33 +6,48 @@ return [
     'default' => env('DB_CONNECTION', 'pgsql'),
 
     'connections' => [
+        // ════════════════════════════════════════════════════════════════════
+        // PRIMARY CONNECTION BLOCK — drives both local Docker Postgres and
+        // production Neon via a single configuration path.
+        //
+        // HOW IT WORKS:
+        //   - Set DB_CONNECTION=pgsql  (the default — never needs changing)
+        //   - Set DATABASE_URL to your connection string (see .env.example)
+        //     The pooled Neon endpoint (ep-xxx-pooler) is recommended for
+        //     production (handles connection storm burst). Use the direct
+        //     endpoint (port 5432, no -pooler suffix) for migrations or
+        //     bulk DDL where connection lifetime is long.
+        //   - Laravel's PostgresConnector reads sslmode / channel_binding
+        //     directly from the URL query string, so sslmode=require and
+        //     channel_binding=require in the URL are honoured automatically.
+        //   - application_name is set here so Neon console / pg_stat_activity
+        //     shows "temple-trust" instead of "psql" as the connected app.
+        //
+        // NEON MIGRATIONS (php artisan migrate):
+        //   Use the DIRECT endpoint (no -pooler suffix) for migrations so
+        //   PgBouncer pool churn does not affect schema apply. You can
+        //   temporarily set DATABASE_URL to the non-pooled URL just for
+        //   the migrate run, or set DB_CONNECTION_URL for the migrate env.
+        // ════════════════════════════════════════════════════════════════════
         'pgsql' => [
-            'driver'         => 'pgsql',
-            'url'            => env('DATABASE_URL'),
-            'host'           => env('DB_HOST', '127.0.0.1'),
-            'port'           => env('DB_PORT', '5432'),
-            'database'       => env('DB_DATABASE', 'temple_trust'),
-            'username'       => env('DB_USERNAME', 'temple_trust'),
-            'password'       => env('DB_PASSWORD', ''),
-            'charset'        => env('DB_CHARSET', 'utf8'),
-            'prefix'         => env('DB_PREFIX', ''),
-            'prefix_indexes' => true,
-            'search_path'    => 'public',
-            // sslmode is intentionally NOT a static literal here.
-            // Laravel's PostgresConnector parses DATABASE_URL and applies
-            // its sslmode query parameter when the URL is present. A hard-
-            // coded 'prefer' here would silently downgrade sslmode=require
-            // for Neon. For local Docker Postgres without TLS, omit it
-            // (driver default). For Neon, use the dedicated 'neon' block
-            // below.
+            'driver'           => 'pgsql',
+            'url'              => env('DATABASE_URL'),
+            'host'             => env('DB_HOST', '127.0.0.1'),
+            'port'             => env('DB_PORT', '5432'),
+            'database'         => env('DB_DATABASE', 'temple_trust'),
+            'username'         => env('DB_USERNAME', 'temple_trust'),
+            'password'         => env('DB_PASSWORD', ''),
+            'charset'          => env('DB_CHARSET', 'utf8'),
+            'prefix'           => env('DB_PREFIX', ''),
+            'prefix_indexes'   => true,
+            'search_path'      => 'public',
+            'application_name' => 'temple-trust',
         ],
 
-        // Neon connection preset — forces sslmode=require, sets a stable
-        // application_name, and applies channel_binding=require. Selecting
-        // this block via DB_CONNECTION=neon (or DB::connection('neon'))
-        // ensures every query path through Neon uses SSL. All Neon-specific
-        // diagnostics (App\Persistence\Neon\Diagnostics\NeonDiagnosticsProbe)
-        // read through this connection block.
+        // Alias — DB_CONNECTION=neon is accepted but maps to the same pgsql
+        // block above. Having the alias lets teams migrate incrementally without
+        // requiring an immediate .env change everywhere. Prefer DB_CONNECTION=pgsql
+        // in new setups.
         'neon' => [
             'driver'           => 'pgsql',
             'url'              => env('DATABASE_URL'),
@@ -58,10 +73,7 @@ return [
         ],
     ],
 
-    'migrations' => [
-        'table' => 'migrations',
-        'update_date_on_publish' => true,
-    ],
+    'migrations' => 'migrations',
 
     'redis' => [
         'client' => env('REDIS_CLIENT', 'phpredis'),

@@ -21,6 +21,32 @@ use DateTimeImmutable;
 interface WebhookEventRepositoryContract
 {
     /**
+     * Atomically reserve a (provider, provider_event_id) slot.
+     *
+     * Returns true if we own this slot (caller proceeds with the webhook
+     * controller); false if duplicate or backend unreachable. Used by the
+     * inbound HTTP webhook dedupe middleware (Layer 3 of 3-layer dedupe)
+     * as the DB fallback when Redis SETEX is unavailable.
+     *
+     * Doctrine:
+     *   - MUST NOT throw. Failure is reported via false; the contract
+     *     layer catches Throwable internally.
+     *   - Atomic at the DB layer (INSERT ... ON CONFLICT DO NOTHING).
+     *   - The `webhook_events` table has `UNIQUE (provider_code, provider_event_id)`
+     *     per the V1 schema; the ON CONFLICT clause uses those columns.
+     *   - Reserves a MINIMAL placeholder row (event_type='pending', payload='{}').
+     *     The full webhook controller will call `record()` AFTER signature
+     *     verification to populate the row with real data. The reserve-then-record
+     *     pattern means record() always succeeds (the UNIQUE was already
+     *     checked at reserve time).
+     */
+    public function reserve(
+        PaymentProvider $provider,
+        string $providerEventId,
+        int $ttlSeconds,
+    ): bool;
+
+    /**
      * Find a webhook event by its provider-side identifier.
      *
      * @return array<string, mixed>|null

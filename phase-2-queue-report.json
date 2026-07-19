@@ -1,0 +1,135 @@
+{
+    "branch": "main",
+    "ran_at": "2026-07-19T00:21:36+05:30",
+    "phase": "2 \u2014 Queue configuration",
+    "total": 16,
+    "passed": 16,
+    "failed": 0,
+    "probes": [
+        {
+            "id": "q01",
+            "name": "QueueConnectorContract resolves to LaravelQueueConnector",
+            "status": "pass",
+            "concrete": "App\\Queue\\Infrastructure\\LaravelQueueConnector",
+            "elapsed_ms": 4.35,
+            "at": "2026-07-19T00:21:36+05:30"
+        },
+        {
+            "id": "q02",
+            "name": "queue.default driver valid",
+            "status": "pass",
+            "driver": "redis",
+            "elapsed_ms": 0.1,
+            "at": "2026-07-19T00:21:36+05:30"
+        },
+        {
+            "id": "q03",
+            "name": "redis.queue connection configured (DB 2)",
+            "status": "pass",
+            "redis_queue_db": 2,
+            "elapsed_ms": 0.02,
+            "at": "2026-07-19T00:21:36+05:30"
+        },
+        {
+            "id": "q04",
+            "name": "table `failed_jobs` exists in postgres",
+            "status": "pass",
+            "table": "failed_jobs",
+            "present": true,
+            "elapsed_ms": 2539.28,
+            "at": "2026-07-19T00:21:39+05:30"
+        },
+        {
+            "id": "q05",
+            "name": "table `job_batches` exists in postgres",
+            "status": "pass",
+            "table": "job_batches",
+            "present": true,
+            "elapsed_ms": 205.58,
+            "at": "2026-07-19T00:21:39+05:30"
+        },
+        {
+            "id": "q06",
+            "name": "table `jobs` exists in postgres",
+            "status": "pass",
+            "table": "jobs",
+            "present": true,
+            "elapsed_ms": 202.9,
+            "at": "2026-07-19T00:21:39+05:30"
+        },
+        {
+            "id": "q07",
+            "name": "ping() returns bool, never throws",
+            "status": "pass",
+            "elapsed_ms": 23.03,
+            "at": "2026-07-19T00:21:39+05:30"
+        },
+        {
+            "id": "q08",
+            "name": "size() returns int",
+            "status": "pass",
+            "elapsed_ms": 0.23,
+            "at": "2026-07-19T00:21:39+05:30"
+        },
+        {
+            "id": "q09",
+            "name": "driver() returns string",
+            "status": "pass",
+            "driver": "redis",
+            "elapsed_ms": 0.01,
+            "at": "2026-07-19T00:21:39+05:30"
+        },
+        {
+            "id": "q10",
+            "name": "config(queue.general.tries) === 3",
+            "status": "pass",
+            "general_tries": 3,
+            "elapsed_ms": 0.01,
+            "at": "2026-07-19T00:21:39+05:30"
+        },
+        {
+            "id": "q11",
+            "name": "config(queue.financial.tries) === 1",
+            "status": "pass",
+            "financial_tries": 1,
+            "elapsed_ms": 0,
+            "at": "2026-07-19T00:21:39+05:30"
+        },
+        {
+            "id": "q12",
+            "name": "config(queue.prune.failed_after_hours) === 720",
+            "status": "pass",
+            "prune_hours": 720,
+            "elapsed_ms": 0,
+            "at": "2026-07-19T00:21:39+05:30"
+        },
+        {
+            "id": "q13",
+            "name": "AbstractQueuedJob defaults (tries=3, backoff=[10,60,300])",
+            "status": "pass",
+            "elapsed_ms": 4.69,
+            "at": "2026-07-19T00:21:39+05:30"
+        },
+        {
+            "id": "q14",
+            "name": "QueueServiceProvider registered in config/app.php",
+            "status": "pass",
+            "elapsed_ms": 0.58,
+            "at": "2026-07-19T00:21:39+05:30"
+        },
+        {
+            "id": "q15",
+            "name": "QueuedJob::financial() = tries=1, backoff=[0]",
+            "status": "pass",
+            "elapsed_ms": 0.67,
+            "at": "2026-07-19T00:21:39+05:30"
+        },
+        {
+            "id": "q16",
+            "name": "QueuedJob::create() = tries=3, backoff=[10,60,300]",
+            "status": "pass",
+            "elapsed_ms": 0,
+            "at": "2026-07-19T00:21:39+05:30"
+        }
+    ]
+}

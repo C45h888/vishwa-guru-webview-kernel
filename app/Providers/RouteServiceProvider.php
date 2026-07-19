@@ -36,6 +36,23 @@ class RouteServiceProvider extends ServiceProvider
             Route::middleware('api')
                 ->prefix('api/v1')
                 ->group(base_path('routes/runtime.php'));
+
+            // Donation flow (Phase 3 endpoints land here). The
+            // `idempotency` middleware applies the SETEX dedupe path to
+            // all mutating verbs. GETs bypass naturally. Doctrine:
+            // HTTP and async are separate concerns; one stuck middleware
+            // does not take down donation intake.
+            Route::middleware(['api', 'idempotency'])
+                ->prefix('api/v1')
+                ->group(base_path('routes/donation.php'));
+
+            // Webhook flow (Phase 3 webhook controllers land here).
+            // The `webhook-dedupe` middleware applies the SETEX dedupe
+            // path BEFORE signature verification. Doctrine: cheaper
+            // check first; expensive HMAC second.
+            Route::middleware(['api', 'webhook-dedupe'])
+                ->prefix('api/v1/webhooks')
+                ->group(base_path('routes/webhook.php'));
         });
     }
 }

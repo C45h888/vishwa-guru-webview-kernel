@@ -32,6 +32,14 @@ return new class extends Migration
      */
     public function up(): void
     {
+        // Connection-aware: this migration ONLY runs on sqlite.
+        // Postgres uses the sibling migration `2026_07_16_000001_*`
+        // which loads V1-schema.sql via DB::unprepared. Running this
+        // against postgres would attempt to recreate tables that the
+        // postgres migration is authoritative for.
+        if (\Illuminate\Support\Facades\DB::connection()->getDriverName() !== 'sqlite') {
+            return;
+        }
         // ── currencies ────────────────────────────────────────────────────
         Schema::create('currencies', function (Blueprint $table) {
             $table->string('code', 3)->primary();
@@ -382,6 +390,35 @@ return new class extends Migration
             $table->index('request_id', 'audit_events_request_idx');
         });
 
+        // ── file_assets ────────────────────────────────────────────────────
+        // Phase 1 closure: the FileAssetRepository concrete impl needs this
+        // table in the SQLite test schema. Mirrors schema-neon/V1-schema.sql
+        // §11 with SQLite type rewrites (BOOLEAN → INTEGER, TIMESTAMPTZ → TEXT,
+        // JSONB → TEXT, ENUM file_owner_type → TEXT).
+        Schema::create('file_assets', function (Blueprint $table) {
+            $table->string('id', 26)->primary();
+            $table->string('owner_type', 32);                  // SQLite stores enum as TEXT
+            $table->string('owner_id', 26);
+            $table->string('original_filename');
+            $table->string('storage_disk', 64);
+            $table->string('storage_path');
+            $table->string('mime_type', 128);
+            $table->bigInteger('file_size_bytes')->unsigned();
+            $table->string('file_hash_sha256', 64);
+            $table->string('purpose')->nullable();
+            $table->boolean('is_public')->default(false);
+            $table->boolean('is_archived')->default(false);
+            $table->timestamp('archived_at')->nullable();
+            $table->text('metadata')->nullable();             // JSONB → TEXT
+            $table->timestamp('uploaded_at')->nullable();
+            $table->timestamps();
+            $table->timestamp('deleted_at')->nullable();
+            $table->string('uploaded_by')->nullable();
+
+            $table->index(['owner_type', 'owner_id'], 'file_assets_owner_idx');
+            $table->index('file_hash_sha256', 'file_assets_hash_idx');
+        });
+
         // ── FK constraints (deferred as SQLite inline references) ─────────
         // SQLite requires FKs to reference existing tables, so we add them
         // after all tables are created.
@@ -456,6 +493,7 @@ return new class extends Migration
     {
         // In tests we only use SQLite; in production we use Postgres.
         // Clean up in reverse dependency order.
+        Schema::dropIfExists('file_assets');
         Schema::dropIfExists('webhook_events');
         Schema::dropIfExists('idempotency_keys');
         Schema::dropIfExists('audit_events');

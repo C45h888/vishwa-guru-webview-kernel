@@ -200,8 +200,16 @@ final class EnvValidator
             'DB_HOST' => false,
             'CACHE_STORE' => true,
             'QUEUE_CONNECTION' => true,
-            'REDIS_HOST' => true,     // OR REDIS_URL
+            'REDIS_HOST' => true,     // OR REDIS_URL — either satisfies the connect block
             'REDIS_URL' => false,
+            'REDIS_PORT' => true,
+            'REDIS_CLIENT' => true,   // phpredis (extension) or predis (Composer)
+            'REDIS_PREFIX' => true,   // prevents key collisions in shared Redis instances
+            'REDIS_DB' => true,       // logical DB 0 = app; 1=cache, 2=queue, 3=session are also configured
+            'REDIS_PASSWORD' => true,  // required for production (managed Redis always has auth)
+            'REDIS_CACHE_DB' => true,
+            'REDIS_QUEUE_DB' => true,
+            'REDIS_SESSION_DB' => true,
             'NEON_BRANCH' => true,
             'NEON_ROLE' => true,
             'RAZORPAY_KEY_ID' => true,

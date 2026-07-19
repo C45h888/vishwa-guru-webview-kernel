@@ -19,6 +19,8 @@
 #   Postgres:  localhost:5432, db=temple_trust, user=temple_trust
 #   Redis:     localhost:6379, password=dev (AOF on, durable across restarts)
 #   PHP app:   localhost:8000
+#   Worker:    no exposed port — runs `php artisan queue:work redis`
+#              continuously; logs to docker compose logs -f worker
 #
 # =====================================================================
 
@@ -104,6 +106,69 @@ services:
       sh -c "composer install --no-interaction --prefer-dist &&
              php artisan migrate --force &&
              php artisan serve --host=0.0.0.0 --port=8000"
+
+  # ── Queue worker (Phase 2 — separate container, doctrine-aligned) ─────
+  # Doctrine: HTTP and async are separate concerns. One stuck worker
+  # does NOT take down donation intake — donors can still POST /donate
+  # while the worker is recovering. This service runs
+  # `php artisan queue:work redis` continuously, processing jobs dispatched
+  # by the app service. Per-job retry policy is enforced by each job's
+  # $tries/$backoff properties (see AbstractQueuedJob); these CLI flags
+  # are the worker-level fallback.
+  #
+  # CLI flag semantics (Laravel queue:work):
+  #   --tries=N         default attempts per job (overridden by AbstractQueuedJob::$tries)
+  #   --backoff=N,N,N  seconds between retries (overridden by AbstractQueuedJob::$backoff)
+  #   --max-time=N      hard upper bound on a single job's runtime
+  #   --sleep=N         idle sleep when queue is empty (default 3)
+  #   --timeout=N       PHP time_limit passed to each job (default 60)
+  #
+  # The env vars below mirror .env.example so ops can tune without rebuilding.
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: temple-trust-worker
+    restart: unless-stopped
+    working_dir: /app
+    volumes:
+      - .:/app
+    environment:
+      # Database connection — same as app container.
+      DB_CONNECTION: pgsql
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_DATABASE: ${DB_DATABASE:-temple_trust}
+      DB_USERNAME: ${DB_USERNAME:-temple_trust}
+      DB_PASSWORD: ${DB_PASSWORD:-dev}
+      # Redis connection — same as app container.
+      REDIS_HOST: redis
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-dev}
+      REDIS_PORT: 6379
+      # Queue driver.
+      QUEUE_CONNECTION: redis
+      # Worker tuning knobs (mirrors .env.example).
+      QUEUE_GENERAL_TRIES: ${QUEUE_GENERAL_TRIES:-3}
+      QUEUE_GENERAL_BACKOFF: ${QUEUE_GENERAL_BACKOFF:-10,60,300}
+      QUEUE_FINANCIAL_TRIES: ${QUEUE_FINANCIAL_TRIES:-1}
+      QUEUE_FINANCIAL_BACKOFF: ${QUEUE_FINANCIAL_BACKOFF:-0}
+      QUEUE_WORKER_MAX_TIME: ${QUEUE_WORKER_MAX_TIME:-3600}
+      QUEUE_WORKER_SLEEP: ${QUEUE_WORKER_SLEEP:-3}
+      QUEUE_WORKER_TIMEOUT: ${QUEUE_WORKER_TIMEOUT:-60}
+      QUEUE_FAILED_RETENTION_HOURS: ${QUEUE_FAILED_RETENTION_HOURS:-720}
+    depends_on:
+      redis:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    command: >
+      sh -c "composer install --no-interaction --prefer-dist && exec php artisan queue:work redis
+        --tries=$$QUEUE_GENERAL_TRIES
+        --backoff=$$QUEUE_GENERAL_BACKOFF
+        --max-time=$$QUEUE_WORKER_MAX_TIME
+        --sleep=$$QUEUE_WORKER_SLEEP
+        --timeout=$$QUEUE_WORKER_TIMEOUT
+        --verbose"
 
 volumes:
   redis-data:

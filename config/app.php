@@ -45,6 +45,10 @@ return [
         App\Providers\AppServiceProvider::class,
         App\Providers\RouteServiceProvider::class,
         App\Shared\Providers\SharedServiceProvider::class,
+        App\Persistence\Providers\PersistenceServiceProvider::class,
+        App\Runtime\Providers\RuntimeServiceProvider::class,
+        App\Redis\Providers\RedisServiceProvider::class,
+        App\Queue\Providers\QueueServiceProvider::class,
         App\Payments\Providers\PaymentsServiceProvider::class,
     ])->toArray(),
 

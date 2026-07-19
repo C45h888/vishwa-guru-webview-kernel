@@ -17,3 +17,4 @@ Homestead.json
 .DS_Store
 Thumbs.db
 /.phpunit.cache/
+.env.local

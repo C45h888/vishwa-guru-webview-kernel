@@ -140,4 +140,64 @@ final class WebhookEventRepositoryTest extends InfrastructureTestCase
         $this->assertSame('failed', $found['processing_status']);
         $this->assertSame('Signature mismatch', $found['processing_error']);
     }
+
+    public function testReserveReturnsTrueForNewEventId(): void
+    {
+        // Atomic reserve — first call on a new (provider, provider_event_id)
+        // returns true. Inserts a minimal placeholder row.
+        $reserved = $this->repo->reserve(
+            provider: PaymentProvider::Razorpay,
+            providerEventId: 'evt_reserve_001',
+            ttlSeconds: 604800, // 7d, matches IDEMPOTENCY_TTL_WEBHOOK
+        );
+
+        $this->assertTrue(
+            $reserved,
+            'reserve() must return true on a fresh (provider, provider_event_id)',
+        );
+    }
+
+    public function testReserveReturnsFalseForDuplicateEventId(): void
+    {
+        // First reserve succeeds.
+        $first = $this->repo->reserve(
+            provider: PaymentProvider::Razorpay,
+            providerEventId: 'evt_reserve_002',
+            ttlSeconds: 604800,
+        );
+        $this->assertTrue($first);
+
+        // Second reserve of the SAME (provider, provider_event_id) returns false.
+        // Doctrine: ON CONFLICT DO NOTHING — atomic, no race window.
+        $second = $this->repo->reserve(
+            provider: PaymentProvider::Razorpay,
+            providerEventId: 'evt_reserve_002',
+            ttlSeconds: 604800,
+        );
+
+        $this->assertFalse(
+            $second,
+            'reserve() must return false on duplicate (provider, provider_event_id)',
+        );
+    }
+
+    public function testReserveIsScopedByProviderSoRazorpayAndPaypalStayDistinct(): void
+    {
+        // Doctrine: same provider_event_id under different providers
+        // is NOT a duplicate. (provider_code, provider_event_id) is
+        // the UNIQUE target on webhook_events.
+        $razorpay = $this->repo->reserve(
+            provider: PaymentProvider::Razorpay,
+            providerEventId: 'evt_shared',
+            ttlSeconds: 604800,
+        );
+        $paypal = $this->repo->reserve(
+            provider: PaymentProvider::PayPal,
+            providerEventId: 'evt_shared',
+            ttlSeconds: 604800,
+        );
+
+        $this->assertTrue($razorpay, 'Razorpay reserve must succeed');
+        $this->assertTrue($paypal, 'PayPal reserve with same event_id must succeed — scoped by provider');
+    }
 }

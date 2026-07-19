@@ -149,6 +149,87 @@ Vendor-specific concerns for Neon. The generic `PersistenceAdapterContract` stay
 
 ---
 
+# HTTP Idempotency-Key Middleware — `app/Http/Middleware/` (Phase 2 — Inbound dedupe Layer 1 of 3)
+
+Inbound HTTP-layer dedupe (Layer 1 of 3-layer dedupe). The `Idempotency-Key` header is read on mutating HTTP requests; duplicate requests within the TTL window return the cached response.
+
+Doctrine:
+- Redis SETEX is the speedup (`IdempotencyMiddleware::reserveKey()`).
+- DB UNIQUE constraint on `idempotency_keys.(key, scope)` is the source of truth (`IdempotencyKeyRepository::reserve()`).
+- Never throws on Redis-down — falls through to the DB atomic reserve.
+- Caches 2xx/4xx responses. 5xx NOT cached (retryable).
+
+## Middleware — `app/Http/Middleware/`
+
+| File | Purpose |
+|---|---|
+| `IdempotencyMiddleware.php` | Reads `Idempotency-Key` header, checks Redis SETEX, falls back to DB atomic reserve, captures non-5xx responses. Doctrine: fail-open. First custom HTTP middleware in the codebase; pattern template for future middleware. |
+
+## Configuration — `config/idempotency.php`
+
+Defines header name, key prefix, default TTL (24h donation / 7d webhook), scope map (donation/webhook/generic URL prefix → scope), and the kill-switch. All values env-driven via `IDEMPOTENCY_KEY_HEADER`, `IDEMPOTENCY_TTL_DONATION`, `IDEMPOTENCY_TTL_WEBHOOK`.
+
+## Route registration — `routes/donation.php` + `RouteServiceProvider`
+
+`RouteServiceProvider::boot()` registers a new route group: `Route::middleware(['api', 'idempotency'])->prefix('api/v1')->group(base_path('routes/donation.php'))`. The `routes/donation.php` file is a Phase 3 placeholder (closure returns 501) — Phase 3 (public site) replaces the closure with the real `DonationController`. The route group + middleware stay stable.
+
+## Tests — `tests/Feature/Http/Middleware/IdempotencyMiddlewareTest.php`
+
+5 tests covering: GET pass-through, cached response on duplicate, missing header pass-through, Redis-down DB fallback, 5xx NOT cached. Uses Mockery to fake `RedisConnectorContract` (no real Redis in default test env) and `RefreshDatabase` for the SQLite `idempotency_keys` table.
+
+## Kernel — `app/Http/Kernel.php`
+
+Added `'idempotency' => IdempotencyMiddleware::class` to `$middlewareAliases`. The first custom alias added to Kernel; the existing `auth` and `throttle` aliases are unchanged.
+
+## Probes — `scripts/phase-2-http-probes.php`
+
+5 probes (http01-http05) verify: middleware alias registration, `IDEMPOTENCY_KEY_HEADER` env presence, `config('idempotency.header')` default, `config('idempotency.default_ttl')` value, and the donation route file's idempotency middleware application. Operator runs: `php scripts/phase-2-http-probes.php`.
+
+---
+
+# Webhook Dedupe Middleware — `app/Http/Middleware/` (Phase 2 — Inbound webhook dedupe Layer 3 of 3)
+
+Inbound webhook-layer dedupe (Layer 3 of 3-layer dedupe). The middleware reads the gateway-specific event ID header (Razorpay `X-Razorpay-Event-Id`, PayPal `PAYPAL-TRANSMISSION-ID`) and applies the SETEX dedupe path BEFORE signature verification. Doctrine: cheaper check first; expensive HMAC second.
+
+Doctrine:
+- Redis SETEX is the speedup (`WebhookDedupeMiddleware::reserveKey()`).
+- `WebhookEventRepository::reserve()` (added in Phase 0) is the atomic primitive (INSERT ... ON CONFLICT DO NOTHING).
+- The `webhook_events` table has `UNIQUE (provider_code, provider_event_id)` — that's the source of truth.
+- Never throws on Redis-down — falls through to DB atomic reserve.
+- Caches 2xx/4xx responses. 5xx NOT cached (webhook gateways auto-retry on 5xx; caching prevents retry).
+
+## Middleware — `app/Http/Middleware/`
+
+| File | Purpose |
+|---|---|
+| `WebhookDedupeMiddleware.php` | Second custom HTTP middleware. Reads gateway event ID header, checks Redis SETEX, falls back to `WebhookEventRepository::reserve()`, captures non-5xx responses. Doctrine: dedupe runs BEFORE signature verification. |
+
+## Configuration — `config/webhook.php`
+
+Defines key prefix (`idem:webhook:`), default TTL (7d = 604800s), per-provider header mapping (Razorpay `X-Razorpay-Event-Id`, PayPal `PAYPAL-TRANSMISSION-ID`), per-provider path mapping. All values env-driven.
+
+## Route registration — `routes/webhook.php` + `RouteServiceProvider`
+
+`RouteServiceProvider::boot()` registers a 6th route group: `Route::middleware(['api', 'webhook-dedupe'])->prefix('api/v1/webhooks')->group(base_path('routes/webhook.php'))`. The `routes/webhook.php` file is a Phase 3 placeholder (closure returns 501) — Phase 3 (public site) replaces the closure with the real `RazorpayWebhookController` + `PayPalWebhookController`. The route group + middleware stay stable.
+
+## Tests — `tests/Feature/Http/Middleware/WebhookDedupeMiddlewareTest.php`
+
+5 tests covering: unknown URL pass-through, cached response on duplicate, missing event ID header, Redis-down DB fallback, 5xx NOT cached. Uses Mockery to fake `RedisConnectorContract` (no real Redis in default test env) and `RefreshDatabase` for the SQLite `webhook_events` table.
+
+## Kernel — `app/Http/Kernel.php`
+
+Added `'webhook-dedupe' => WebhookDedupeMiddleware::class` to `$middlewareAliases`. The `idempotency` alias (Layer 1) is unchanged.
+
+## Probes — `scripts/phase-2-webhook-probes.php`
+
+5 probes (wh01-wh05) verify: middleware alias registration, `config('webhook.default_ttl')` default, `routes/webhook.php` route file + middleware application, per-provider header mapping. Operator runs: `php scripts/phase-2-webhook-probes.php`.
+
+## Repository additions — `WebhookEventRepository::reserve()`
+
+Added in Phase 0 of this spec. Atomic INSERT ... ON CONFLICT (provider_code, provider_event_id) DO NOTHING. Returns true on first reserve, false on duplicate, false on backend error (never throws). Doctrine: `webhook_events` UNIQUE constraint is the source of truth.
+
+---
+
 # Payments Module — `app/Payments/` (PHASE 1 COMPLETE)
 
 The Payments module's Phase 1 surface is the complete Financial Kernel
@@ -525,3 +606,88 @@ Mirrors `phase-0.5-validation-report.json`. Probes the Redis substrate at
 runtime: extension loaded, contract resolves, four DBs configured, all four
 PING succeed, Cache::put round-trip, idempotency SET NX, webhook SET NX EX,
 configured prefix, optional connect-timeout probe.
+
+
+---
+
+# Queue Module — `app/Queue/`
+
+Phase 2 introduces Laravel's queue subsystem as a runtime dependency. The
+Queue module is the domain abstraction over the queue substrate; service
+code depends on `QueueConnectorContract`, never on `Queue::` facade.
+
+Doctrine alignment: facade forbidden in domain code (same rule as
+`RedisConnectorContract` and `PersistenceAdapterContract`).
+
+## Contracts — `app/Queue/Contracts/`
+
+| File | Purpose |
+|---|---|
+| `QueueConnectorContract.php` | Single entry point: dispatch(QueuedJob), size(?queue), failedCount(), listFailed(limit), retryFailed(uuid), ping(), driver() |
+
+## Value Objects — `app/Queue/ValueObjects/`
+
+| File | Purpose |
+|---|---|
+| `QueuedJob.php` | Typed payload VO with job class, payload array, queue, tries, backoff. Two factories: `create()` (general, tries=3) and `financial()` (fail-fast, tries=1). |
+
+## Infrastructure — `app/Queue/Infrastructure/`
+
+| File | Purpose |
+|---|---|
+| `LaravelQueueConnector.php` | The canonical `QueueConnectorContract` impl. Wraps `Illuminate\Contracts\Queue\Factory`. `ping()` and `size()` swallow Throwable (doctrine fail-open for queue paths). |
+
+## Console — `app/Queue/Console/Commands/`
+
+| File | Command | Purpose |
+|---|---|---|
+| `QueueStatsCommand.php` | `php artisan temple:queue:stats` | Prints driver, reachability, depth, failed count, recent failed jobs. |
+
+## Jobs — `app/Jobs/`
+
+| File | Purpose |
+|---|---|
+| `AbstractQueuedJob.php` | Base class. Sets doctrine defaults: $tries=3, $backoff=[10,60,300]. Financial jobs override. |
+| `Templates/HealthCheckQueuedJob.php` | Example/template job. Demonstrates the pattern every domain job follows. |
+
+## Provider — `app/Queue/Providers/`
+
+| File | Bindings |
+|---|---|
+| `QueueServiceProvider.php` | `QueueConnectorContract → LaravelQueueConnector` (singleton). Registers `QueueStatsCommand`. Registered in `bootstrap/providers.php` + `config/app.php` after `RedisServiceProvider`. |
+
+## Configuration — `config/queue.php`
+
+| Block | Purpose | Default |
+|---|---|---|
+| `general` | General-purpose job retry policy | tries=3, backoff=[10,60,300], max_time=3600, sleep=3, timeout=60 |
+| `financial` | Financial-path retry policy (fail-fast) | tries=1, backoff=[0] |
+| `prune` | Failed-job retention | failed_after_hours=720 (30 days) |
+
+All env-driven via `QUEUE_GENERAL_TRIES`, `QUEUE_GENERAL_BACKOFF`, etc.
+
+## Database — Neon production
+
+Tables live on Neon production (verified by `scripts/phase-2-queue-probes.php`):
+
+| Table | Purpose |
+|---|---|
+| `failed_jobs` | Forensic record of jobs that exhausted retries |
+| `job_batches` | Bus::batch() metadata |
+| `jobs` | Default queue substrate (database driver; not used since QUEUE_CONNECTION=redis) |
+
+Applied via the Doctrine-correct `php artisan migrate --force` path
+against Neon production after Phase 1 fix unblocked the doctrine path.
+
+## Validation — `scripts/phase-2-queue-probes.php`
+
+Mirrors `phase-0.5-validation-report.json` and `phase-2-redis-probes.php`.
+16 probes covering:
+- QueueConnectorContract resolution
+- Queue driver validation (redis|sync|database|...)
+- Redis DB 2 connection (queue)
+- failed_jobs / jobs / job_batches table presence
+- Connector API safety (no-throw semantics on ping/size)
+- Retry config (general.tries=3, financial.tries=1, prune=720)
+- AbstractQueuedJob defaults
+- QueuedJob factories (general + financial)

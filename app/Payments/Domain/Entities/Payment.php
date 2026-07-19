@@ -348,10 +348,23 @@ final class Payment implements EntityContract
      * Best-effort event inference for direct transitionTo calls. The
      * machine accepts only its known vocabulary, so callers should pass
      * an explicit event via the 3-arg form when ambiguous.
+     *
+     * Arm-ordering invariant: SPECIFIC (status, target) arms MUST
+     * precede GENERIC (target-only) arms. PHP match(true) returns the
+     * first true arm — a generic arm above a specific arm would mask
+     * the specific case and the SM would reject the inferred event.
+     *
+     * The grouping below is therefore:
+     *   1. Specific success arms (status, target) where target is reachable
+     *   2. Specific FAILED arms with distinct events (SETTLING, DISPUTED)
+     *   3. Generic target-only arms (catch remaining source states)
+     *   4. Specific refund/dispute arms for non-FAILED targets (post-generic
+     *      because their target is not FAILED — no risk of mask)
      */
     private function eventForTarget(TransactionStatus $target): \App\Payments\Domain\StateMachines\StateTransitionEvent
     {
         return match (true) {
+            // ── Group 1: specific (status, target) success arms ───────────
             $this->status === TransactionStatus::INITIALIZED && $target === TransactionStatus::PENDING
                 => \App\Payments\Domain\StateMachines\StateTransitionEvent::AUTH_OK,
             $this->status === TransactionStatus::PENDING && $target === TransactionStatus::AUTHORIZED
@@ -372,20 +385,36 @@ final class Payment implements EntityContract
                 => \App\Payments\Domain\StateMachines\StateTransitionEvent::REFUND_INITIATED,
             $this->status === TransactionStatus::SETTLED && $target === TransactionStatus::PARTIALLY_REFUNDED
                 => \App\Payments\Domain\StateMachines\StateTransitionEvent::PARTIAL_REFUND_INITIATED,
+
+            // ── Group 2: specific FAILED arms with distinct events ───────
+            // These MUST come BEFORE the generic `target === FAILED` arm
+            // below — the SM rejects GATEWAY_FAILED for SETTLING and DISPUTED
+            // (it requires SETTLEMENT_FAILED and DISPUTE_RESOLVED_LOST respectively).
+            $this->status === TransactionStatus::SETTLING && $target === TransactionStatus::FAILED
+                => \App\Payments\Domain\StateMachines\StateTransitionEvent::SETTLEMENT_FAILED,
+            $this->status === TransactionStatus::DISPUTED && $target === TransactionStatus::FAILED
+                => \App\Payments\Domain\StateMachines\StateTransitionEvent::DISPUTE_RESOLVED_LOST,
+
+            // ── Group 3: generic target-only arms ─────────────────────────
+            // Catch-all for any remaining source state → target transition.
+            // Specific arms in groups 1+2 above take precedence.
             $target === TransactionStatus::FAILED
                 => \App\Payments\Domain\StateMachines\StateTransitionEvent::GATEWAY_FAILED,
             $target === TransactionStatus::CANCELLED
                 => \App\Payments\Domain\StateMachines\StateTransitionEvent::CUSTOMER_CANCELLED,
             $target === TransactionStatus::EXPIRED
                 => \App\Payments\Domain\StateMachines\StateTransitionEvent::GATEWAY_TIMEOUT,
+
+            // ── Group 4: specific refund/dispute arms (non-FAILED) ────────
+            // Safe to be below the generic FAILED arm — their target is
+            // REFUNDED / DISPUTED, not FAILED, so the generic arm never matches.
             $this->status === TransactionStatus::PARTIALLY_REFUNDED && $target === TransactionStatus::REFUNDED
                 => \App\Payments\Domain\StateMachines\StateTransitionEvent::REFUND_COMPLETED,
             $this->status === TransactionStatus::DISPUTED && $target === TransactionStatus::REFUNDED
                 => \App\Payments\Domain\StateMachines\StateTransitionEvent::REFUND_INITIATED,
-            $this->status === TransactionStatus::DISPUTED && $target === TransactionStatus::FAILED
-                => \App\Payments\Domain\StateMachines\StateTransitionEvent::DISPUTE_RESOLVED_LOST,
             $target === TransactionStatus::DISPUTED
                 => \App\Payments\Domain\StateMachines\StateTransitionEvent::DISPUTE_OPENED,
+
             default => throw new PaymentStateTransitionException(
                 sprintf('No event inferred for transition %s -> %s', $this->status->value, $target->value),
                 $this->status,

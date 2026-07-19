@@ -530,3 +530,105 @@ class in the runtime tree instantiates a handler directly — handlers
 are bound by the FailureRouter and dispatched based on `FailureKind`.
 See `app/Runtime/Failure/` for the full state machine and routing
 membrane.
+
+
+---
+
+# Queue Configuration — Phase 2
+
+## Queue substrate
+
+Laravel's queue subsystem is wired against Redis DB 2 (the
+`redis.queue` connection configured in the Redis turn). Failed
+jobs and batch metadata live on Postgres (`failed_jobs`,
+`job_batches` tables).
+
+The `QUEUE_CONNECTION=redis` default is set in `config/queue.php`.
+The `phpunit.xml` override is `sync` for testing isolation.
+
+## Retry policy
+
+The retry contract is doctrine-driven and env-configurable:
+
+| Path | tries | backoff | Use case |
+|---|---|---|---|
+| General-purpose | 3 | [10, 60, 300] seconds | Notifications, audit archival, webhooks |
+| Financial | 1 | [0] | Receipts tied to verified payments, donation state transitions |
+
+Set in `config/queue.php` under `general` and `financial` blocks.
+Override at the class level in subclasses of `AbstractQueuedJob`:
+
+```php
+final class ReceiptPdfGenerationJob extends AbstractQueuedJob
+{
+    public int $tries = 1;             // financial — fail-fast
+    public array $backoff = [0];
+    public function handle(ReceiptService $receipts): void
+    {
+        $receipts->generatePdf($this->receiptId);
+    }
+}
+```
+
+Doctrine: financial correctness > convenience. A payment has been
+verified by the gateway; if the receipt job fails, retrying
+silently is worse than surfacing to ops via the `failed_jobs` table.
+
+## Domain service surface
+
+Service code depends on `QueueConnectorContract`, never on `Queue::`
+facade. Same doctrine as `RedisConnectorContract` and
+`PersistenceAdapterContract`. This keeps the queue topology in
+one place and makes tests substitute a fake without booting a worker.
+
+```php
+final class PaymentService
+{
+    public function __construct(
+        private readonly QueueConnectorContract $queue,
+        ...
+    ) {}
+
+    public function complete(DonationId $id): void
+    {
+        // ... synchronous payment verification ...
+        $job = QueuedJob::financial(
+            jobClass: ReceiptPdfGenerationJob::class,
+            payload: ['donationId' => $id->value()],
+            queue: 'receipts',
+        );
+        $this->queue->dispatch($job);
+    }
+}
+```
+
+## Worker runtime
+
+In production: a separate container runs `php artisan queue:work redis
+--tries=3 --backoff=10,60,300 --max-time=3600 --sleep=3`. The
+doctrine: HTTP serving and async processing are different concerns.
+A stuck worker cannot take down the donation form.
+
+Failed-job retention: 30 days via `php artisan queue:prune-failed
+--hours=720`, scheduled weekly.
+
+## Failure semantics
+
+| Path | Behavior on Redis down |
+|---|---|
+| `ping()` | Returns false (never throws). Doctrine-critical for HealthProbe + fallback paths. |
+| `size(?queue)` | Returns -1 (sentinel). Never throws. |
+| `listFailed(limit)` | Returns []. Never throws. |
+| `retryFailed(uuid)` | Returns false. Never throws. |
+| `dispatch(job)` | **Throws**. Doctrine-critical: caller MUST know the job didn't enqueue. |
+
+Doctrine: payments must surface failure, not hang. Cache and queue
+paths fail-open; payment paths fail-closed.
+
+## Health and introspection
+
+| Surface | Purpose |
+|---|---|
+| `php artisan temple:queue:stats` | On-demand ops view: driver, depth, failed count, recent failures |
+| `php artisan temple:runtime` | Auto probe includes queue health via QueueHealthProbe |
+| `GET /health` | Returns queue subsystem status in JSON |

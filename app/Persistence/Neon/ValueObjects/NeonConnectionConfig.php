@@ -35,13 +35,27 @@ final class NeonConnectionConfig
 
     /**
      * Build a config from the application's ConfigurationContract.
-     * Reads DATABASE_URL (preferred) and falls back to DB_HOST/DB_DATABASE/
-     * DB_USERNAME env keys when the URL is absent.
+     *
+     * Reads DATABASE_URL via the `database.connections.pgsql.url` key.
+     * Laravel auto-populates this key by parsing DATABASE_URL when the
+     * env var is set. This means the config is correct for both:
+     *   - DB_CONNECTION=pgsql  (primary; uses pgsql.url)
+     *   - DB_CONNECTION=neon   (alias; also resolves to pgsql block at runtime)
+     *
+     * Falls back to discrete DB_HOST / DB_DATABASE / DB_USERNAME env keys
+     * when DATABASE_URL is absent (local Docker Postgres workflow).
+     *
+     * Role is read from NEON_ROLE env key (owner=DDL only, app=runtime).
+     * NeonConnectionConfig itself does NOT prevent DDL on the app role —
+     * that is enforced by the role grant model in Neon, not in code.
      */
     public static function fromConfig(ConfigurationContract $config): self
     {
-        $databaseUrl = $config->get('database.connections.neon.url')
-            ?? $config->get('database.connections.pgsql.url');
+        // Read DATABASE_URL from the pgsql connection block — Laravel stores
+        // the parsed URL there regardless of DB_CONNECTION=pgsql or DB_CONNECTION=neon.
+        // The 'neon' key in config is an alias; the actual connection always
+        // flows through 'pgsql' at the Laravel layer.
+        $databaseUrl = $config->get('database.connections.pgsql.url');
 
         $parsed = is_string($databaseUrl) ? parse_url($databaseUrl) : null;
 
@@ -61,21 +75,19 @@ final class NeonConnectionConfig
         }
 
         // Fallback to discrete env keys when DATABASE_URL is missing.
+        // All discrete keys are resolved via env() in config/database.php against
+        // the pgsql block, so we read from pgsql.* for fallbacks.
         if ($host === null) {
-            $host = $config->get('database.connections.neon.host')
-                ?? $config->get('database.connections.pgsql.host');
+            $host = $config->get('database.connections.pgsql.host');
         }
         if ($database === null) {
-            $database = $config->get('database.connections.neon.database')
-                ?? $config->get('database.connections.pgsql.database');
+            $database = $config->get('database.connections.pgsql.database');
         }
         if ($username === null) {
-            $username = $config->get('database.connections.neon.username')
-                ?? $config->get('database.connections.pgsql.username');
+            $username = $config->get('database.connections.pgsql.username');
         }
         if ($sslmode === null) {
-            $sslmode = $config->get('database.connections.neon.sslmode')
-                ?? $config->get('database.connections.pgsql.sslmode');
+            $sslmode = $config->get('database.connections.pgsql.sslmode');
         }
 
         // Connection pool detection: Neon PgBouncer sets ?pgbouncer=true

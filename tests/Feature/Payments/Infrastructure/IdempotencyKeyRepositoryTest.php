@@ -140,4 +140,40 @@ final class IdempotencyKeyRepositoryTest extends InfrastructureTestCase
         $found = $this->repo->findByKey('nonexistent_key');
         $this->assertNull($found);
     }
+
+    public function testReserveReturnsTrueForNewKey(): void
+    {
+        // Atomic reserve — first call on a new key + scope returns true.
+        $reserved = $this->repo->reserve(
+            key: 'idem_reserve_001',
+            scope: 'donation.create',
+            ttlSeconds: 86400,
+        );
+
+        $this->assertTrue($reserved, 'reserve() must return true on a fresh key+scope');
+    }
+
+    public function testReserveReturnsFalseForDuplicateKey(): void
+    {
+        // First reserve succeeds.
+        $first = $this->repo->reserve(
+            key: 'idem_reserve_002',
+            scope: 'donation.create',
+            ttlSeconds: 86400,
+        );
+        $this->assertTrue($first);
+
+        // Second reserve of the SAME key+scope returns false.
+        // Doctrine: ON CONFLICT DO NOTHING — atomic, no race window.
+        $second = $this->repo->reserve(
+            key: 'idem_reserve_002',
+            scope: 'donation.create',
+            ttlSeconds: 86400,
+        );
+
+        $this->assertFalse(
+            $second,
+            'reserve() must return false on duplicate key+scope (ON CONFLICT DO NOTHING)',
+        );
+    }
 }

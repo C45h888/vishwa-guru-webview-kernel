@@ -270,9 +270,26 @@ final class Donation implements EntityContract
         return self::fromRow($row);
     }
 
+    /**
+     * Best-effort event inference for direct transitionTo calls.
+     *
+     * Arm-ordering invariant: SPECIFIC (state, target) arms MUST precede
+     * GENERIC (target-only) arms. PHP match(true) returns the first true
+     * arm — a generic arm above a specific arm would mask the specific
+     * case and the SM would reject the inferred event.
+     *
+     * The grouping below is therefore:
+     *   1. Specific success arms (state, target)
+     *   2. Specific FAILED arms with distinct events (PAYMENT_VERIFIED,
+     *      RECEIPT_GENERATED) — these MUST come BEFORE the generic
+     *      `target === FAILED` arm below
+     *   3. Generic target-only arms (catches DRAFT, PENDING_PAYMENT → FAILED,
+     *      and CANCELLED)
+     */
     private function eventForTarget(DonationState $target): StateTransitionEvent
     {
         return match (true) {
+            // ── Group 1: specific success arms ───────────────────────────────
             $this->state === DonationState::DRAFT && $target === DonationState::PENDING_PAYMENT
                 => StateTransitionEvent::SUBMITTED,
             $this->state === DonationState::PENDING_PAYMENT && $target === DonationState::PAYMENT_VERIFIED
@@ -281,10 +298,22 @@ final class Donation implements EntityContract
                 => StateTransitionEvent::RECEIPT_ISSUED,
             $this->state === DonationState::RECEIPT_GENERATED && $target === DonationState::COMPLETED
                 => StateTransitionEvent::COMPLETED,
+
+            // ── Group 2: specific FAILED arms with distinct events ────────
+            // The SM requires RECEIPT_FAILED for PAYMENT_VERIFIED→FAILED and
+            // POST_COMMIT_FAIL for RECEIPT_GENERATED→FAILED. The generic
+            // GATEWAY_FAILED arm below only catches DRAFT/PENDING_PAYMENT→FAILED.
+            $this->state === DonationState::PAYMENT_VERIFIED && $target === DonationState::FAILED
+                => StateTransitionEvent::RECEIPT_FAILED,
+            $this->state === DonationState::RECEIPT_GENERATED && $target === DonationState::FAILED
+                => StateTransitionEvent::POST_COMMIT_FAIL,
+
+            // ── Group 3: generic target-only arms ─────────────────────────
             $target === DonationState::FAILED
                 => StateTransitionEvent::GATEWAY_FAILED,
             $target === DonationState::CANCELLED
                 => StateTransitionEvent::CUSTOMER_CANCELLED,
+
             default => throw new PaymentStateTransitionException(
                 sprintf('No event inferred for donation transition %s -> %s', $this->state->value, $target->value),
                 DonationStateMachine::mapToTransactionStatus($this->state),
