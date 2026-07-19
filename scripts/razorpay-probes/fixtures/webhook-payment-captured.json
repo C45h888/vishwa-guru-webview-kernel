@@ -1,0 +1,48 @@
+{
+  "entity": "event",
+  "account_id": "acc_BWoXhV7QXocKl9",
+  "event": "payment.captured",
+  "contains": ["payment", "order"],
+  "payload": {
+    "payment": {
+      "entity": {
+        "id": "__PAYMENT_ID__",
+        "entity": "payment",
+        "amount": __AMOUNT__,
+        "currency": "INR",
+        "status": "captured",
+        "order_id": "__ORDER_ID__",
+        "method": "card",
+        "description": "Test donation",
+        "card_id": null,
+        "bank": null,
+        "wallet": null,
+        "vpa": null,
+        "email": "donor@example.in",
+        "contact": "+919999999999",
+        "notes": { "donation_id": "__DONATION_ID__" },
+        "fee": 1180,
+        "tax": 180,
+        "error_code": null,
+        "error_description": null,
+        "created_at": __CREATED_AT__
+      }
+    },
+    "order": {
+      "entity": {
+        "id": "__ORDER_ID__",
+        "entity": "order",
+        "amount": __AMOUNT__,
+        "amount_paid": __AMOUNT__,
+        "amount_due": 0,
+        "currency": "INR",
+        "receipt": "__RECEIPT__",
+        "status": "paid",
+        "attempts": 1,
+        "notes": { "donation_id": "__DONATION_ID__" },
+        "created_at": __CREATED_AT__
+      }
+    }
+  },
+  "created_at": __CREATED_AT__
+}

@@ -1,0 +1,3 @@
+# Razorpay test-mode sample payment ID. If 404s, fetch a fresh one
+# from https://dashboard.razorpay.com/app/payments (Test Mode) and replace.
+pay_EXAMPLEDONOTUSE

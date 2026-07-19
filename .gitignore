@@ -18,3 +18,5 @@ Homestead.json
 Thumbs.db
 /.phpunit.cache/
 .env.local
+.env.testing
+.env.testing.*.local
