@@ -15,6 +15,7 @@ use App\Shared\ValueObjects\Identifier as IdentifierVO;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
 use ReflectionProperty;
+use stdClass;
 
 class RazorpayAdapterTest extends TestCase
 {
@@ -45,59 +46,65 @@ class RazorpayAdapterTest extends TestCase
         $apiProp = $reflection->getProperty('api');
         $apiProp->setAccessible(true);
 
-        // Create a minimal mock API that returns recorded responses
+        // Create a minimal mock API that returns recorded responses.
+        // PHP 8.3 does not allow `new class` inside property initializers
+        // (that's a PHP 8.4 feature), so order/payment are constructed
+        // inside the constructor below.
         $mockApi = new class($recordedResponse) {
+            /** @var array<string, mixed> */
             private array $responses;
-            private int $callIndex = 0;
+
+            public object $order;
+            public object $payment;
 
             public function __construct(array $responses)
             {
                 $this->responses = $responses;
+
+                $this->order = new class {
+                    public function create(array $payload = []): object
+                    {
+                        return (object) [
+                            'id' => 'order_mock_' . uniqid(),
+                            'amount' => $payload['amount'] ?? 10000,
+                            'currency' => $payload['currency'] ?? 'INR',
+                            'status' => 'created',
+                            'receipt' => $payload['receipt'] ?? null,
+                        ];
+                    }
+
+                    public function fetch(string $orderId): object
+                    {
+                        return (object) [
+                            'id' => $orderId,
+                            'amount' => 10000,
+                            'currency' => 'INR',
+                            'status' => 'captured',
+                        ];
+                    }
+                };
+
+                $this->payment = new class {
+                    public function fetch(string $paymentId): object
+                    {
+                        return (object) [
+                            'id' => $paymentId,
+                            'amount' => 10000,
+                            'currency' => 'INR',
+                            'status' => 'captured',
+                        ];
+                    }
+
+                    public function refund(array $body = []): object
+                    {
+                        return (object) [
+                            'id' => 're_' . uniqid(),
+                            'status' => 'processed',
+                            'amount' => $body['amount'] ?? 10000,
+                        ];
+                    }
+                };
             }
-
-            public function order = new class {
-                public function create(array $payload = []): object
-                {
-                    return (object) [
-                        'id' => 'order_mock_' . uniqid(),
-                        'amount' => $payload['amount'] ?? 10000,
-                        'currency' => $payload['currency'] ?? 'INR',
-                        'status' => 'created',
-                        'receipt' => $payload['receipt'] ?? null,
-                    ];
-                }
-
-                public function fetch(string $orderId): object
-                {
-                    return (object) [
-                        'id' => $orderId,
-                        'amount' => 10000,
-                        'currency' => 'INR',
-                        'status' => 'captured',
-                    ];
-                }
-            };
-
-            public function payment = new class {
-                public function fetch(string $paymentId): object
-                {
-                    return (object) [
-                        'id' => $paymentId,
-                        'amount' => 10000,
-                        'currency' => 'INR',
-                        'status' => 'captured',
-                    ];
-                }
-
-                public function refund(array $body = []): object
-                {
-                    return (object) [
-                        'id' => 're_' . uniqid(),
-                        'status' => 'processed',
-                        'amount' => $body['amount'] ?? 10000,
-                    ];
-                }
-            };
         };
 
         $apiProp->setValue($client, $mockApi);
@@ -302,5 +309,77 @@ class RazorpayAdapterTest extends TestCase
 
         $this->assertTrue($result->isOk());
         $this->assertSame(TransactionStatus::AUTHORIZED, $result->value());
+    }
+
+    // ─── C4: real-SDK payload shape assertions (Razorpay /v1/orders) ────
+
+    public function testCapturedCreateOrderPayloadMatchesRazorpaySchema(): void
+    {
+        // We capture the payload by holding a reference to the order mock
+        // outside the closure. The mock exposes a public array property
+        // that the create() method appends into.
+        $mockOrder = new class {
+            /** @var array<int, array<string, mixed>> */
+            public array $captured = [];
+
+            public function create(array $payload = []): object
+            {
+                $this->captured[] = $payload;
+
+                return (object) [
+                    'id' => 'order_shape_' . uniqid(),
+                    'amount' => $payload['amount'] ?? 0,
+                    'currency' => $payload['currency'] ?? 'INR',
+                    'status' => 'created',
+                    'receipt' => $payload['receipt'] ?? null,
+                    'notes' => $payload['notes'] ?? null,
+                ];
+            }
+        };
+
+        $reflection = new ReflectionClass($this->client);
+        $apiProp = $reflection->getProperty('api');
+        $apiProp->setAccessible(true);
+
+        $mockApi = new stdClass();
+        $mockApi->order = $mockOrder;
+        $apiProp->setValue($this->client, $mockApi);
+
+        $request = new PaymentRequest(
+            donorIdentifier: new IdentifierVO('don_shape_1'),
+            amount: 50000,
+            currency: Currency::INR,
+            purpose: 'General Donation',
+            metadata: [
+                'donation_id' => 'don_shape_1',
+                'campaign_id' => 'cmp_shape_1',
+            ],
+            idempotencyKey: 'idem_shape_1',
+        );
+
+        $result = $this->adapter->initialize($request);
+
+        $this->assertTrue($result->isOk(), 'initialize should succeed');
+
+        $this->assertNotEmpty(
+            $mockOrder->captured,
+            'createOrder should have been invoked with at least one payload',
+        );
+
+        $payload = $mockOrder->captured[0];
+
+        // Required Razorpay /v1/orders fields with the exact shape we send
+        $this->assertSame(50000, $payload['amount'], 'amount in paise');
+        $this->assertSame('INR', $payload['currency'], 'currency code');
+        $this->assertSame('idem_shape_1', $payload['receipt'], 'receipt holds the idempotency key');
+        $this->assertArrayHasKey('notes', $payload);
+        $this->assertIsArray($payload['notes']);
+        $this->assertArrayHasKey('donation_id', $payload['notes']);
+        $this->assertSame('don_shape_1', $payload['notes']['donation_id']);
+        $this->assertArrayHasKey('purpose', $payload['notes']);
+        $this->assertSame('General Donation', $payload['notes']['purpose']);
+        // Razorpay auto-captures iff payment_capture=1; auto-capture is
+        // the canonical mode for Standard Checkout donations.
+        $this->assertSame(1, $payload['payment_capture'], 'auto-capture enabled');
     }
 }

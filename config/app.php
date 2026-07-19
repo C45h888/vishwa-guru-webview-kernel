@@ -48,7 +48,12 @@ return [
         App\Persistence\Providers\PersistenceServiceProvider::class,
         App\Runtime\Providers\RuntimeServiceProvider::class,
         App\Redis\Providers\RedisServiceProvider::class,
-        // QueueServiceProvider registered in bootstrap/providers.php (Laravel 10+).
+        // QueueServiceProvider — wires QueueConnectorContract → LaravelQueueConnector.
+        // Doctrine: service code depends on QueueConnectorContract, NEVER on
+        // Illuminate\Support\Facades\Queue. Laravel's built-in QueueServiceProvider
+        // is loaded via defaultProviders() above (provides Queue\Factory); ours
+        // adds the Queue module's typed contract on top.
+        App\Queue\Providers\QueueServiceProvider::class,
         App\Payments\Providers\PaymentsServiceProvider::class,
     ])->toArray(),
 

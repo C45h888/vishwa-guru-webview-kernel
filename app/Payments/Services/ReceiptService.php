@@ -8,7 +8,6 @@ use App\Payments\Contracts\ReceiptGenerationContract;
 use App\Payments\Domain\Entities\Receipt;
 use App\Payments\Domain\Enums\ReceiptDeliveryState;
 use App\Payments\Domain\Exceptions\PaymentVerificationFailedException;
-use App\Payments\Domain\Exceptions\ReceiptGenerationFailedException;
 use App\Payments\Domain\Repositories\DonationRepositoryContract;
 use App\Payments\Domain\Repositories\PaymentRepositoryContract;
 use App\Payments\Domain\Repositories\ReceiptRepositoryContract;
@@ -139,7 +138,10 @@ class ReceiptService
             deliveryChannel: $d->deliveryChannel(),
             deliveryAddress: $d->deliveryAddress(),
             deliveryMetadata: [],
-            metadata: [],
+            metadata: [
+                'payment_method' => $payment->method(),
+                'provider' => $payment->providerCode()->value,
+            ],
             id: EntityId::generate('receipt'),
         );
 
@@ -187,11 +189,9 @@ class ReceiptService
     }
 
     /**
-     * Centralised failure path. The receipt layer NEVER throws
-     * (ReceiptGenerationFailedException is for adapter-layer code,
-     * not service code). Instead it escalates a FailureState so
-     * operators see the receipt gap and the underlying Payment stays
-     * verified.
+     * Centralised failure path. The receipt layer NEVER throws — receipt
+     * failures are deferred, not fatal. The Payment stays verified; an
+     * operator sees the gap via FailureState + audit.
      *
      * @return Result<Receipt>
      */
@@ -219,10 +219,8 @@ class ReceiptService
             ],
         );
 
-        throw ReceiptGenerationFailedException::renderingFailed(
-            $transactionId->value(),
-            $message,
-        );
+        // @phpstan-ignore-next-line  Result<T> generic narrowing limit: failure() returns Result<null>
+        return Result::failure("receipt.{$stage}.{$errorCode}: {$message}");
     }
 
     private function eventForDeliveryState(ReceiptDeliveryState $state): StateTransitionEvent

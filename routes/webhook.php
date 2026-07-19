@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Http\Controllers\Payments\RazorpayWebhookController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -19,12 +20,10 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::post('/razorpay', function () {
-    return response()->json(
-        ['error' => 'Not Implemented — Phase 3 webhook controllers land here.'],
-        501,
-    );
-})->name('webhook.razorpay');
+Route::post(
+    '/razorpay',
+    [RazorpayWebhookController::class, 'handle']
+)->name('webhook.razorpay');
 
 Route::post('/paypal', function () {
     return response()->json(

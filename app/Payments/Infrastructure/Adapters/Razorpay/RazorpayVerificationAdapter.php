@@ -23,12 +23,22 @@ final class RazorpayVerificationAdapter implements PaymentVerificationContract
 
     /**
      * Verify a Razorpay webhook callback.
+     *
+     * Doctrine: the configured header name (default: X-Razorpay-Signature) is
+     * read from config so deployments behind a stripping proxy can override
+     * without touching this class. Header lookup is case-insensitive because
+     * Symfony's HeaderBag preserves source-case but downstream consumers may
+     * not.
      */
     public function verifyWebhook(array $headers, string $payload): Result
     {
-        $signature = $headers['x-razorpay-signature'] ?? null;
+        $configuredHeader = (string) $this->config->get(
+            'payments.providers.razorpay.webhook_signature_header',
+            'X-Razorpay-Signature',
+        );
+        $signature = $this->extractHeader($headers, $configuredHeader);
 
-        if ($signature === null) {
+        if ($signature === null || $signature === '') {
             return Result::failure(
                 WebhookVerificationFailedException::missingSignature('razorpay', '')->getMessage(),
             );
@@ -108,5 +118,27 @@ final class RazorpayVerificationAdapter implements PaymentVerificationContract
             'pending' => TransactionStatus::PENDING,
             default => TransactionStatus::PENDING,
         };
+    }
+
+    /**
+     * Locate a header value by name, case-insensitively. Returns null when
+     * the header is absent. Multi-value headers return the first value.
+     *
+     * @param  array<string, string|array<int, string>>  $headers
+     */
+    private function extractHeader(array $headers, string $name): ?string
+    {
+        $needle = strtolower($name);
+        foreach ($headers as $key => $value) {
+            if (strtolower((string) $key) !== $needle) {
+                continue;
+            }
+            if (is_array($value)) {
+                $first = $value[0] ?? null;
+                return $first === null ? null : (string) $first;
+            }
+            return (string) $value;
+        }
+        return null;
     }
 }

@@ -26,7 +26,7 @@ enum TransactionStatus: string
     public function isTerminal(): bool
     {
         return match ($this) {
-            self::SETTLED, self::FAILED, self::REFUNDED, self::CANCELLED, self::EXPIRED => true,
+            self::FAILED, self::REFUNDED, self::CANCELLED, self::EXPIRED => true,
             default => false,
         };
     }

@@ -106,16 +106,16 @@ final class ReceiptStateMachine
         ReceiptDeliveryState $from,
         StateTransitionEvent $event,
     ): ReceiptDeliveryState {
+        $key = "{$from->value}|{$event->value}";
         $table = [
-            [ReceiptDeliveryState::PENDING, StateTransitionEvent::DELIVERY_DISPATCHED] => ReceiptDeliveryState::DELIVERED,
-            [ReceiptDeliveryState::PENDING, StateTransitionEvent::DELIVERY_BOUNCED] => ReceiptDeliveryState::BOUNCED,
-            [ReceiptDeliveryState::PENDING, StateTransitionEvent::DELIVERY_FAILED] => ReceiptDeliveryState::FAILED,
+            'pending|delivery_dispatched' => ReceiptDeliveryState::DELIVERED,
+            'pending|delivery_bounced' => ReceiptDeliveryState::BOUNCED,
+            'pending|delivery_failed' => ReceiptDeliveryState::FAILED,
 
-            [ReceiptDeliveryState::FAILED, StateTransitionEvent::DELIVERY_REDISPATCHED] => ReceiptDeliveryState::PENDING,
-            [ReceiptDeliveryState::BOUNCED, StateTransitionEvent::DELIVERY_REDISPATCHED] => ReceiptDeliveryState::PENDING,
+            'failed|delivery_redispatched' => ReceiptDeliveryState::PENDING,
+            'bounced|delivery_redispatched' => ReceiptDeliveryState::PENDING,
         ];
 
-        $key = [$from, $event];
         if (! isset($table[$key])) {
             throw new \LogicException(
                 sprintf(

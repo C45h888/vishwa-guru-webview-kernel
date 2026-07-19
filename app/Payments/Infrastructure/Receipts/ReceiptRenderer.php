@@ -202,8 +202,11 @@ final class ReceiptRenderer implements ReceiptGenerationContract
 
     public function isEnabled(): bool
     {
-        // TODO: wire to config when ready
-        return true;
+        // Doctrine kill-switch: receipts can be disabled per deployment
+        // without touching code. ReceiptService::issue() calls this
+        // before invoking draft(); when false, no PDF rendering occurs
+        // and the draft pipeline returns gracefully with a failure.
+        return (bool) config('receipts.enabled', true);
     }
 
     // ─── Private helpers ────────────────────────────────────────────────

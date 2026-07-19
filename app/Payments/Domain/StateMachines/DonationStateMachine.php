@@ -121,24 +121,24 @@ final class DonationStateMachine
         DonationState $from,
         StateTransitionEvent $event,
     ): DonationState {
+        $key = "{$from->value}|{$event->value}";
         $table = [
-            [DonationState::DRAFT, StateTransitionEvent::SUBMITTED] => DonationState::PENDING_PAYMENT,
-            [DonationState::DRAFT, StateTransitionEvent::CUSTOMER_CANCELLED] => DonationState::CANCELLED,
+            'draft|submitted' => DonationState::PENDING_PAYMENT,
+            'draft|customer_cancelled' => DonationState::CANCELLED,
 
-            [DonationState::PENDING_PAYMENT, StateTransitionEvent::GATEWAY_CONFIRMED] => DonationState::PAYMENT_VERIFIED,
-            [DonationState::PENDING_PAYMENT, StateTransitionEvent::GATEWAY_FAILED] => DonationState::FAILED,
-            [DonationState::PENDING_PAYMENT, StateTransitionEvent::WEBHOOK_TIMEOUT] => DonationState::CANCELLED,
-            [DonationState::PENDING_PAYMENT, StateTransitionEvent::CUSTOMER_CANCELLED] => DonationState::CANCELLED,
+            'pending_payment|gateway_confirmed' => DonationState::PAYMENT_VERIFIED,
+            'pending_payment|gateway_failed' => DonationState::FAILED,
+            'pending_payment|webhook_timeout' => DonationState::CANCELLED,
+            'pending_payment|customer_cancelled' => DonationState::CANCELLED,
 
-            [DonationState::PAYMENT_VERIFIED, StateTransitionEvent::RECEIPT_ISSUED] => DonationState::RECEIPT_GENERATED,
-            [DonationState::PAYMENT_VERIFIED, StateTransitionEvent::RECEIPT_FAILED] => DonationState::FAILED,
-            [DonationState::PAYMENT_VERIFIED, StateTransitionEvent::CUSTOMER_CANCELLED] => DonationState::CANCELLED,
+            'payment_verified|receipt_issued' => DonationState::RECEIPT_GENERATED,
+            'payment_verified|receipt_failed' => DonationState::FAILED,
+            'payment_verified|customer_cancelled' => DonationState::CANCELLED,
 
-            [DonationState::RECEIPT_GENERATED, StateTransitionEvent::COMPLETED] => DonationState::COMPLETED,
-            [DonationState::RECEIPT_GENERATED, StateTransitionEvent::POST_COMMIT_FAIL] => DonationState::FAILED,
+            'receipt_generated|completed' => DonationState::COMPLETED,
+            'receipt_generated|post_commit_fail' => DonationState::FAILED,
         ];
 
-        $key = [$from, $event];
         if (! isset($table[$key])) {
             throw PaymentStateTransitionException::invalidTransition(
                 self::mapToTransactionStatus($from),

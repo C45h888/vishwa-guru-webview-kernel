@@ -6,6 +6,7 @@ namespace App\Payments\Domain\Repositories;
 
 use App\Payments\Domain\Entities\Receipt;
 use App\Persistence\ValueObjects\EntityId;
+use DateTimeImmutable;
 
 /**
  * Persistence boundary for the Receipt aggregate.
@@ -33,6 +34,18 @@ interface ReceiptRepositoryContract
      * Find a receipt by its human-readable number (TR-YYYY-{shortId}).
      */
     public function findByReceiptNumber(string $receiptNumber): ?Receipt;
+
+    /**
+     * Find all receipts whose generated_at timestamp falls within the
+     * inclusive [from, to] window. Soft-deleted rows are excluded.
+     * Caller-side filters (80G eligibility, minimum amount) belong in
+     * the calling service — this method stays a pure range scan.
+     *
+     * Used by Form10BDExporter quarterly filing.
+     *
+     * @return array<int, Receipt>
+     */
+    public function findByDateRange(DateTimeImmutable $from, DateTimeImmutable $to): array;
 
     /**
      * Persist a new receipt (INSERT).

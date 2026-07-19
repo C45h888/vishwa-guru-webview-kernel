@@ -190,51 +190,47 @@ final class PaymentStateMachine
         TransactionStatus $from,
         StateTransitionEvent $event,
     ): TransactionStatus {
+        $key = "{$from->value}|{$event->value}";
         $table = [
             // INITIALIZED +
-            [TransactionStatus::INITIALIZED, StateTransitionEvent::AUTH_OK] => TransactionStatus::PENDING,
-            [TransactionStatus::INITIALIZED, StateTransitionEvent::GATEWAY_CONFIRMED] => TransactionStatus::PENDING,
-            [TransactionStatus::INITIALIZED, StateTransitionEvent::GATEWAY_FAILED] => TransactionStatus::FAILED,
-            [TransactionStatus::INITIALIZED, StateTransitionEvent::GATEWAY_TIMEOUT] => TransactionStatus::EXPIRED,
-            [TransactionStatus::INITIALIZED, StateTransitionEvent::CUSTOMER_CANCELLED] => TransactionStatus::CANCELLED,
+            'initialized|auth_ok' => TransactionStatus::PENDING,
+            'initialized|gateway_confirmed' => TransactionStatus::PENDING,
+            'initialized|gateway_failed' => TransactionStatus::FAILED,
+            'initialized|gateway_timeout' => TransactionStatus::EXPIRED,
+            'initialized|customer_cancelled' => TransactionStatus::CANCELLED,
 
             // PENDING +
-            [TransactionStatus::PENDING, StateTransitionEvent::GATEWAY_CONFIRMED] => TransactionStatus::AUTHORIZED,
-            [TransactionStatus::PENDING, StateTransitionEvent::GATEWAY_FAILED] => TransactionStatus::FAILED,
-            [TransactionStatus::PENDING, StateTransitionEvent::GATEWAY_TIMEOUT] => TransactionStatus::EXPIRED,
-            [TransactionStatus::PENDING, StateTransitionEvent::CUSTOMER_CANCELLED] => TransactionStatus::CANCELLED,
+            'pending|gateway_confirmed' => TransactionStatus::AUTHORIZED,
+            'pending|gateway_failed' => TransactionStatus::FAILED,
+            'pending|gateway_timeout' => TransactionStatus::EXPIRED,
+            'pending|customer_cancelled' => TransactionStatus::CANCELLED,
 
             // AUTHORIZED +
-            [TransactionStatus::AUTHORIZED, StateTransitionEvent::CAPTURE_RECEIVED] => TransactionStatus::CAPTURED,
-            [TransactionStatus::AUTHORIZED, StateTransitionEvent::GATEWAY_FAILED] => TransactionStatus::FAILED,
-            [TransactionStatus::AUTHORIZED, StateTransitionEvent::CUSTOMER_CANCELLED] => TransactionStatus::CANCELLED,
+            'authorized|capture_received' => TransactionStatus::CAPTURED,
+            'authorized|gateway_failed' => TransactionStatus::FAILED,
+            'authorized|customer_cancelled' => TransactionStatus::CANCELLED,
 
             // CAPTURED +
-            [TransactionStatus::CAPTURED, StateTransitionEvent::SETTLEMENT_NOTICE] => TransactionStatus::SETTLING,
-            [TransactionStatus::CAPTURED, StateTransitionEvent::SETTLEMENT_CONFIRMED] => TransactionStatus::SETTLED,
-            [TransactionStatus::CAPTURED, StateTransitionEvent::REFUND_INITIATED] => TransactionStatus::REFUNDED,
-            [TransactionStatus::CAPTURED, StateTransitionEvent::PARTIAL_REFUND_INITIATED] => TransactionStatus::PARTIALLY_REFUNDED,
-            [TransactionStatus::CAPTURED, StateTransitionEvent::DISPUTE_OPENED] => TransactionStatus::DISPUTED,
+            'captured|settlement_notice' => TransactionStatus::SETTLING,
+            'captured|settlement_confirmed' => TransactionStatus::SETTLED,
+            'captured|refund_initiated' => TransactionStatus::REFUNDED,
+            'captured|partial_refund_initiated' => TransactionStatus::PARTIALLY_REFUNDED,
+            'captured|dispute_opened' => TransactionStatus::DISPUTED,
 
             // SETTLING +
-            [TransactionStatus::SETTLING, StateTransitionEvent::SETTLEMENT_CONFIRMED] => TransactionStatus::SETTLED,
-            [TransactionStatus::SETTLING, StateTransitionEvent::SETTLEMENT_FAILED] => TransactionStatus::FAILED,
-            [TransactionStatus::SETTLING, StateTransitionEvent::DISPUTE_OPENED] => TransactionStatus::DISPUTED,
+            'settling|settlement_confirmed' => TransactionStatus::SETTLED,
+            'settling|settlement_failed' => TransactionStatus::FAILED,
+            'settling|dispute_opened' => TransactionStatus::DISPUTED,
 
             // SETTLED +
-            [TransactionStatus::SETTLED, StateTransitionEvent::REFUND_INITIATED] => TransactionStatus::REFUNDED,
-            [TransactionStatus::SETTLED, StateTransitionEvent::PARTIAL_REFUND_INITIATED] => TransactionStatus::PARTIALLY_REFUNDED,
-            [TransactionStatus::SETTLED, StateTransitionEvent::DISPUTE_OPENED] => TransactionStatus::DISPUTED,
-
-            // PARTIALLY_REFUNDED +
-            [TransactionStatus::PARTIALLY_REFUNDED, StateTransitionEvent::REFUND_COMPLETED] => TransactionStatus::REFUNDED,
-            [TransactionStatus::PARTIALLY_REFUNDED, StateTransitionEvent::DISPUTE_OPENED] => TransactionStatus::DISPUTED,
+            'settled|refund_initiated' => TransactionStatus::REFUNDED,
+            'settled|partial_refund_initiated' => TransactionStatus::PARTIALLY_REFUNDED,
+            'settled|dispute_opened' => TransactionStatus::DISPUTED,
 
             // DISPUTED +
-            [TransactionStatus::DISPUTED, StateTransitionEvent::DISPUTE_RESOLVED_LOST] => TransactionStatus::FAILED,
+            'disputed|dispute_resolved_lost' => TransactionStatus::FAILED,
         ];
 
-        $key = [$from, $event];
         if (! isset($table[$key])) {
             throw PaymentStateTransitionException::invalidTransition($from, $from, $event->value);
         }

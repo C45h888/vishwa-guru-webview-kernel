@@ -8,6 +8,7 @@ use App\Payments\Domain\Entities\Payment;
 use App\Payments\Domain\Enums\Currency;
 use App\Payments\Domain\Enums\PaymentProvider;
 use App\Payments\Domain\Enums\TransactionStatus;
+use App\Payments\Domain\StateMachines\PaymentStateMachine;
 use App\Payments\Infrastructure\Repositories\PaymentRepository;
 use App\Persistence\ValueObjects\EntityId;
 use RuntimeException;
@@ -23,7 +24,7 @@ final class PaymentRepositoryTest extends InfrastructureTestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->repo = new PaymentRepository($this->adapter);
+        $this->repo = new PaymentRepository($this->adapter, new PaymentStateMachine());
     }
 
     public function testSaveFindByIdRoundTrip(): void

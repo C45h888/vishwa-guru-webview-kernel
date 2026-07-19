@@ -141,32 +141,6 @@ class PaymentTest extends TestCase
         $this->assertSame(TransactionStatus::DISPUTED, $disputed->status());
     }
 
-    public function testTransitionPartiallyRefundedToRefunded(): void
-    {
-        $machine = new PaymentStateMachine();
-        $p = $this->make()
-            ->transitionTo($machine, TransactionStatus::PENDING)
-            ->transitionTo($machine, TransactionStatus::AUTHORIZED)
-            ->transitionTo($machine, TransactionStatus::CAPTURED)
-            ->transitionTo($machine, TransactionStatus::PARTIALLY_REFUNDED);
-
-        $refunded = $p->transitionTo($machine, TransactionStatus::REFUNDED);
-        $this->assertSame(TransactionStatus::REFUNDED, $refunded->status());
-    }
-
-    public function testTransitionDisputedToRefunded(): void
-    {
-        $machine = new PaymentStateMachine();
-        $p = $this->make()
-            ->transitionTo($machine, TransactionStatus::PENDING)
-            ->transitionTo($machine, TransactionStatus::AUTHORIZED)
-            ->transitionTo($machine, TransactionStatus::CAPTURED)
-            ->transitionTo($machine, TransactionStatus::DISPUTED);
-
-        $refunded = $p->transitionTo($machine, TransactionStatus::REFUNDED);
-        $this->assertSame(TransactionStatus::REFUNDED, $refunded->status());
-    }
-
     public function testTransitionDisputedToFailed(): void
     {
         $machine = new PaymentStateMachine();

@@ -232,86 +232,78 @@ class PaymentOrchestrator
      */
     public function handleWebhook(WebhookPayload $payload): Result
     {
-        // Build a synthetic VerificationContextDTO. Pass 1.3 does
-        // not yet have a Payment/Donation registry lookup wired
-        // into the orchestrator (that lands in Pass 1.4 once the
-        // PaymentRepository lookup supports gateway_order_id fast
-        // path); for now we require the caller to surface
-        // donationId/paymentId via headers, which is the convention
-        // Phase 0.25 establishes.
+        // Doctrine: the orchestrator is the bridge between a raw webhook
+        // (transport-layer) and the PaymentStateMachine (regional authority).
+        // It OWNS the local Payment/Donation lookup so callers (controllers,
+        // queues) only need to supply the gateway_order_id. This makes the
+        // controller thin (pure transport) and centralizes the lookup here.
+        //
+        // Pre-Pass-1.4 this code required the caller to surface all five
+        // expected fields via metadata. Pass 1.4+ uses the
+        // PaymentRepository fast-path by gateway_order_id so the lookup is
+        // canonical and the controller never needs to touch the repository.
         $metadata = $payload->metadata();
+        $gatewayOrderId = trim((string) ($metadata['gateway_order_id'] ?? ''));
 
-        $donationUlid = (string) ($metadata['donation_id'] ?? '');
-        $paymentUlid = (string) ($metadata['payment_id'] ?? '');
-        $expectedAmount = (int) ($metadata['expected_amount_minor'] ?? 0);
-        $expectedCurrency = (string) ($metadata['expected_currency'] ?? '');
-        $expectedKey = (string) ($metadata['expected_idempotency_key'] ?? '');
-
-        if ($donationUlid === '' || $paymentUlid === '' || $expectedAmount <= 0
-            || $expectedCurrency === '' || $expectedKey === ''
-        ) {
+        if ($gatewayOrderId === '') {
             return Result::failure(
-                'webhook_metadata_insufficient: donation_id, payment_id, '.
-                'expected_amount_minor, expected_currency, '.
-                'expected_idempotency_key are required',
+                'webhook_metadata_insufficient: gateway_order_id is required',
+            );
+        }
+
+        $local = $this->payments->findByGatewayOrderId($gatewayOrderId);
+        if ($local === null) {
+            return Result::failure(
+                'webhook_unknown_order: no local Payment with gateway_order_id='.$gatewayOrderId,
+            );
+        }
+
+        $expectedKey = (string) ($local->idempotencyKey() ?? '');
+        if ($expectedKey === '') {
+            // Doctrine: every Payment row carries an idempotency key. Missing
+            // key indicates a row pre-dating Pass 1.5; do not trust it.
+            return Result::failure(
+                'webhook_payment_missing_idempotency_key: gateway_order_id='.$gatewayOrderId,
             );
         }
 
         $context = new VerificationContextDTO(
             payload: $payload,
-            donationId: new Identifier($donationUlid),
-            paymentId: new Identifier($paymentUlid),
-            expectedAmountMinor: $expectedAmount,
-            expectedCurrency: \App\Payments\Domain\Enums\Currency::from($expectedCurrency),
+            donationId: new Identifier($local->donationId()->ulid()),
+            paymentId: new Identifier($local->id()->ulid()),
+            expectedAmountMinor: $local->amountMinor(),
+            expectedCurrency: $local->currency(),
             expectedIdempotencyKey: $expectedKey,
         );
 
         $verified = $this->verification->verify($context);
         if ($verified->isFailure()) {
-            $paymentEntity = $this->payments->findById(
-                EntityId::fromString($paymentUlid),
+            $this->failureStateService->record(
+                paymentId: $local->id(),
+                providerCode: $payload->provider()->value,
+                gatewayOrderId: $verified->error() ?? 'unknown',
+                observedStatus: TransactionStatus::FAILED,
+                failureCode: 'webhook_verification_failed',
+                failureReason: $verified->error(),
+                classification: null,
+                metadata: [
+                    'stage_results' => $context->stageResults(),
+                ],
+                context: [
+                    'correlation_id' => $payload->providerEventId() ?: null,
+                ],
             );
-            if ($paymentEntity !== null) {
-                $this->failureStateService->record(
-                    paymentId: $paymentEntity->id(),
-                    providerCode: $payload->provider()->value,
-                    gatewayOrderId: $verified->error() ?? 'unknown',
-                    observedStatus: TransactionStatus::FAILED,
-                    failureCode: 'webhook_verification_failed',
-                    failureReason: $verified->error(),
-                    classification: null,
-                    metadata: [
-                        'stage_results' => $context->stageResults(),
-                    ],
-                    context: [
-                        'correlation_id' => $payload->providerEventId() ?: null,
-                    ],
-                );
-            }
             return Result::failure(
                 'verification_failed: '.$verified->error(),
             );
         }
 
         $verification = $verified->value();
-        $paymentUlid = $verification->gatewayPaymentId() !== ''
-            ? $paymentUlid
-            : $paymentUlid;
 
         $commit = $this->coordinator->execute(function () use (
-            $verification, $donationUlid, $paymentUlid, $payload,
+            $verification, $local,
         ): Payment {
-            $payment = $this->payments->findById(
-                EntityId::fromString($paymentUlid),
-            );
-            if ($payment === null) {
-                throw new PaymentInitializationFailedException(
-                    sprintf('Payment [%s] not found during webhook commit', $paymentUlid),
-                    $payload->provider()->value,
-                );
-            }
-
-            $transitioned = $payment->transitionTo(
+            $transitioned = $local->transitionTo(
                 machine: $this->paymentStateMachine,
                 to: $verification->status(),
                 context: [
@@ -323,9 +315,7 @@ class PaymentOrchestrator
             );
             $this->payments->update($transitioned);
 
-            $donation = $this->donations->findById(
-                EntityId::fromString($donationUlid),
-            );
+            $donation = $this->donations->findById($local->donationId());
             if ($donation !== null) {
                 $donationTransitioned = $donation->transitionTo(
                     machine: $this->donationStateMachine,
@@ -349,7 +339,7 @@ class PaymentOrchestrator
         // verified payment. The receipt service escalates a
         // FailureState on its own failure path.
         $receiptResult = $this->receiptService->issue(
-            new Identifier($paymentUlid),
+            new Identifier($local->id()->ulid()),
         );
 
         if ($receiptResult->isFailure()) {
@@ -359,7 +349,7 @@ class PaymentOrchestrator
             $this->auditLog->append(
                 eventType: 'payment.receipt.deferred',
                 entityType: Payment::ENTITY_TYPE,
-                entityId: $paymentUlid,
+                entityId: $local->id()->ulid(),
                 previousState: $commit->value()->status()->value,
                 newState: $commit->value()->status()->value,
                 context: [
@@ -409,23 +399,15 @@ class PaymentOrchestrator
             );
         }
 
-        $gateway = $this->resolveGatewayFor($payment);
-        if ($gateway->isFailure()) {
-            return $gateway;
-        }
-
-        $refundResult = $gateway->value()->refund($transactionId, $amountMinor);
-        if ($refundResult->isFailure()) {
-            return Result::failure(
-                'gateway_refund_failed: '.$refundResult->error(),
-            );
-        }
-
         $isFull = ($amountMinor === $captured - $alreadyRefunded);
         $targetStatus = $isFull
             ? TransactionStatus::REFUNDED
             : TransactionStatus::PARTIALLY_REFUNDED;
 
+        // SM validation FIRST — reject invalid states before touching the gateway.
+        // Refunds are out of scope for Pass 1.3; this guard ensures that if
+        // a refund request arrives for an invalid state, we fail cleanly without
+        // making an irreversible external gateway call.
         $transitioned = $payment->transitionTo(
             machine: $this->paymentStateMachine,
             to: $targetStatus,
@@ -434,6 +416,22 @@ class PaymentOrchestrator
                 'amount_refunded_minor' => $alreadyRefunded + $amountMinor,
             ],
         );
+
+        $gateway = $this->resolveGatewayFor($payment);
+        if ($gateway->isFailure()) {
+            return $gateway;
+        }
+
+        $refundResult = $gateway->value()->refund($transactionId, $amountMinor);
+        if ($refundResult->isFailure()) {
+            // Gateway failed — SM state was never persisted (transitioned is
+            // a new object; $this->payments->update was never called). No
+            // compensating action needed; the local state is unchanged.
+            return Result::failure(
+                'gateway_refund_failed: '.$refundResult->error(),
+            );
+        }
+
         $this->payments->update($transitioned);
 
         $this->auditLog->append(

@@ -41,8 +41,11 @@ remain.
   Receipt entity).
 - 18 transitions detected in PaymentStateMachine were initially
   unreachable from entity helper `eventForTarget()`. Fixed via 4
-  added cases (PARTIALLY_REFUNDED→REFUNDED, DISPUTED→REFUNDED,
-  DISPUTED→FAILED, *→DISPUTED).
+  added cases (DISPUTED→FAILED, *→DISPUTED).
+  Note: PARTIALLY_REFUNDED→REFUNDED and DISPUTED→REFUNDED were
+  removed in Pass 1.3 as refund paths are out of scope — Razorpay
+  SDK owns all refund state and DISPUTED cannot occur through the
+  SDK's payment lifecycle.
 
 **Deviations**:
 - **D1** ReceiptStateMachine added (not in original plan). Necessary

@@ -268,24 +268,25 @@ final class Payment implements EntityContract
 
         foreach (['amount_captured_minor', 'amount_refunded_minor', 'fee_minor', 'tax_minor', 'method', 'provider_order_id', 'provider_payment_id', 'provider_reference_id', 'signature', 'verified_at', 'last_failure_code', 'last_failure_reason'] as $field) {
             if (array_key_exists($field, $changes)) {
-                $snake = self::camelToSnake($field);
-                $cloneProp = $field;
                 if ($field === 'verified_at' && $changes[$field] !== null) {
-                    $clone->{$cloneProp} = $changes[$field] instanceof DateTimeImmutable
+                    $clone->verifiedAt = $changes[$field] instanceof DateTimeImmutable
                         ? $changes[$field]
                         : new DateTimeImmutable($changes[$field]);
-                } elseif ($snake === 'provider_order_id') {
+                } elseif ($field === 'provider_order_id') {
                     $clone->providerOrderId = $changes[$field];
-                } elseif ($snake === 'provider_payment_id') {
+                } elseif ($field === 'provider_payment_id') {
                     $clone->providerPaymentId = $changes[$field];
-                } elseif ($snake === 'provider_reference_id') {
+                } elseif ($field === 'provider_reference_id') {
                     $clone->providerReferenceId = $changes[$field];
-                } elseif ($snake === 'last_failure_code') {
+                } elseif ($field === 'last_failure_code') {
                     $clone->lastFailureCode = $changes[$field];
-                } elseif ($snake === 'last_failure_reason') {
+                } elseif ($field === 'last_failure_reason') {
                     $clone->lastFailureReason = $changes[$field];
+                } elseif ($field === 'signature') {
+                    $clone->signature = $changes[$field];
                 } else {
-                    $clone->{$cloneProp} = $changes[$field];
+                    // All other fields map snake_case key -> camelCase property via snake_to_camel
+                    $clone->{self::snakeToCamel($field)} = $changes[$field];
                 }
             }
         }
@@ -405,13 +406,11 @@ final class Payment implements EntityContract
             $target === TransactionStatus::EXPIRED
                 => \App\Payments\Domain\StateMachines\StateTransitionEvent::GATEWAY_TIMEOUT,
 
-            // ── Group 4: specific refund/dispute arms (non-FAILED) ────────
-            // Safe to be below the generic FAILED arm — their target is
-            // REFUNDED / DISPUTED, not FAILED, so the generic arm never matches.
-            $this->status === TransactionStatus::PARTIALLY_REFUNDED && $target === TransactionStatus::REFUNDED
-                => \App\Payments\Domain\StateMachines\StateTransitionEvent::REFUND_COMPLETED,
-            $this->status === TransactionStatus::DISPUTED && $target === TransactionStatus::REFUNDED
-                => \App\Payments\Domain\StateMachines\StateTransitionEvent::REFUND_INITIATED,
+            // ── Group 4: dispute arms ───────────────────────────────────
+            // Any source status → DISPUTED maps to DISPUTE_OPENED.
+            // Refund arms (PARTIALLY_REFUNDED→REFUNDED, DISPUTED→REFUNDED)
+            // are out of scope for Pass 1.3 — refunds are handled by the
+            // Razorpay SDK and are not modelled in this runtime.
             $target === TransactionStatus::DISPUTED
                 => \App\Payments\Domain\StateMachines\StateTransitionEvent::DISPUTE_OPENED,
 
@@ -648,5 +647,10 @@ final class Payment implements EntityContract
     private static function camelToSnake(string $input): string
     {
         return strtolower(preg_replace('/(?<!^)([A-Z])/', '_$1', $input) ?? $input);
+    }
+
+    private static function snakeToCamel(string $input): string
+    {
+        return lcfirst(str_replace('_', '', ucwords($input, '_')));
     }
 }

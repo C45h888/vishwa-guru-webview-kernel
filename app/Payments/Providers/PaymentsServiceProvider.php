@@ -202,10 +202,25 @@ final class PaymentsServiceProvider extends ServiceProvider
         }
 
         // ════════════════════════════════════════════════════════════════
-        // AXIS B — Services (auto-resolved unless tagged/iterable needed)
+        // AXIS B — Receipt pipeline (ReceiptRenderer is the production impl)
         // ════════════════════════════════════════════════════════════════
-        // ReceiptGeneration → Stub in Phase 1; replaced by ReceiptRenderer in Pass 1.7
-        $app->bind(ReceiptGenerationContract::class, StubReceiptGenerator::class);
+        // PdfWrapper: bind DomPdfWrapper as the production implementation.
+        // DomPdfWrapper self-resolves the barryvdh\DomPDF facade inside render()
+        // (no constructor deps), so a single bind is sufficient.
+        $app->bind(\App\Payments\Infrastructure\Receipts\Pdf\PdfWrapper::class,
+            \App\Payments\Infrastructure\Receipts\Pdf\DomPdfWrapper::class);
+
+        // Receipt subsystem — singletons (stateless beyond constructor injection).
+        $app->singleton(\App\Payments\Infrastructure\Receipts\ReceiptNumberAllocator::class);
+        $app->singleton(\App\Payments\Infrastructure\Receipts\Receipt80GValidator::class);
+        $app->singleton(\App\Payments\Infrastructure\Receipts\ReceiptPdfGenerator::class);
+        $app->singleton(\App\Payments\Infrastructure\Receipts\ReceiptStorage::class);
+
+        // ReceiptGeneration → ReceiptRenderer is the production path.
+        // ReceiptRenderer decides whether to actually run based on
+        // config('receipts.enabled'); the env var switch is RECEIPTS_ENABLED.
+        $app->bind(ReceiptGenerationContract::class,
+            \App\Payments\Infrastructure\Receipts\ReceiptRenderer::class);
 
         // PaymentProviderSelector requires iterable<PaymentGatewayContract>
         // which Laravel can't auto-inject → manual closure

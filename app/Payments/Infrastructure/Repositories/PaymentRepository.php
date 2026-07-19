@@ -9,6 +9,7 @@ use App\Payments\Domain\Enums\Currency;
 use App\Payments\Domain\Enums\PaymentProvider;
 use App\Payments\Domain\Enums\TransactionStatus;
 use App\Payments\Domain\Repositories\PaymentRepositoryContract;
+use App\Payments\Domain\StateMachines\PaymentStateMachine;
 use App\Persistence\Contracts\PersistenceAdapterContract;
 use App\Persistence\ValueObjects\EntityId;
 use App\Shared\Support\Result;
@@ -20,6 +21,7 @@ final class PaymentRepository implements PaymentRepositoryContract
 {
     public function __construct(
         private readonly PersistenceAdapterContract $adapter,
+        private readonly PaymentStateMachine $stateMachine,
     ) {}
 
     public function findById(EntityId $id): ?Payment
@@ -260,22 +262,17 @@ final class PaymentRepository implements PaymentRepositoryContract
 
     public function updateStatus(EntityId $id, TransactionStatus $newStatus): Payment
     {
-        $updatedAt = (new \DateTimeImmutable())->format(DATE_ATOM);
-
-        $exec = $this->adapter->execute(
-            'UPDATE payments SET status = :status, updated_at = :updated_at WHERE id = :id AND deleted_at IS NULL',
-            ['id' => $id->value(), 'status' => $newStatus->value, 'updated_at' => $updatedAt],
-        );
-        if ($exec->isFailure()) {
-            throw new \RuntimeException('PaymentRepository::updateStatus failed: '.$exec->error());
+        $payment = $this->findById($id);
+        if ($payment === null) {
+            throw new \RuntimeException("PaymentRepository::updateStatus: payment {$id->value()} not found");
         }
 
-        $found = $this->findById($id);
-        if ($found === null) {
-            throw new \RuntimeException("PaymentRepository::updateStatus: payment {$id->value()} not found after update");
-        }
+        // Enforce SM as sole authority — validate the transition before persisting.
+        $transitioned = $payment->transitionTo($this->stateMachine, $newStatus);
 
-        return $found;
+        $this->update($transitioned);
+
+        return $transitioned;
     }
 
     public function existsForGatewayOrder(string $gatewayOrderId): bool

@@ -11,6 +11,7 @@ use App\Payments\Domain\StateMachines\ReceiptStateMachine;
 use App\Payments\Domain\StateMachines\StateTransitionEvent;
 use App\Persistence\Contracts\PersistenceAdapterContract;
 use App\Persistence\ValueObjects\EntityId;
+use DateTimeImmutable;
 use RuntimeException;
 
 final class ReceiptRepository implements ReceiptRepositoryContract
@@ -224,6 +225,31 @@ final class ReceiptRepository implements ReceiptRepositoryContract
         }
 
         return (string) $result->value()[0]['receipt_number'];
+    }
+
+    public function findByDateRange(DateTimeImmutable $from, DateTimeImmutable $to): array
+    {
+        $result = $this->adapter->query(
+            'SELECT * FROM receipts
+             WHERE generated_at >= :from
+               AND generated_at <= :to
+               AND deleted_at IS NULL
+             ORDER BY generated_at ASC',
+            [
+                'from' => $from->format(DATE_ATOM),
+                'to' => $to->format(DATE_ATOM),
+            ],
+        );
+
+        if ($result->isFailure() || empty($result->value())) {
+            return [];
+        }
+
+        $receipts = [];
+        foreach ($result->value() as $row) {
+            $receipts[] = Receipt::fromRow($row);
+        }
+        return $receipts;
     }
 
     private function getStateMachine(): ReceiptStateMachine

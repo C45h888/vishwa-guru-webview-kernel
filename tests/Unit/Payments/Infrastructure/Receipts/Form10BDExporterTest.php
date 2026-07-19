@@ -43,15 +43,94 @@ class Form10BDExporterTest extends TestCase
         );
     }
 
-    public function testExportReturnsEmptyCsvWhenNoEligibleReceipts(): void
+    public function testExportIncludesEligibleReceiptsFromDateRange(): void
     {
-        // collectEligibleReceipts currently returns empty (no date-range query yet)
-        // This test documents the expected behavior once the query is wired
-        $this->markTestSkipped(
-            'collectEligibleReceipts needs date-range query on ReceiptRepository ' .
-            'before this integration test can run end-to-end. ' .
-            'Wired in Pass 1.4 when findByDateRange is added.',
+        // The contract: Form10BDExporter.export(date range) must reach the
+        // receipt repository via findByDateRange(), filter by 80G eligibility
+        // and minimum amount, and emit one CSV row per surviving receipt.
+        $quarterStart = new DateTimeImmutable('2026-04-01');
+        $quarterEnd = new DateTimeImmutable('2026-06-30');
+
+        $eligible = $this->createMock(Receipt::class);
+        $eligible->method('tax80gEligible')->willReturn(true);
+        $eligible->method('amountMinor')->willReturn(50_000);        // ₹500 → above ₹500 threshold tied
+        $eligible->method('donorName')->willReturn('Eligible Donor');
+        $eligible->method('donorPan')->willReturn('ABCDE1234F');
+        $eligible->method('generatedAt')->willReturn(new DateTimeImmutable('2026-05-15'));
+        $eligible->method('amountInWords')->willReturn('Five Hundred Rupees Only');
+
+        $notEligible = $this->createMock(Receipt::class);
+        $notEligible->method('tax80gEligible')->willReturn(false);
+        $notEligible->method('amountMinor')->willReturn(1_000_000);
+
+        $this->receipts
+            ->expects($this->once())
+            ->method('findByDateRange')
+            ->with(
+                $this->equalTo($quarterStart),
+                $this->equalTo($quarterEnd),
+            )
+            ->willReturn([$eligible, $notEligible]);
+
+        $donation = $this->createMock(Donation::class);
+        $donation->method('donorAddressSnapshot')->willReturn(null);
+        $this->donations
+            ->expects($this->once())
+            ->method('findById')
+            ->willReturn($donation);
+
+        $result = $this->exporter->export(
+            quarterStart: $quarterStart,
+            quarterEnd: $quarterEnd,
+            trustName: 'Temple Trust',
+            trustAddress: '123 Temple St',
+            trustPan: 'AAACT1234D',
+            trust80gRegNumber: 'REG1234',
         );
+
+        $this->assertTrue($result->isOk());
+        $csv = $result->value();
+        $this->assertStringContainsString('Eligible Donor', $csv);
+        $this->assertStringContainsString('ABCDE1234F', $csv);
+        $this->assertStringContainsString('500.00', $csv);
+        $this->assertStringContainsString('15/05/2026', $csv);
+        // 80G-ineligible receipt should not appear
+        $this->assertStringNotContainsString('Not In CSV', $csv);
+    }
+
+    public function testExportSkipsReceiptsBelowMinimumAmount(): void
+    {
+        $quarterStart = new DateTimeImmutable('2026-04-01');
+        $quarterEnd = new DateTimeImmutable('2026-06-30');
+
+        $smallReceipt = $this->createMock(Receipt::class);
+        $smallReceipt->method('tax80gEligible')->willReturn(true);
+        $smallReceipt->method('amountMinor')->willReturn(40_00);     // ₹400 → below ₹500 threshold
+
+        $this->receipts
+            ->expects($this->once())
+            ->method('findByDateRange')
+            ->willReturn([$smallReceipt]);
+
+        // donations->findById must NOT be called — receipt is filtered out before
+        $this->donations
+            ->expects($this->never())
+            ->method('findById');
+
+        $result = $this->exporter->export(
+            quarterStart: $quarterStart,
+            quarterEnd: $quarterEnd,
+            trustName: 'Temple Trust',
+            trustAddress: '',
+            trustPan: '',
+            trust80gRegNumber: '',
+        );
+
+        $this->assertTrue($result->isOk());
+        // Empty CSV (header row only)
+        $csv = $result->value();
+        $csvRows = array_filter(explode("\n", trim($csv)));
+        $this->assertCount(1, $csvRows, 'only the header row should remain');
     }
 
     public function testBuildCsvFormatsHeadersCorrectly(): void

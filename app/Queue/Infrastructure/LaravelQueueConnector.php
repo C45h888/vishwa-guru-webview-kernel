@@ -146,13 +146,17 @@ final class LaravelQueueConnector implements QueueConnectorContract
             // Returns true if the key was set (we own this slot), false
             // if it already existed (duplicate).
             if ($driver === 'redis') {
-                /** @var \Illuminate\Queue\Queue $connection */
-                $client = $connection->client();
-                // phpredis set(...) with NX + EX returns true on success,
-                // false on duplicate. The exception type is \RedisException
-                // (caught by the outer Throwable).
-                $result = $client->set($key, '1', ['NX', 'EX' => $ttlSeconds]);
-                return $result === true;
+                /** @var \Illuminate\Queue\RedisQueue $connection */
+                // $connection->getConnection() returns Illuminate\Redis\Connections\Connection
+                // (Laravel's Redis connection wrapper). Its set(...) proxies to the
+                // underlying phpredis client and returns true/false based on NX success.
+                $result = $connection->getConnection()->set($key, '1', 'EX', $ttlSeconds, 'NX');
+                // Laravel's wrapper returns the literal Redis reply; on NX-success
+                // that's 'OK' (string) or true; on NX-failure it's false.
+                if ($result === false || $result === null) {
+                    return false;
+                }
+                return true;
             }
 
             // Database driver: rely on the idempotency_keys table's UNIQUE

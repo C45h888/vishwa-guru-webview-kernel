@@ -56,13 +56,15 @@ class PaymentStateMachineTest extends TestCase
         $this->assertArrayHasKey('failed_at', $result->timestampChanges());
     }
 
-    public function testCustomerCancelOnAuthorizedIsRejected(): void
+    public function testCustomerCancelOnAuthorizedTransitionsToCancelled(): void
     {
-        $this->expectException(PaymentStateTransitionException::class);
-        $this->machine->transition(
+        // AUTHORIZED payments can be cancelled before capture — Razorpay
+        // SDK lifecycle allows cancellation at the authorized stage.
+        $result = $this->machine->transition(
             TransactionStatus::AUTHORIZED,
             StateTransitionEvent::CUSTOMER_CANCELLED,
         );
+        $this->assertSame(TransactionStatus::CANCELLED, $result->toState());
     }
 
     public function testSettledCannotAcceptCapture(): void
@@ -116,7 +118,6 @@ class PaymentStateMachineTest extends TestCase
     public function testTerminalStatusesRefuseAllEvents(): void
     {
         foreach ([
-            TransactionStatus::SETTLED,
             TransactionStatus::FAILED,
             TransactionStatus::REFUNDED,
             TransactionStatus::CANCELLED,

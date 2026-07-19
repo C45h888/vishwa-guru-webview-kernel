@@ -54,9 +54,9 @@ final class ReceiptFormatter
 
             // Payment info
             'payment_id' => $payment->id()->value(),
-            'gateway' => 'razorpay', // TODO: inject from Payment entity when provider is tracked
+            'gateway' => $payment->providerCode()->value,
             'payment_date' => $this->formatDate($payment->capturedAt() ?? $payment->createdAt()),
-            'payment_method' => 'UPI / Net Banking / Card', // TODO: extend Payment entity
+            'payment_method' => $payment->method() ?? '',
 
             // Amount info
             'currency' => $payment->currency()->value,

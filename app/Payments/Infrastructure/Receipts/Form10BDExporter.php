@@ -110,38 +110,37 @@ final class Form10BDExporter
     }
 
     /**
+     * Pull all ITD-10BD-eligible receipts in [start, end] and pair them with
+     * their Donation rows. Eligibility = tax-80G-eligible AND amount ≥ the
+     * configured minimum threshold. Returns [] if no rows match.
+     *
      * @return array<int, array{0: Receipt, 1: Donation|null}>
      */
     private function collectEligibleReceipts(
         DateTimeImmutable $start,
         DateTimeImmutable $end,
     ): array {
-        // Walk through the quarter by month (ReceiptRepository doesn't have a range query,
-        // so we iterate by quarter's months)
-        $eligible = [];
-        $minAmount = $this->config->integer('receipts.form_10bd.min_amount_minor', 50_00);
+        $minAmountMinor = $this->config->integer(
+            'receipts.form_10bd.min_amount_minor',
+            50_00,
+        );
 
-        // Iterate month by month within the quarter
-        $current = $start;
-        while ($current <= $end) {
-            $monthEnd = (clone $current)->modify('last day of this month');
-            if ($monthEnd > $end) {
-                $monthEnd = $end;
+        $receipts = $this->receipts->findByDateRange($start, $end);
+
+        $pairs = [];
+        foreach ($receipts as $receipt) {
+            if (! $receipt->tax80gEligible()) {
+                continue;
+            }
+            if ($receipt->amountMinor() < $minAmountMinor) {
+                continue;
             }
 
-            // For each month, we would query receipts in range — but since
-            // ReceiptRepositoryContract doesn't have a date range method,
-            // we load all receipts for the quarter and filter.
-            // In Pass 1.4 when a proper range query is added to the repo,
-            // this method can be optimized.
-            $current = $monthEnd->modify('+1 day');
+            $donation = $this->donations->findById($receipt->donationId());
+            $pairs[] = [$receipt, $donation];
         }
 
-        // Placeholder: in the real implementation, this would call
-        // ReceiptRepository::findByDateRange($start, $end) (to be added in Pass 1.4).
-        // For now, return empty — this method is ready to be wired once
-        // the date-range query method exists on the repository contract.
-        return $eligible;
+        return $pairs;
     }
 
     /**
@@ -160,7 +159,7 @@ final class Form10BDExporter
         $amountWords = $receipt->amountInWords()
             ?? AmountInWords::convert($receipt->amountMinor());
 
-        $mode = 'Others'; // TODO: extend Payment entity to track payment method
+        $mode = (string) ($receipt->metadata()['payment_method'] ?? 'Others');
 
         return [
             (string) $slNo,
