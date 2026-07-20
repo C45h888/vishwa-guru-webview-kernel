@@ -22,19 +22,48 @@
         </include>
     </source>
     <php>
-        <env name="APP_ENV" value="testing"/>
-        <env name="APP_MAINTENANCE_DRIVER" value="file"/>
-        <env name="BCRYPT_ROUNDS" value="4"/>
-        <env name="CACHE_STORE" value="array"/>
-        <env name="DB_CONNECTION" value="sqlite"/>
-        <env name="DB_DATABASE" value=":memory:"/>
-        <env name="MAIL_MAILER" value="array"/>
-        <env name="PULSE_ENABLED" value="false"/>
-        <env name="QUEUE_CONNECTION" value="sync"/>
-        <env name="SESSION_DRIVER" value="array"/>
-        <env name="TELESCOPE_ENABLED" value="false"/>
-        <env name="SHARED_IDENTIFIER_STRATEGY" value="ulid"/>
-        <env name="SHARED_DEFAULT_CURRENCY" value="INR"/>
-        <env name="SHARED_CLOCK_IMPLEMENTATION" value="system"/>
+        <!--
+            All test env values set force="true" so they override the
+            container-level DB_CONNECTION=neon / DATABASE_URL inherited
+            from docker-compose.yml. Without force="true", phpunit
+            silently leaves the existing values in place and the test
+            suite attempts to migrate Neon instead of in-memory SQLite.
+
+            We declare each test-relevant value TWICE: once as <env>
+            (sets $_ENV and putenv) and once as <server> (sets $_SERVER).
+            Phpdotenv's default RepositoryBuilder reads from BOTH $_ENV
+            and $_SERVER via ServerConstAdapter / EnvConstAdapter — so
+            both must agree on the value, otherwise Laravel's env() falls
+            back to whatever was set in $_SERVER by the container env
+            (which means Neon would still win).
+
+            Override DB_CONNECTION to sqlite + DB_DATABASE to :memory:
+            so RefreshDatabase runs against an in-memory SQLite. Override
+            DATABASE_URL to empty so the pgsql connection block does not
+            pick up the Neon URL when invoked with DB_CONNECTION=pgsql.
+        -->
+        <env name="APP_ENV" value="testing" force="true"/>
+        <server name="APP_ENV" value="testing" force="true"/>
+
+        <env name="DB_CONNECTION" value="sqlite" force="true"/>
+        <server name="DB_CONNECTION" value="sqlite" force="true"/>
+
+        <env name="DB_DATABASE" value=":memory:" force="true"/>
+        <server name="DB_DATABASE" value=":memory:" force="true"/>
+
+        <env name="DATABASE_URL" value="" force="true"/>
+        <server name="DATABASE_URL" value="" force="true"/>
+
+        <env name="APP_MAINTENANCE_DRIVER" value="file" force="true"/>
+        <env name="BCRYPT_ROUNDS" value="4" force="true"/>
+        <env name="CACHE_STORE" value="array" force="true"/>
+        <env name="MAIL_MAILER" value="array" force="true"/>
+        <env name="PULSE_ENABLED" value="false" force="true"/>
+        <env name="QUEUE_CONNECTION" value="sync" force="true"/>
+        <env name="SESSION_DRIVER" value="array" force="true"/>
+        <env name="TELESCOPE_ENABLED" value="false" force="true"/>
+        <env name="SHARED_IDENTIFIER_STRATEGY" value="ulid" force="true"/>
+        <env name="SHARED_DEFAULT_CURRENCY" value="INR" force="true"/>
+        <env name="SHARED_CLOCK_IMPLEMENTATION" value="system" force="true"/>
     </php>
 </phpunit>

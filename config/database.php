@@ -84,8 +84,14 @@ return [
         ],
 
         'sqlite' => [
+            // SQLite connection must NOT consult DATABASE_URL — that env
+            // is the Neon Postgres URL in this project and Laravel's
+            // parseUrlConfig would overwrite `driver` with pgsql plus
+            // inject Neon credentials, turning a "sqlite" connection
+            // into a pgsql one and breaking every SQLite-backed test
+            // (RefreshDatabase, feature suite, the CMS probe runner).
+            // Keep this block pure-file/local only.
             'driver'              => 'sqlite',
-            'url'                 => env('DATABASE_URL'),
             'database'            => env('DB_DATABASE', database_path('database.sqlite')),
             'prefix'              => '',
             'foreign_key_constraints' => env('DB_FOREIGN_KEYS', true),
