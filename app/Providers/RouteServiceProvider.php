@@ -20,6 +20,22 @@ class RouteServiceProvider extends ServiceProvider
             Route::middleware('web')
                 ->group(base_path('routes/web.php'));
 
+            // Public campaigns routes — Sub-project 1 reserves the URL
+            // namespace (campaigns.index, campaigns.show). Sub-project 3
+            // wires real controllers behind these paths.
+            Route::middleware('web')
+                ->group(base_path('routes/campaigns.php'));
+
+            // Public gallery routes — reserved in Sub-project 1, wired
+            // in Sub-project 3.
+            Route::middleware('web')
+                ->group(base_path('routes/gallery.php'));
+
+            // Public events routes — reserved in Sub-project 1, wired
+            // in Sub-project 3.
+            Route::middleware('web')
+                ->group(base_path('routes/events.php'));
+
             // Artisan commands — web middleware group (so console.php
             // commands have access to session / cookies if needed).
             Route::middleware('web')
