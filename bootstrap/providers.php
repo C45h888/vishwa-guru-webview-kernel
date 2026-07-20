@@ -39,4 +39,7 @@ return [
     App\Redis\Providers\RedisServiceProvider::class,
     App\Queue\Providers\QueueServiceProvider::class,
     App\Payments\Providers\PaymentsServiceProvider::class,
+    App\Campaigns\Providers\CampaignsServiceProvider::class,
+    App\Gallery\Providers\GalleryServiceProvider::class,
+    App\Events\Providers\EventsServiceProvider::class,
 ];

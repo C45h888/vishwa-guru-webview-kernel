@@ -56,6 +56,9 @@ return [
         App\Queue\Providers\QueueServiceProvider::class,
         App\Payments\Providers\PaymentsServiceProvider::class,
         App\Cms\Providers\CmsServiceProvider::class,
+        App\Campaigns\Providers\CampaignsServiceProvider::class,
+        App\Gallery\Providers\GalleryServiceProvider::class,
+        App\Events\Providers\EventsServiceProvider::class,
     ])->toArray(),
 
     /*
