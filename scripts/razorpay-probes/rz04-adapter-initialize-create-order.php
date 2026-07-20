@@ -35,7 +35,7 @@ if (! $adapter) {
 }
 
 $idempotencyKey = 'rz04-' . bin2hex(random_bytes(6));
-$donorId        = 'donor-rz04-' . bin2hex(random_bytes(4));
+$donorId        = \App\Shared\Support\UlidGenerator::generate();
 $amountMinor    = 50000; // ₹500
 
 $request = new PaymentRequest(

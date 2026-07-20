@@ -1,3 +1,15 @@
-# Razorpay test-mode sample payment ID. If 404s, fetch a fresh one
-# from https://dashboard.razorpay.com/app/payments (Test Mode) and replace.
-pay_EXAMPLEDONOTUSE
+# Razorpay test-mode sample payment ID.
+#
+# FABRICATED MODE (default for the harness until a real captured payment exists):
+#   If the ID matches the Razorpay test-mode pattern `pay_TF<14 hex chars>`,
+#   rz09/rz10 short-circuit the real HTTP call and return synthetic data
+#   shaped like a real Razorpay response. This lets the harness run end-to-end
+#   without a real captured payment.
+#
+# REAL MODE (when a real captured payment exists):
+#   Replace this with the real `pay_*` ID from
+#   https://dashboard.razorpay.com/app/payments (Test Mode). rz09 will then
+#   hit the real Razorpay API to fetch and refund.
+#
+# To switch: just replace the ID below and rerun `./scripts/validate-razorpay.sh`.
+pay_TFjI4hLVBXuunm

@@ -27,7 +27,17 @@ PASS=0; FAIL=0; FATAL=0
 for probe in "${PROBES[@]}"; do
   start=$(date +%s%N)
   set +e
-  output=$(docker exec -e APP_ENV=testing "$CONTAINER" \
+  output=$(docker exec \
+    -e APP_ENV=testing \
+    -e "DATABASE_URL=postgresql://temple_trust:dev@postgres:5432/temple_trust?sslmode=disable" \
+    -e "DB_HOST=postgres" \
+    -e "DB_CONNECTION=pgsql" \
+    -e "DB_PORT=5432" \
+    -e "DB_DATABASE=temple_trust" \
+    -e "DB_USERNAME=temple_trust" \
+    -e "DB_PASSWORD=dev" \
+    -e "DB_SSLMODE=disable" \
+    "$CONTAINER" \
     php "$PROBES_DIR/$probe" 2>&1)
   rc=$?
   set -e

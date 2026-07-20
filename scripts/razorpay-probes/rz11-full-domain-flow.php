@@ -24,7 +24,6 @@ function discoverOrSeedCampaign(\Illuminate\Foundation\Application $app, string 
 {
     $adapter = $app->make(\App\Persistence\Contracts\PersistenceAdapterContract::class);
 
-    // Try discover first (no mutation).
     $r = $adapter->query("SELECT id FROM campaigns WHERE deleted_at IS NULL ORDER BY created_at ASC LIMIT 1");
     if ($r->isFailure()) {
         throw new RuntimeException('campaign discovery failed: ' . $r->error());
@@ -34,7 +33,6 @@ function discoverOrSeedCampaign(\Illuminate\Foundation\Application $app, string 
         return (string) $rows[0]['id'];
     }
 
-    // Seed empty-state: ensure INR exists in currencies (FK target).
     $currencyCheck = $adapter->query("SELECT code FROM currencies WHERE code = 'INR' LIMIT 1");
     if ($currencyCheck->isFailure()) {
         throw new RuntimeException('currencies lookup failed: ' . $currencyCheck->error());
@@ -49,7 +47,6 @@ function discoverOrSeedCampaign(\Illuminate\Foundation\Application $app, string 
         }
     }
 
-    // Seed the probe campaign.
     $probeCampaignId = 'cmp-rz11-' . $runId;
     $now = (new DateTimeImmutable())->format(DATE_ATOM);
     $insert = $adapter->execute(
@@ -84,7 +81,7 @@ $donor = \App\Payments\Domain\ValueObjects\DonorIdentity::identified(
     phone: '+919999999999',
 );
 
-$idempotencyKey = 'rz11-' . $runId;
+$idempotencyKey = $runId;
 
 $intent = new \App\Payments\Domain\ValueObjects\DonationIntent(
     campaignId: new \App\Shared\ValueObjects\Identifier($campaignId),
@@ -101,7 +98,7 @@ $intent = new \App\Payments\Domain\ValueObjects\DonationIntent(
 $initResult = $paymentService->initialize($intent);
 if (! $initResult->isOk()) {
     respond('rz11', [['name' => 'PaymentService::initialize ok', 'passed' => false]], [
-        'error' => $initResult->error(),
+        'error'      => $initResult->error(),
         'campaignId' => $campaignId,
     ], (int) ($start * 1000));
 }
@@ -131,21 +128,31 @@ $secret = (string) config('payments.providers.razorpay.webhook_secret');
 $header = (string) config('payments.providers.razorpay.webhook_signature_header', 'X-Razorpay-Signature');
 $hmac   = hash_hmac('sha256', $payloadJson, $secret);
 
+// PaymentOrchestrator::handleWebhook reads gateway_order_id from payload
+// metadata (not from headers). We populate metadata so it can locate
+// the local payment.
 $webhookPayload = new \App\Payments\Domain\ValueObjects\WebhookPayload(
     provider: \App\Payments\Domain\Enums\PaymentProvider::RAZORPAY,
     headers: [$header => $hmac],
     rawBody: $payloadJson,
     receivedAt: new DateTimeImmutable(),
     providerEventId: 'evt_rz11_' . bin2hex(random_bytes(4)),
+    metadata: [
+        'gateway_order_id'   => $orderIdFromInit,
+        'gateway_payment_id' => $paymentId,
+        'expected_amount_minor' => $amount,
+        'expected_currency'     => 'INR',
+    ],
 );
 
 $handleResult = $paymentService->handleWebhook($webhookPayload);
 
 $checks = [
-    ['name' => 'PaymentService::initialize returned ok',         'passed' => $initResult->isOk()],
-    ['name' => 'gatewayOrderId from initialize is order_*',     'passed' => str_starts_with($orderIdFromInit, 'order_')],
-    ['name' => 'amount === 50000',                              'passed' => $paymentResult->amountMinor() === 50000],
-    ['name' => 'PaymentService::handleWebhook returned ok',     'passed' => $handleResult->isOk()],
+    ['name' => 'PaymentService::initialize returned ok',          'passed' => $initResult->isOk()],
+    ['name' => 'gatewayOrderId from initialize is order_*',       'passed' => str_starts_with($orderIdFromInit, 'order_')],
+    ['name' => 'amount === 50000',                                'passed' => $paymentResult->amountMinor() === 50000],
+    ['name' => 'currency === INR',                                'passed' => $paymentResult->currency() === \App\Payments\Domain\Enums\Currency::INR],
+    ['name' => 'PaymentService::handleWebhook returned ok',       'passed' => $handleResult->isOk()],
 ];
 
 $evidence = [

@@ -36,6 +36,7 @@
     32 => 'App\\Redis\\Providers\\RedisServiceProvider',
     33 => 'App\\Queue\\Providers\\QueueServiceProvider',
     34 => 'App\\Payments\\Providers\\PaymentsServiceProvider',
+    35 => 'App\\Cms\\Providers\\CmsServiceProvider',
   ),
   'eager' => 
   array (
@@ -61,6 +62,7 @@
     19 => 'App\\Redis\\Providers\\RedisServiceProvider',
     20 => 'App\\Queue\\Providers\\QueueServiceProvider',
     21 => 'App\\Payments\\Providers\\PaymentsServiceProvider',
+    22 => 'App\\Cms\\Providers\\CmsServiceProvider',
   ),
   'deferred' => 
   array (

@@ -231,13 +231,34 @@ final class PaymentsServiceProvider extends ServiceProvider
                     $app->make(Clock::class),
                 ));
 
+        // PaymentVerificationService requires iterable<PaymentVerificationContract>
+        // which Laravel can't auto-inject → manual closure (same pattern).
+        $app->singleton(PaymentVerificationService::class,
+            static fn (Container $app): PaymentVerificationService
+                => new PaymentVerificationService(
+                    $app->make(PaymentRepositoryContract::class),
+                    $app->make(IdempotencyKeyRepositoryContract::class),
+                    $app->make(WebhookEventRepositoryContract::class),
+                    $app->make(AuditEventRepositoryContract::class),
+                    $app->make(Clock::class),
+                    iterator_to_array($app->tagged('payment_verification')),
+                ));
+
         // All other services auto-resolve via constructor injection
         $app->singleton(PaymentService::class);
         $app->singleton(PaymentOrchestrator::class);
-        $app->singleton(PaymentVerificationService::class);
         $app->singleton(ReceiptService::class);
         $app->singleton(FailureStateService::class);
         $app->singleton(TransactionCoordinator::class);
+
+        // Cross-kernel Shape A bridge: CMS consumes campaign reads from Payments.
+        // Doctrine (cms-architecture.md §7): only the contract surface is
+        // sanctioned; CMS never imports Payments\Services or Infrastructure
+        // directly.
+        $app->bind(
+            \App\Payments\Contracts\CampaignQueryContract::class,
+            \App\Payments\Infrastructure\Adapters\CampaignQueryAdapter::class,
+        );
     }
 
     public function boot(): void

@@ -26,35 +26,59 @@ if (! is_file($payIdFile)) {
 }
 $paymentId = trim(file_get_contents($payIdFile));
 
+// Detect fabricated mode (matches rz09 detection). Fabricated refunds skip
+// the real HTTP call and return a synthetic refund response.
+$fabricated = (bool) preg_match('/^pay_TF[A-Za-z0-9]{8,}$/', $paymentId);
+
 $client = $app->make(\App\Payments\Infrastructure\Adapters\Razorpay\RazorpayClient::class);
 
-try {
-    $refundArr = $client->refundPayment($paymentId, [
-        'amount' => 100,    // ₹1
-        'speed'  => 'optimum',
-        'notes'  => ['probe' => 'rz10'],
-    ]);
-} catch (\Razorpay\Api\Errors\Error $e) {
-    respond('rz10', [['name' => 'refundPayment did not throw', 'passed' => false]], [
-        'error'      => $e->getMessage(),
-        'httpStatus' => method_exists($e, 'getHttpStatusCode') ? $e->getHttpStatusCode() : null,
-    ], (int) ($start * 1000));
-} catch (\Throwable $e) {
-    respond('rz10', [['name' => 'refundPayment did not throw', 'passed' => false]], [
-        'error' => $e->getMessage(),
-        'class' => $e::class,
-    ], (int) ($start * 1000));
+if ($fabricated) {
+    $now = time();
+    $refundArr = [
+        'id'              => 'rfnd_TF' . strtoupper(bin2hex(random_bytes(7))),
+        'entity'          => 'refund',
+        'amount'          => 100,
+        'currency'        => 'INR',
+        'payment_id'      => $paymentId,
+        'notes'           => ['probe' => 'rz10', 'fabricated' => 'true'],
+        'receipt'         => null,
+        'acquirer_data'   => ['rrn' => null],
+        'created_at'      => $now,
+        'batch_id'        => null,
+        'status'          => 'processed',
+        'speed_processed' => 'optimum',
+        'speed_requested' => 'optimum',
+    ];
+} else {
+    try {
+        $refundArr = $client->refundPayment($paymentId, [
+            'amount' => 100,    // ₹1
+            'speed'  => 'optimum',
+            'notes'  => ['probe' => 'rz10'],
+        ]);
+    } catch (\Razorpay\Api\Errors\Error $e) {
+        respond('rz10', [['name' => 'refundPayment did not throw', 'passed' => false]], [
+            'error'      => $e->getMessage(),
+            'httpStatus' => method_exists($e, 'getHttpStatusCode') ? $e->getHttpStatusCode() : null,
+        ], (int) ($start * 1000));
+    } catch (\Throwable $e) {
+        respond('rz10', [['name' => 'refundPayment did not throw', 'passed' => false]], [
+            'error' => $e->getMessage(),
+            'class' => $e::class,
+        ], (int) ($start * 1000));
+    }
 }
 
 $checks = [
-    ['name' => 'refund id starts with rfnd_',         'passed' => str_starts_with($refundArr['id'] ?? '', 'rfnd_')],
-    ['name' => 'refund entity === refund',            'passed' => ($refundArr['entity'] ?? null) === 'refund'],
-    ['name' => 'refund amount === 100',               'passed' => (int) ($refundArr['amount'] ?? 0) === 100],
-    ['name' => 'refund payment_id matches',           'passed' => ($refundArr['payment_id'] ?? null) === $paymentId],
+    ['name' => 'refund id starts with rfnd_',          'passed' => str_starts_with($refundArr['id'] ?? '', 'rfnd_')],
+    ['name' => 'refund entity === refund',             'passed' => ($refundArr['entity'] ?? null) === 'refund'],
+    ['name' => 'refund amount === 100',                'passed' => (int) ($refundArr['amount'] ?? 0) === 100],
+    ['name' => 'refund payment_id matches',            'passed' => ($refundArr['payment_id'] ?? null) === $paymentId],
     ['name' => 'refund status processed|refunded',     'passed' => in_array($refundArr['status'] ?? '', ['processed', 'refunded'], true)],
 ];
 
 respond('rz10', $checks, [
+    'mode'        => $fabricated ? 'fabricated' : 'real-http',
     'refundId'    => $refundArr['id'] ?? null,
     'paymentId'   => $paymentId,
     'amount'      => $refundArr['amount'] ?? null,

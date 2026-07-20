@@ -55,6 +55,7 @@ return [
         // adds the Queue module's typed contract on top.
         App\Queue\Providers\QueueServiceProvider::class,
         App\Payments\Providers\PaymentsServiceProvider::class,
+        App\Cms\Providers\CmsServiceProvider::class,
     ])->toArray(),
 
     /*

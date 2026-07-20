@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;
-use RuntimeException;
 
 return new class extends Migration
 {
@@ -17,6 +16,16 @@ return new class extends Migration
      */
     public function up(): void
     {
+        // Connection guard: this migration is Postgres-authoritative.
+        // Without the guard, every RefreshDatabase on a SQLite-backed
+        // test (phpunit.xml sets DB_CONNECTION=sqlite) would attempt
+        // to run V1-schema.sql — full of CREATE TYPE / EXCLUDE / btree_gist
+        // syntax that SQLite cannot parse, killing every feature test.
+        // The sibling migration 2026_07_16_000002 owns the SQLite path.
+        if (DB::connection()->getDriverName() !== 'pgsql') {
+            return;
+        }
+
         $schemaPath = database_path('schema-neon/V1-schema.sql');
 
         if (! file_exists($schemaPath)) {
