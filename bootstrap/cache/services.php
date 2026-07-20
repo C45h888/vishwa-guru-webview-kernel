@@ -37,6 +37,9 @@
     33 => 'App\\Queue\\Providers\\QueueServiceProvider',
     34 => 'App\\Payments\\Providers\\PaymentsServiceProvider',
     35 => 'App\\Cms\\Providers\\CmsServiceProvider',
+    36 => 'App\\Campaigns\\Providers\\CampaignsServiceProvider',
+    37 => 'App\\Gallery\\Providers\\GalleryServiceProvider',
+    38 => 'App\\Events\\Providers\\EventsServiceProvider',
   ),
   'eager' => 
   array (
@@ -63,6 +66,9 @@
     20 => 'App\\Queue\\Providers\\QueueServiceProvider',
     21 => 'App\\Payments\\Providers\\PaymentsServiceProvider',
     22 => 'App\\Cms\\Providers\\CmsServiceProvider',
+    23 => 'App\\Campaigns\\Providers\\CampaignsServiceProvider',
+    24 => 'App\\Gallery\\Providers\\GalleryServiceProvider',
+    25 => 'App\\Events\\Providers\\EventsServiceProvider',
   ),
   'deferred' => 
   array (
