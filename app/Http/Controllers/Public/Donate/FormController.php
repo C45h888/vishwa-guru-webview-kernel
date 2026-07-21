@@ -21,9 +21,11 @@ final class FormController
 {
     public function __invoke(CampaignsQueryContract $campaigns): Response
     {
+        $paged = $campaigns->listDisplayable(1, 50);
+
         $campaignsList = array_map(
             static fn ($dto) => $dto->toArray(),
-            $campaigns->listDisplayable(1, 50),
+            $paged->items,
         );
 
         // Default currency comes from the first campaign or 'INR'.

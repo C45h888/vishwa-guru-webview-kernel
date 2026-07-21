@@ -41,6 +41,13 @@ class RouteServiceProvider extends ServiceProvider
             Route::middleware('web')
                 ->group(base_path('routes/receipts.php'));
 
+            // Donation UI pages — Sub-project 3 (Phase 3).
+            // GET /donate + GET /donate/success served as Inertia pages.
+            // The Razorpay submission POST lives in routes/donation.php
+            // under /api/v1 (separate group, below).
+            Route::middleware('web')
+                ->group(base_path('routes/donate.php'));
+
             // Artisan commands — web middleware group (so console.php
             // commands have access to session / cookies if needed).
             Route::middleware('web')
