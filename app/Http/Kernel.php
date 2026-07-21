@@ -39,6 +39,7 @@ class Kernel extends HttpKernel
         'web' => [
             EncryptCookies::class,
             AddQueuedCookiesToResponse::class,
+            \App\Http\Middleware\HandleInertiaRequests::class,
             StartSession::class,
             ShareErrorsFromSession::class,
             VerifyCsrfToken::class,
