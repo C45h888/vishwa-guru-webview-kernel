@@ -2,30 +2,20 @@
 
 declare(strict_types=1);
 
-use Illuminate\Http\Request;
+use App\Http\Controllers\Public\Events\IndexController as EventsIndex;
+use App\Http\Controllers\Public\Events\ShowController as EventsShow;
 use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
-| Public events routes — reserved in Sub-project 1
+| Public events routes — wired in Sub-project 3 (Phase 3)
 |--------------------------------------------------------------------------
+|
+| Thin controllers under App\Http\Controllers\Public\Events.
 |
 | Route names: `events.index`, `events.show`.
 | URL paths:  `/events`, `/events/{slug}`.
-|
-| Controllers arrive in Sub-project 3 (Public UI Skeleton Pages).
 */
 
-Route::get('/events', function (Request $request) {
-    return response()->json(
-        ['error' => 'events.index not yet implemented'],
-        501,
-    );
-})->name('events.index');
-
-Route::get('/events/{slug}', function (Request $request, string $slug) {
-    return response()->json(
-        ['error' => 'events.show not yet implemented', 'slug' => $slug],
-        501,
-    );
-})->name('events.show');
+Route::get('/events', EventsIndex::class)->name('events.index');
+Route::get('/events/{slug}', EventsShow::class)->name('events.show');
