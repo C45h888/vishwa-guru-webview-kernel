@@ -1,0 +1,21 @@
+{
+    "extends": "@tsconfig/svelte/tsconfig.json",
+    "compilerOptions": {
+        "target": "ES2022",
+        "module": "ESNext",
+        "moduleResolution": "Bundler",
+        "strict": true,
+        "noImplicitAny": true,
+        "baseUrl": ".",
+        "paths": {
+            "$shared/*": ["resources/js/shared/*"],
+            "$domains/*": ["resources/js/domains/*"]
+        },
+        "types": ["svelte"]
+    },
+    "include": [
+        "resources/js/**/*.ts",
+        "resources/js/**/*.svelte"
+    ],
+    "references": [{ "path": "./tsconfig.node.json" }]
+}
