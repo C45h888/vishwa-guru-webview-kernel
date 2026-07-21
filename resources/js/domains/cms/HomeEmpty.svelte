@@ -2,7 +2,7 @@
     import PublicLayout from '$shared/components/PublicLayout.svelte';
     import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '$shared/ui/card';
     import { Separator } from '$shared/ui/separator';
-    import type { HomeEmptyProps } from '../types';
+    import type { HomeEmptyProps } from './types';
 
     let { appName, featuredCampaigns, featuredEvents, featuredGalleries }: HomeEmptyProps = $props();
 </script>

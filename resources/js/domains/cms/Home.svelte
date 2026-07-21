@@ -2,7 +2,7 @@
     import PublicLayout from '$shared/components/PublicLayout.svelte';
     import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '$shared/ui/card';
     import { Separator } from '$shared/ui/separator';
-    import type { HomePageProps } from '../types';
+    import type { HomePageProps } from './types';
 
     let {
         page,
