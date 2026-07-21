@@ -2,8 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Http\Controllers\Public\HomeController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', function () {
-    return response()->json(['status' => 'ok', 'phase' => '0.25']);
-});
+Route::get('/', [HomeController::class, 'index'])->name('home');
