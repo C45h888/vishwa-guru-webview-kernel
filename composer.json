@@ -42,6 +42,9 @@
             "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
             "@php artisan package:discover --ansi"
         ],
+        "post-install-cmd": [
+            "@php -r \"exec('which npm', \\$o, \\$s); if (\\$s === 0) { passthru('npm ci && npm run build'); } else { fwrite(STDERR, '[composer] npm not on PATH; skipping JS install.\\n'); }\""
+        ],
         "post-update-cmd": [
             "@php artisan vendor:publish --tag=laravel-assets --ansi --force"
         ],
