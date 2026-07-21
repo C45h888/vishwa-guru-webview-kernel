@@ -36,6 +36,11 @@ class RouteServiceProvider extends ServiceProvider
             Route::middleware('web')
                 ->group(base_path('routes/events.php'));
 
+            // Public receipt routes — Sub-project 3 (Phase 3).
+            // Single GET /receipts/{receiptNumber} with regex constraint.
+            Route::middleware('web')
+                ->group(base_path('routes/receipts.php'));
+
             // Artisan commands — web middleware group (so console.php
             // commands have access to session / cookies if needed).
             Route::middleware('web')
