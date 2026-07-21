@@ -2,30 +2,20 @@
 
 declare(strict_types=1);
 
-use Illuminate\Http\Request;
+use App\Http\Controllers\Public\Gallery\IndexController as GalleryIndex;
+use App\Http\Controllers\Public\Gallery\ShowController as GalleryShow;
 use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
-| Public gallery routes — reserved in Sub-project 1
+| Public gallery routes — wired in Sub-project 3 (Phase 3)
 |--------------------------------------------------------------------------
+|
+| Thin controllers under App\Http\Controllers\Public\Gallery.
 |
 | Route names: `gallery.index`, `gallery.show`.
 | URL paths:  `/gallery`, `/gallery/{slug}`.
-|
-| Controllers arrive in Sub-project 3 (Public UI Skeleton Pages).
 */
 
-Route::get('/gallery', function (Request $request) {
-    return response()->json(
-        ['error' => 'gallery.index not yet implemented'],
-        501,
-    );
-})->name('gallery.index');
-
-Route::get('/gallery/{slug}', function (Request $request, string $slug) {
-    return response()->json(
-        ['error' => 'gallery.show not yet implemented', 'slug' => $slug],
-        501,
-    );
-})->name('gallery.show');
+Route::get('/gallery', GalleryIndex::class)->name('gallery.index');
+Route::get('/gallery/{slug}', GalleryShow::class)->name('gallery.show');
