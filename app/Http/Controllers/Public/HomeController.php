@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Public;
 
 use App\Campaigns\Contracts\CampaignsQueryContract;
+use App\Cms\Contracts\StaticPageRendererContract;
 use App\Cms\Domain\DTOs\RenderedStaticPage;
 use App\Cms\Domain\Exceptions\StaticPageNotFoundException;
-use App\Cms\Services\StaticPageRendererService;
 use App\Events\Contracts\EventsQueryContract;
 use App\Gallery\Contracts\GalleryQueryContract;
 use Inertia\Inertia;
@@ -16,7 +16,7 @@ use Inertia\Response;
 final class HomeController
 {
     public function index(
-        StaticPageRendererService $renderer,
+        StaticPageRendererContract $renderer,
         CampaignsQueryContract $campaigns,
         EventsQueryContract $events,
         GalleryQueryContract $gallery,

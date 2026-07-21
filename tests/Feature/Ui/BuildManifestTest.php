@@ -10,10 +10,10 @@ final class BuildManifestTest extends TestCase
 {
     public function test_build_manifest_is_well_formed_when_present(): void
     {
-        $manifestPath = public_path('build/manifest.json');
+        $manifestPath = public_path('build/.vite/manifest.json');
         if (! is_file($manifestPath)) {
             $this->markTestSkipped(
-                "public/build/manifest.json missing — run 'npm run build' before this test."
+                "public/build/.vite/manifest.json missing — run 'npm run build' before this test."
             );
         }
 

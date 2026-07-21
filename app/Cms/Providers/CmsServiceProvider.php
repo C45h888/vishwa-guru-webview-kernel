@@ -26,6 +26,7 @@ use App\Cms\Infrastructure\Repositories\EloquentStaticPageRepository;
 use App\Cms\Infrastructure\UrlResolution\StubImageUrlResolver;
 use App\Cms\Contracts\ImageUrlResolverContract;
 use App\Cms\Contracts\ResolvedPageCacheContract;
+use App\Cms\Contracts\StaticPageRendererContract;
 use App\Cms\Domain\Repositories\ContactInformationRepositoryContract;
 use App\Cms\Domain\Repositories\HeroBannerRepositoryContract;
 use App\Cms\Domain\Repositories\StaticPageReferenceRepositoryContract;
@@ -127,6 +128,7 @@ final class CmsServiceProvider extends ServiceProvider
         $app->singleton(StaticPageService::class);
         $app->singleton(StaticPageQueryService::class);
         $app->singleton(StaticPageRendererService::class);
+        $app->bind(StaticPageRendererContract::class, StaticPageRendererService::class);
         $app->singleton(HeroBannerService::class);
         $app->singleton(ContactInformationService::class);
         $app->singleton(ReferenceResolutionService::class);
@@ -199,6 +201,7 @@ final class CmsServiceProvider extends ServiceProvider
             StaticPageService::class,
             StaticPageQueryService::class,
             StaticPageRendererService::class,
+            StaticPageRendererContract::class,
             HeroBannerService::class,
             ContactInformationService::class,
             ReferenceResolutionService::class,

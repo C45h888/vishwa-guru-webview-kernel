@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Cms\Services;
 
 use App\Cms\Contracts\ResolvedPageCacheContract;
+use App\Cms\Contracts\StaticPageRendererContract;
 use App\Cms\Domain\DTOs\RenderedStaticPage;
 use App\Cms\Domain\DTOs\ResolvedReference;
 use App\Cms\Domain\Entities\StaticPage;
@@ -37,7 +38,7 @@ use DateTimeImmutable;
  *
  * @see /Users/kamii/Vishwaguru-webview-kernel/vishwa-guru-webview-kernel/cms-architecture.md §4.3
  */
-final class StaticPageRendererService
+final class StaticPageRendererService implements StaticPageRendererContract
 {
     /**
      * Per-process memoization of in-flight resolutions (cache stampede mitigation).

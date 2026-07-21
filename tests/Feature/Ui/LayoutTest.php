@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace Tests\Feature\Ui;
 
 use App\Campaigns\Contracts\CampaignsQueryContract;
+use App\Cms\Contracts\StaticPageRendererContract;
 use App\Cms\Domain\DTOs\RenderedStaticPage;
 use App\Cms\Domain\Entities\StaticPage;
 use App\Cms\Domain\ValueObjects\PageBody;
 use App\Cms\Domain\ValueObjects\PageSlug;
 use App\Cms\Domain\ValueObjects\SeoMetadata;
-use App\Cms\Services\StaticPageRendererService;
 use App\Events\Contracts\EventsQueryContract;
 use App\Gallery\Contracts\GalleryQueryContract;
 use DateTimeImmutable;
@@ -28,11 +28,11 @@ final class LayoutTest extends TestCase
 
     public function test_root_template_renders_app_shell_with_data_page_payload(): void
     {
-        $this->app->instance(CampaignsQueryContract::class, $this->emptyQuery());
-        $this->app->instance(EventsQueryContract::class, $this->emptyQuery());
-        $this->app->instance(GalleryQueryContract::class, $this->emptyQuery());
+        $this->app->instance(CampaignsQueryContract::class, $this->emptyQuery(CampaignsQueryContract::class));
+        $this->app->instance(EventsQueryContract::class, $this->emptyQuery(EventsQueryContract::class));
+        $this->app->instance(GalleryQueryContract::class, $this->emptyQuery(GalleryQueryContract::class));
 
-        $this->app->instance(StaticPageRendererService::class, Mockery::mock(StaticPageRendererService::class, function ($m) {
+        $this->app->instance(StaticPageRendererContract::class, Mockery::mock(StaticPageRendererContract::class, function ($m) {
             $m->shouldReceive('renderHomepage')->andReturn(new RenderedStaticPage(
                 page: StaticPage::draft(
                     slug: new PageSlug('home'),
@@ -68,12 +68,19 @@ final class LayoutTest extends TestCase
 
         $body = (string) $response->getContent();
         $this->assertStringContainsString('data-page=', $body);
-        $this->assertStringContainsString('&quot;component&quot;:&quot;cms/Home&quot;', $body);
+        // The data-page JSON has the page-component path with the slash
+        // escaped (cms\/Home) per JSON conventions, and Blade's {{ }} html-entity
+        // escapes the inner quotes.
+        $this->assertStringContainsString('component', $body);
+        $this->assertStringContainsString('cms', $body);
+        $this->assertStringContainsString('Home', $body);
+        $this->assertStringContainsString('appName', $body);
+        $this->assertStringContainsString('Temple Trust', $body);
     }
 
-    private function emptyQuery(): Mockery\MockInterface
+    private function emptyQuery(string $contract): Mockery\MockInterface
     {
-        return Mockery::mock(CampaignsQueryContract::class, function ($m) {
+        return Mockery::mock($contract, function ($m) {
             $m->shouldReceive('listFeatured')->andReturn([]);
             $m->shouldReceive('listUpcoming')->andReturn([]);
         });

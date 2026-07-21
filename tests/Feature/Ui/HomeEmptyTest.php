@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Tests\Feature\Ui;
 
 use App\Campaigns\Contracts\CampaignsQueryContract;
+use App\Cms\Contracts\StaticPageRendererContract;
 use App\Cms\Domain\Exceptions\StaticPageNotFoundException;
-use App\Cms\Services\StaticPageRendererService;
 use App\Events\Contracts\EventsQueryContract;
 use App\Gallery\Contracts\GalleryQueryContract;
 use Inertia\Testing\AssertableInertia;
@@ -23,11 +23,11 @@ final class HomeEmptyTest extends TestCase
 
     public function test_missing_homepage_falls_back_to_home_empty(): void
     {
-        $this->app->instance(CampaignsQueryContract::class, $this->emptyQuery());
-        $this->app->instance(EventsQueryContract::class, $this->emptyQuery());
-        $this->app->instance(GalleryQueryContract::class, $this->emptyQuery());
+        $this->app->instance(CampaignsQueryContract::class, $this->emptyQuery(CampaignsQueryContract::class));
+        $this->app->instance(EventsQueryContract::class, $this->emptyQuery(EventsQueryContract::class));
+        $this->app->instance(GalleryQueryContract::class, $this->emptyQuery(GalleryQueryContract::class));
 
-        $this->app->instance(StaticPageRendererService::class, Mockery::mock(StaticPageRendererService::class, function ($m) {
+        $this->app->instance(StaticPageRendererContract::class, Mockery::mock(StaticPageRendererContract::class, function ($m) {
             $m->shouldReceive('renderHomepage')
                 ->andThrow(StaticPageNotFoundException::bySlug('homepage'));
         }));
@@ -45,9 +45,9 @@ final class HomeEmptyTest extends TestCase
         );
     }
 
-    private function emptyQuery(): Mockery\MockInterface
+    private function emptyQuery(string $contract): Mockery\MockInterface
     {
-        return Mockery::mock(CampaignsQueryContract::class, function ($m) {
+        return Mockery::mock($contract, function ($m) {
             $m->shouldReceive('listFeatured')->andReturn([]);
             $m->shouldReceive('listUpcoming')->andReturn([]);
         });
