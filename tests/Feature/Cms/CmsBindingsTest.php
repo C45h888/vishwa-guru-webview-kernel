@@ -17,7 +17,7 @@ use App\Cms\Infrastructure\Repositories\EloquentContactInformationRepository;
 use App\Cms\Infrastructure\Repositories\EloquentHeroBannerRepository;
 use App\Cms\Infrastructure\Repositories\EloquentStaticPageReferenceRepository;
 use App\Cms\Infrastructure\Repositories\EloquentStaticPageRepository;
-use App\Cms\Infrastructure\UrlResolution\StubImageUrlResolver;
+use App\Cms\Infrastructure\UrlResolution\PublicMediaUrlResolver;
 use App\Cms\Services\ReferenceResolutionService;
 use App\Persistence\Contracts\RepositoryRegistryContract;
 use App\Persistence\ValueObjects\EntityId;
@@ -78,18 +78,18 @@ final class CmsBindingsTest extends TestCase
     }
 
     #[Test]
-    public function testImageUrlResolverResolvesToStub(): void
+    public function testImageUrlResolverResolvesToCmsMediaRoute(): void
     {
         /** @var ImageUrlResolverContract $resolver */
         $resolver = $this->app->make(ImageUrlResolverContract::class);
 
-        $this->assertInstanceOf(StubImageUrlResolver::class, $resolver);
+        $this->assertInstanceOf(PublicMediaUrlResolver::class, $resolver);
 
         // EntityId::fromString requires a strict 26-char ULID suffix,
         // so generate a real one rather than hardcoding a fake.
         $fileId = EntityId::generate('file_asset');
         $url = $resolver->resolve($fileId);
-        $this->assertSame("/placeholder/file/{$fileId->value()}", $url);
+        $this->assertStringEndsWith("/media/{$fileId->value()}", $url);
     }
 
     #[Test]

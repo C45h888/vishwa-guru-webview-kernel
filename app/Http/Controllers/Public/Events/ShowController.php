@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Public\Events;
 
 use App\Events\Contracts\EventsQueryContract;
+use App\Cms\Services\PublicMediaPresentationService;
 use Inertia\Inertia;
 use Inertia\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -19,7 +20,7 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
  */
 final class ShowController
 {
-    public function __invoke(EventsQueryContract $events, string $slug): Response
+    public function __invoke(EventsQueryContract $events, PublicMediaPresentationService $media, string $slug): Response
     {
         $detail = $events->findBySlug($slug);
         if ($detail === null) {
@@ -27,7 +28,7 @@ final class ShowController
         }
 
         return Inertia::render('events/Show', [
-            'event' => $detail->toArray(),
+            'event' => $media->enrich($detail->toArray(), 'banner_file_id', 'banner_image'),
             'appName' => config('app.name', 'Temple Trust'),
             'appUrl' => config('app.url'),
         ]);

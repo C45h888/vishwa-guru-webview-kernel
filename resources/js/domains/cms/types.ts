@@ -1,4 +1,4 @@
-import type { AppPageProps } from '$shared/lib/inertia';
+import type { AppPageProps, PublicMediaProps } from '$shared/lib/inertia';
 
 export interface HeroBannerProps {
     id: string;
@@ -8,6 +8,8 @@ export interface HeroBannerProps {
     cta_url: string | null;
     image_file_id: string | null;
     mobile_image_file_id: string | null;
+    image?: PublicMediaProps | null;
+    mobile_image?: PublicMediaProps | null;
     state: string;
     display_order: number;
     starts_at: string | null;

@@ -204,7 +204,7 @@ final class DonorRepository implements DonorRepositoryContract
         $updatedAt = (new \DateTimeImmutable())->format(DATE_ATOM);
 
         $sql = 'UPDATE donors SET
-            is_anonymized = 1,
+            is_anonymized = true,
             email = NULL,
             phone = NULL,
             updated_at = :updated_at

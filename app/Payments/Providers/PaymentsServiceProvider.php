@@ -15,6 +15,7 @@ use App\Payments\Domain\Repositories\DonationRepositoryContract;
 use App\Payments\Domain\Repositories\DonorRepositoryContract;
 use App\Payments\Domain\Repositories\FailureStateRepositoryContract;
 use App\Payments\Domain\Repositories\FileAssetRepositoryContract;
+use App\Payments\Domain\Repositories\PaymentDocumentRepositoryContract;
 use App\Payments\Domain\Repositories\IdempotencyKeyRepositoryContract;
 use App\Payments\Domain\Repositories\PaymentRepositoryContract;
 use App\Payments\Domain\Repositories\ReceiptRepositoryContract;
@@ -43,6 +44,7 @@ use App\Payments\Infrastructure\Repositories\DonationRepository;
 use App\Payments\Infrastructure\Repositories\DonorRepository;
 use App\Payments\Infrastructure\Repositories\FailureStateRepository;
 use App\Payments\Infrastructure\Repositories\FileAssetRepository;
+use App\Payments\Infrastructure\Repositories\PaymentDocumentRepository;
 use App\Payments\Infrastructure\Repositories\IdempotencyKeyRepository;
 use App\Payments\Infrastructure\Repositories\PaymentRepository;
 use App\Payments\Infrastructure\Repositories\ReceiptRepository;
@@ -196,6 +198,7 @@ final class PaymentsServiceProvider extends ServiceProvider
             WebhookEventRepositoryContract::class  => WebhookEventRepository::class,
             AuditEventRepositoryContract::class    => AuditEventRepository::class,
             FileAssetRepositoryContract::class      => FileAssetRepository::class,
+            PaymentDocumentRepositoryContract::class => PaymentDocumentRepository::class,
         ];
         foreach ($repoBindings as $contract => $impl) {
             $app->bind($contract, $impl);
@@ -324,6 +327,7 @@ final class PaymentsServiceProvider extends ServiceProvider
             WebhookEventRepositoryContract::class,
             AuditEventRepositoryContract::class,
             FileAssetRepositoryContract::class,
+            PaymentDocumentRepositoryContract::class,
             // Services
             ReceiptGenerationContract::class,
             PaymentProviderSelector::class,

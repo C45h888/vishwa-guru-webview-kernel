@@ -7,6 +7,7 @@
         CardContent,
     } from '$shared/ui/card';
     import Money from './Money.svelte';
+    import PublicMediaImage from './PublicMediaImage.svelte';
     import type { CampaignSummaryProps } from '$shared/lib/inertia';
 
     let {
@@ -21,6 +22,9 @@
 </script>
 
 <Card class={`h-full ${className}`}>
+    {#if campaign.cover_image}
+        <PublicMediaImage media={campaign.cover_image} alt={campaign.title} class="aspect-[16/9] w-full object-cover" />
+    {/if}
     <CardHeader>
         <CardTitle>
             {#if href}

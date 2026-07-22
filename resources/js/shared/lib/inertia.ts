@@ -10,6 +10,19 @@ export interface SharedPageProps {
     authUser: AuthUser | null;
 }
 
+export interface PublicMediaProps {
+    id: string;
+    url: string;
+    mime_type: string;
+    file_size_bytes: number;
+    content_hash: string;
+    alt_text: string | null;
+    width: number | null;
+    height: number | null;
+    caption: string | null;
+    credit: string | null;
+}
+
 export type AppPageProps<TProps = Record<string, unknown>> = TProps & SharedPageProps;
 
 export type PageComponentProps<TProps = Record<string, unknown>> = AppPageProps<TProps>;
@@ -62,6 +75,7 @@ export interface CampaignSummaryProps {
     starts_at: string | null;
     ends_at: string | null;
     cover_image_file_id: string | null;
+    cover_image?: PublicMediaProps | null;
 }
 
 /**
@@ -94,6 +108,7 @@ export interface EventSummaryProps {
     is_featured: boolean;
     is_upcoming: boolean;
     banner_file_id: string | null;
+    banner_image?: PublicMediaProps | null;
 }
 
 /**
@@ -106,6 +121,7 @@ export interface GallerySummaryProps {
     title: string;
     short_description: string | null;
     cover_image_file_id: string | null;
+    cover_image?: PublicMediaProps | null;
     image_count: number;
     is_featured: boolean;
     published_at: string | null;
@@ -119,6 +135,7 @@ export interface GalleryImageProps {
     id: string;
     gallery_id: string;
     file_asset_id: string | null;
+    image?: PublicMediaProps | null;
     title: string | null;
     caption: string | null;
     alt_text: string | null;

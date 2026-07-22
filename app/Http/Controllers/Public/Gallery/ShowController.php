@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Public\Gallery;
 
 use App\Gallery\Contracts\GalleryQueryContract;
+use App\Cms\Services\PublicMediaPresentationService;
 use Inertia\Inertia;
 use Inertia\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -20,7 +21,7 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
  */
 final class ShowController
 {
-    public function __invoke(GalleryQueryContract $gallery, string $slug): Response
+    public function __invoke(GalleryQueryContract $gallery, PublicMediaPresentationService $media, string $slug): Response
     {
         $detail = $gallery->findBySlug($slug);
         if ($detail === null) {
@@ -28,7 +29,12 @@ final class ShowController
         }
 
         return Inertia::render('gallery/Show', [
-            'gallery' => $detail->toArray(),
+            'gallery' => $media->enrichNestedMany(
+                $media->enrich($detail->toArray(), 'cover_image_file_id', 'cover_image'),
+                'images',
+                'file_asset_id',
+                'image',
+            ),
             'appName' => config('app.name', 'Temple Trust'),
             'appUrl' => config('app.url'),
         ]);

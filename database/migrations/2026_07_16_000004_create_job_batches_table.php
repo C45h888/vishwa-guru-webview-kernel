@@ -24,6 +24,38 @@ return new class extends Migration
 {
     public function up(): void
     {
+        $driver = DB::connection()->getDriverName();
+        if ($driver === 'pgsql' || $driver === 'postgres') {
+            DB::statement(<<<'SQL'
+                CREATE TABLE IF NOT EXISTS job_batches (
+                    id VARCHAR(255) PRIMARY KEY,
+                    name VARCHAR(255) NOT NULL,
+                    total_jobs INTEGER NOT NULL,
+                    pending_jobs INTEGER NOT NULL,
+                    failed_jobs INTEGER NOT NULL,
+                    failed_job_ids TEXT NOT NULL,
+                    options TEXT,
+                    cancelled_at INTEGER,
+                    created_at INTEGER NOT NULL,
+                    finished_at INTEGER
+                )
+            SQL);
+            DB::statement(<<<'SQL'
+                CREATE TABLE IF NOT EXISTS jobs (
+                    id BIGSERIAL PRIMARY KEY,
+                    queue VARCHAR(255) NOT NULL,
+                    payload TEXT NOT NULL,
+                    attempts SMALLINT NOT NULL,
+                    reserved_at INTEGER,
+                    available_at INTEGER NOT NULL,
+                    created_at INTEGER NOT NULL
+                )
+            SQL);
+            DB::statement('CREATE INDEX IF NOT EXISTS jobs_queue_index ON jobs (queue)');
+            DB::statement('CREATE INDEX IF NOT EXISTS jobs_queue_reserved_at_index ON jobs (queue, reserved_at)');
+            return;
+        }
+
         Schema::create('job_batches', function (Blueprint $table) {
             $table->string('id')->primary();
             $table->string('name');

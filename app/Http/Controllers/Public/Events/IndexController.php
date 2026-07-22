@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Public\Events;
 
 use App\Events\Contracts\EventsQueryContract;
+use App\Cms\Services\PublicMediaPresentationService;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -18,22 +19,22 @@ use Inertia\Response;
  */
 final class IndexController
 {
-    public function __invoke(EventsQueryContract $events): Response
+    public function __invoke(EventsQueryContract $events, PublicMediaPresentationService $media): Response
     {
         $page = max(1, (int) request()->query('page', 1));
         $perPage = 12;
         $upcomingLimit = 12;
 
-        $upcoming = array_map(
+        $upcoming = $media->enrichMany(array_map(
             static fn ($dto) => $dto->toArray(),
             $events->listUpcoming($upcomingLimit),
-        );
+        ), 'banner_file_id', 'banner_image');
 
         $pastResult = $events->listPast($page, $perPage);
-        $past = array_map(
+        $past = $media->enrichMany(array_map(
             static fn ($dto) => $dto->toArray(),
             $pastResult->items,
-        );
+        ), 'banner_file_id', 'banner_image');
 
         return Inertia::render('events/Index', [
             'upcoming' => $upcoming,

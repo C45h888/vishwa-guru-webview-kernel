@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Public\Campaigns;
 
 use App\Campaigns\Contracts\CampaignsQueryContract;
+use App\Cms\Services\PublicMediaPresentationService;
 use Inertia\Inertia;
 use Inertia\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -19,7 +20,7 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
  */
 final class ShowController
 {
-    public function __invoke(CampaignsQueryContract $campaigns, string $slug): Response
+    public function __invoke(CampaignsQueryContract $campaigns, PublicMediaPresentationService $media, string $slug): Response
     {
         $detail = $campaigns->findBySlug($slug);
         if ($detail === null) {
@@ -32,7 +33,7 @@ final class ShowController
         );
 
         return Inertia::render('campaigns/Show', [
-            'campaign' => $detail->toArray(),
+            'campaign' => $media->enrich($detail->toArray(), 'cover_image_file_id', 'cover_image'),
             'progress' => $progress,
             'appName' => config('app.name', 'Temple Trust'),
             'appUrl' => config('app.url'),

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Payments\Infrastructure\Receipts;
 
 use App\Payments\Domain\Repositories\FileAssetRepositoryContract;
+use App\Payments\Domain\Repositories\PaymentDocumentRepositoryContract;
 use App\Payments\Domain\ValueObjects\FileAssetRecord;
 use App\Shared\Contracts\ConfigurationContract;
 use App\Shared\Support\Clock;
@@ -24,6 +25,7 @@ final class ReceiptStorage
         private readonly Clock $clock,
         private readonly FileAssetRepositoryContract $fileAssets,
         private readonly ConfigurationContract $config,
+        private readonly ?PaymentDocumentRepositoryContract $paymentDocuments = null,
     ) {}
 
     /**
@@ -54,6 +56,7 @@ final class ReceiptStorage
             $existing = $this->fileAssets->findByHash($hash);
             if ($existing !== null) {
                 // Already stored — reuse the existing record
+                $this->paymentDocuments?->ensureReceiptDocument($existing->id());
                 return Result::success($existing);
             }
 
@@ -73,11 +76,14 @@ final class ReceiptStorage
             );
 
             $this->fileAssets->save($record);
+            $this->paymentDocuments?->ensureReceiptDocument($record->id());
 
             return Result::success($record);
         } catch (RuntimeException $e) {
+            // @phpstan-ignore-next-line Result<T> generic narrowing limit
             return Result::failure("ReceiptStorage: failed to persist PDF — {$e->getMessage()}");
         } catch (\Throwable $e) {
+            // @phpstan-ignore-next-line Result<T> generic narrowing limit
             return Result::failure("ReceiptStorage: unexpected error — {$e->getMessage()}");
         }
     }

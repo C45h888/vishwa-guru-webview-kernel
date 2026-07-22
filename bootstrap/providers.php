@@ -2,43 +2,54 @@
 
 /*
 |--------------------------------------------------------------------------
-| Temple Trust Management System — Provider Registration
+| Temple Trust Management System — Canonical Service Provider List
 |--------------------------------------------------------------------------
 |
-| This file is the canonical source of truth for service provider order.
-| Providers listed here are loaded by bootstrap/app.php and executed
-| during the Application::register phase.
+| THIS FILE IS THE CANONICAL SOURCE OF TRUTH FOR APP SERVICE PROVIDERS.
 |
-| Order is significant:
-|   1. AppServiceProvider         — application-wide bindings
-|   2. SharedServiceProvider      — base contracts and abstractions
-|   3. PersistenceServiceProvider — kernel-level persistence contracts
-|                                   (PersistenceAdapterContract → LaravelDbAdapter,
-|                                    RepositoryRegistryContract → RepositoryRegistry,
-|                                    NeonConnectionConfig, etc.)
-|   4. RuntimeServiceProvider     — runtime infrastructure (health env,
-|                                   failure state machine, commands,
-|                                   health probes, idempotency middleware)
-|   5. RedisServiceProvider       — Redis connector contract wiring
-|                                   (DB 0 app / 1 cache / 2 queue / 3 session)
-|   6. QueueServiceProvider       — Queue connector contract wiring
-|                                   (Laravel queue manager; failed_jobs +
-|                                    jobs + job_batches tables in postgres)
-|   7. PaymentsServiceProvider    — Phase 1 Financial Kernel (9 repos,
-|                                    gateway triads, state machines)
-|   8. (Future) module providers  — Donations, CMS, Gallery, Events, ...
+| config/app.php's 'providers' key merges this array on top of
+| ServiceProvider::defaultProviders(). Laravel 10.50 reads the merged
+| list via Foundation\Application::registerConfiguredProviders() during
+| the kernel's RegisterProviders bootstrap step.
+|
+| Doctrine:
+|   - Add a provider here; do not edit config/app.php's provider list.
+|   - Order is significant. Boot-order invariants:
+|       Shared   → Persistence  (Persistence contracts must resolve first)
+|       Persistence → Runtime   (Runtime tags DatabaseHealthProbe on
+|                                   PersistenceAdapterContract)
+|       Runtime  → Redis        (Redis connector is wired by Runtime-side
+|                                   commands before the worker boots)
+|       Redis    → Queue        (Queue lives on Redis; both share a Redis
+|                                   bus and Queue depends on Redis's
+|                                   connection being resolvable)
+|       Queue    → Payments     (PaymentsServicesProvider may dispatch
+|                                   financial jobs; tries=1)
+|       Payments → Cms          (Cross-kernel dependency: the Payments-side
+|                                   CampaignQuery adapter resolves via Cms
+|                                   modules during boot)
+|       Cms      → Campaigns    (Public content read surface precedes the
+|                                   Payments-facing Campaigns read surface;
+|                                   both share reference-resolution plumbing)
+|       Campaigns → Gallery     (independent kernels, ordered for symmetry)
+|       Gallery   → Events      (independent kernels, ordered for symmetry)
 |
 | Future phases must extend this list without reordering existing entries.
+| When the Laravel framework is upgraded to 11.x and bootstrap/app.php
+| is migrated to Application::configure()->withProviders(...), this file
+| is the array passed to withProviders(). No data change required.
 */
 
 return [
     App\Providers\AppServiceProvider::class,
+    App\Providers\RouteServiceProvider::class,
     App\Shared\Providers\SharedServiceProvider::class,
     App\Persistence\Providers\PersistenceServiceProvider::class,
     App\Runtime\Providers\RuntimeServiceProvider::class,
     App\Redis\Providers\RedisServiceProvider::class,
     App\Queue\Providers\QueueServiceProvider::class,
     App\Payments\Providers\PaymentsServiceProvider::class,
+    App\Cms\Providers\CmsServiceProvider::class,
     App\Campaigns\Providers\CampaignsServiceProvider::class,
     App\Gallery\Providers\GalleryServiceProvider::class,
     App\Events\Providers\EventsServiceProvider::class,

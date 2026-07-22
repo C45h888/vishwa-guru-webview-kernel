@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Public\Gallery;
 
 use App\Gallery\Contracts\GalleryQueryContract;
+use App\Cms\Services\PublicMediaPresentationService;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -17,7 +18,7 @@ use Inertia\Response;
  */
 final class IndexController
 {
-    public function __invoke(GalleryQueryContract $gallery): Response
+    public function __invoke(GalleryQueryContract $gallery, PublicMediaPresentationService $media): Response
     {
         $page = max(1, (int) request()->query('page', 1));
         $perPage = 12;
@@ -25,10 +26,10 @@ final class IndexController
         $paged = $gallery->listDisplayable($page, $perPage);
 
         return Inertia::render('gallery/Index', [
-            'galleries' => array_map(
+            'galleries' => $media->enrichMany(array_map(
                 static fn ($dto) => $dto->toArray(),
                 $paged->items,
-            ),
+            ), 'cover_image_file_id', 'cover_image'),
             'pagination' => [
                 'page' => $paged->page,
                 'per_page' => $paged->perPage,

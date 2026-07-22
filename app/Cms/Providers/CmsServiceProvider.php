@@ -23,8 +23,9 @@ use App\Cms\Infrastructure\Repositories\EloquentContactInformationRepository;
 use App\Cms\Infrastructure\Repositories\EloquentHeroBannerRepository;
 use App\Cms\Infrastructure\Repositories\EloquentStaticPageReferenceRepository;
 use App\Cms\Infrastructure\Repositories\EloquentStaticPageRepository;
-use App\Cms\Infrastructure\UrlResolution\StubImageUrlResolver;
+use App\Cms\Infrastructure\Repositories\PublicMediaQuery;
 use App\Cms\Contracts\ImageUrlResolverContract;
+use App\Cms\Contracts\PublicMediaQueryContract;
 use App\Cms\Contracts\ResolvedPageCacheContract;
 use App\Cms\Contracts\StaticPageRendererContract;
 use App\Cms\Domain\Repositories\ContactInformationRepositoryContract;
@@ -35,6 +36,7 @@ use App\Cms\Infrastructure\Events\CmsDomainEvents;
 use App\Cms\Services\ContactInformationService;
 use App\Cms\Services\HeroBannerService;
 use App\Cms\Services\ReferenceResolutionService;
+use App\Cms\Services\PublicMediaPresentationService;
 use App\Cms\Services\StaticPageQueryService;
 use App\Cms\Services\StaticPageRendererService;
 use App\Cms\Services\StaticPageService;
@@ -120,7 +122,9 @@ final class CmsServiceProvider extends ServiceProvider
         // AXIS F — Image URL resolver stub (Phase 4 replaces with real
         // file storage; V1 returns the file id as a placeholder URL).
         // ════════════════════════════════════════════════════════════════
-        $app->bind(ImageUrlResolverContract::class, StubImageUrlResolver::class);
+        $app->bind(PublicMediaQueryContract::class, PublicMediaQuery::class);
+        $app->bind(ImageUrlResolverContract::class, static fn (): ImageUrlResolverContract =>
+            new \App\Cms\Infrastructure\UrlResolution\PublicMediaUrlResolver());
 
         // ════════════════════════════════════════════════════════════════
         // AXIS G — Services (auto-resolved via constructor injection)
@@ -132,6 +136,7 @@ final class CmsServiceProvider extends ServiceProvider
         $app->singleton(HeroBannerService::class);
         $app->singleton(ContactInformationService::class);
         $app->singleton(ReferenceResolutionService::class);
+        $app->singleton(PublicMediaPresentationService::class);
     }
 
     public function boot(): void
@@ -192,6 +197,7 @@ final class CmsServiceProvider extends ServiceProvider
             StaticPageBodyRenderer::class,
             BlockRendererRegistry::class,
             ImageUrlResolverContract::class,
+            PublicMediaQueryContract::class,
 
             // Cache
             ResolvedPageCacheContract::class,

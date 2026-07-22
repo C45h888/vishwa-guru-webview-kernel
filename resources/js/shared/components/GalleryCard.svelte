@@ -7,6 +7,7 @@
         CardContent,
     } from '$shared/ui/card';
     import type { GallerySummaryProps } from '$shared/lib/inertia';
+    import PublicMediaImage from './PublicMediaImage.svelte';
 
     let {
         gallery,
@@ -20,6 +21,9 @@
 </script>
 
 <Card class={`h-full ${className}`}>
+    {#if gallery.cover_image}
+        <PublicMediaImage media={gallery.cover_image} alt={gallery.title} class="aspect-[16/9] w-full object-cover" />
+    {/if}
     <CardHeader>
         <CardTitle>
             {#if href}

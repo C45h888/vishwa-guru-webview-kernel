@@ -105,6 +105,12 @@ services:
     ports:
       - "8000:8000"
     environment:
+      # APP_KEY and APP_URL must be explicitly passed so they are present
+      # at container startup — php artisan serve caches env at boot and does
+      # not re-read .env. The host shell may have APP_KEY= (empty) which
+      # would shadow the .env value without this block.
+      APP_KEY: ${APP_KEY}
+      APP_URL: ${APP_URL:-http://localhost:8000}
       # DATABASE_URL is the single source of truth when set — it overrides
       # every discrete DB_* key. The app/worker below still see the discrete
       # keys, but only USE them when DATABASE_URL is empty.
@@ -140,7 +146,7 @@ services:
              else
                echo '[container] NEON mode: skipping migrate (Neon already migrated)';
              fi &&
-             php artisan serve --host=0.0.0.0 --port=8000"
+             php artisan serve --host=0.0.0.0 --port=8000 --no-reload"
 
   # ── Queue worker (Phase 2 — separate container, doctrine-aligned) ─────
   # Doctrine: HTTP and async are separate concerns. One stuck worker

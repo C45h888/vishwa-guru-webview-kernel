@@ -28,19 +28,25 @@ final class ReceiptTest extends InfrastructureTestCase
 {
     public function testShowRendersReceiptDetail(): void
     {
-        // The receipts table in the SQLite migration is missing the
-        // `delivery_status` column that Receipt::fromRow requires.
-        // The repository's SELECT * therefore returns rows that the
-        // entity refuses to rehydrate (InvalidArgumentException at
-        // Receipt.php:206). The full receipt-issuance path is exercised
-        // end-to-end by tests/Feature/Payments/Receipts/ReceiptsEndToEndTest
-        // (which uses an in-memory PDF + a stubbed renderer, bypassing
-        // the schema-mismatch). Out of scope for Phase 3 — the route +
-        // controller surface is still verified by the 404 path test
-        // below. Skip the happy-path until the migration is patched
-        // (Phase 0.5 / Phase 2 work).
-        $this->markTestSkipped(
-            'Skipped: receipts.delivery_status column missing from SQLite migration (pre-existing schema drift).'
+        $this->seedCampaign(id: 'cmp_rcpt_1', state: 'active', title: 'Receipt Test Campaign');
+        $this->seedDonation(id: 'don_rcpt_1', campaignId: 'cmp_rcpt_1', amountMinor: 1000_00);
+        $this->seedPayment(id: 'pay_rcpt_1', donationId: 'don_rcpt_1', amountMinor: 1000_00, status: 'captured');
+        $this->seedReceipt(
+            receiptNumber: 'TR-2026-ABCD12345678',
+            donationId: 'don_rcpt_1',
+            paymentId: 'pay_rcpt_1',
+            campaignId: 'cmp_rcpt_1',
+            amountMinor: 1000_00,
+        );
+
+        $response = $this->get('/receipts/TR-2026-ABCD12345678');
+
+        $response->assertOk();
+        $response->assertInertia(fn (AssertableInertia $page) => $page
+            ->component('payments/Receipt')
+            ->where('receipt_number', 'TR-2026-ABCD12345678')
+            ->where('amount_in_words', 'Rupees One Thousand Only')
+            ->etc()
         );
     }
 

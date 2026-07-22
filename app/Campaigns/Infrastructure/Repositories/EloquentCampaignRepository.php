@@ -109,7 +109,7 @@ final class EloquentCampaignRepository implements CampaignRepositoryContract
                 FROM   campaigns
                 WHERE  deleted_at IS NULL
                   AND  state IN (\'active\',\'completed\')
-                  AND  is_featured = 1
+                  AND  is_featured = true
                 ORDER BY display_order ASC,
                          starts_at DESC NULLS LAST,
                          id ASC

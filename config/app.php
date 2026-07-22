@@ -41,25 +41,17 @@ return [
     |
     */
 
-    'providers' => ServiceProvider::defaultProviders()->merge([
-        App\Providers\AppServiceProvider::class,
-        App\Providers\RouteServiceProvider::class,
-        App\Shared\Providers\SharedServiceProvider::class,
-        App\Persistence\Providers\PersistenceServiceProvider::class,
-        App\Runtime\Providers\RuntimeServiceProvider::class,
-        App\Redis\Providers\RedisServiceProvider::class,
-        // QueueServiceProvider — wires QueueConnectorContract → LaravelQueueConnector.
-        // Doctrine: service code depends on QueueConnectorContract, NEVER on
-        // Illuminate\Support\Facades\Queue. Laravel's built-in QueueServiceProvider
-        // is loaded via defaultProviders() above (provides Queue\Factory); ours
-        // adds the Queue module's typed contract on top.
-        App\Queue\Providers\QueueServiceProvider::class,
-        App\Payments\Providers\PaymentsServiceProvider::class,
-        App\Cms\Providers\CmsServiceProvider::class,
-        App\Campaigns\Providers\CampaignsServiceProvider::class,
-        App\Gallery\Providers\GalleryServiceProvider::class,
-        App\Events\Providers\EventsServiceProvider::class,
-    ])->toArray(),
+    /*
+    | The full app service-provider list lives in bootstrap/providers.php.
+    | This file only contributes Laravel-internal defaults (auth, queue,
+    | cache, ...) via ServiceProvider::defaultProviders(). Edit the
+    | canonical file when registering or reordering app kernels.
+    | See bootstrap/providers.php for the boot-order invariants and the
+    | reasoning behind each provider's position in the array.
+    */
+    'providers' => ServiceProvider::defaultProviders()->merge(
+        require __DIR__.'/../bootstrap/providers.php'
+    )->toArray(),
 
     /*
     |--------------------------------------------------------------------------

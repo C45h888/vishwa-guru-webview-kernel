@@ -144,7 +144,7 @@ final class EloquentEventRepository implements EventRepositoryContract
                 FROM   events
                 WHERE  deleted_at IS NULL
                   AND  state IN (\'published\',\'completed\')
-                  AND  is_featured = 1
+                  AND  is_featured = true
                 ORDER BY display_order ASC, starts_at ASC, id ASC
                 LIMIT  :limit';
 

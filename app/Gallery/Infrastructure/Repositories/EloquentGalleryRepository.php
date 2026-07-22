@@ -130,7 +130,7 @@ final class EloquentGalleryRepository implements GalleryRepositoryContract
                       AND gi.state = \'published\'
                 WHERE  g.deleted_at IS NULL
                   AND  g.state = \'published\'
-                  AND  g.is_featured = 1
+                  AND  g.is_featured = true
                 GROUP BY g.id
                 ORDER BY g.display_order ASC,
                          g.published_at DESC NULLS LAST,

@@ -7,6 +7,7 @@
         CardContent,
     } from '$shared/ui/card';
     import type { EventSummaryProps } from '$shared/lib/inertia';
+    import PublicMediaImage from './PublicMediaImage.svelte';
 
     let {
         event,
@@ -33,6 +34,9 @@
 </script>
 
 <Card class={`h-full ${className}`}>
+    {#if event.banner_image}
+        <PublicMediaImage media={event.banner_image} alt={event.title} class="aspect-[16/9] w-full object-cover" />
+    {/if}
     <CardHeader>
         <CardTitle>
             {#if href}
