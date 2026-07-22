@@ -1,4 +1,10 @@
-import type { AppPageProps, PublicMediaProps } from '$shared/lib/inertia';
+import type {
+    AppPageProps,
+    PublicMediaProps,
+    CampaignSummaryProps,
+    EventSummaryProps,
+    GallerySummaryProps,
+} from '$shared/lib/inertia';
 
 export interface HeroBannerProps {
     id: string;
@@ -41,19 +47,43 @@ export interface FeaturedItemSummary {
     short_description: string | null;
 }
 
+export type HomeFeaturedCampaign = CampaignSummaryProps;
+export type HomeFeaturedEvent = EventSummaryProps;
+export type HomeFeaturedGallery = GallerySummaryProps;
+
 export interface HomePageProps extends AppPageProps {
     page: StaticPageSummary;
     heroBanners: HeroBannerProps[];
     resolvedReferences: ResolvedReferenceProps[];
     html: string;
     resolvedAt: string;
-    featuredCampaigns: FeaturedItemSummary[];
-    featuredEvents: FeaturedItemSummary[];
-    featuredGalleries: FeaturedItemSummary[];
+    featuredCampaigns: HomeFeaturedCampaign[];
+    featuredEvents: HomeFeaturedEvent[];
+    featuredGalleries: HomeFeaturedGallery[];
 }
 
 export interface HomeEmptyProps extends AppPageProps {
-    featuredCampaigns: FeaturedItemSummary[];
-    featuredEvents: FeaturedItemSummary[];
-    featuredGalleries: FeaturedItemSummary[];
+    featuredCampaigns: HomeFeaturedCampaign[];
+    featuredEvents: HomeFeaturedEvent[];
+    featuredGalleries: HomeFeaturedGallery[];
+}
+
+export interface CmsPageProps extends AppPageProps {
+    page: StaticPageSummary;
+    heroBanners: HeroBannerProps[];
+    html: string;
+    resolvedAt: string;
+}
+
+export interface ContactPointProps {
+    id: string;
+    label: string;
+    contact_type: string;
+    value: string;
+    is_primary: boolean;
+    display_order: number;
+}
+
+export interface ContactPageProps extends AppPageProps {
+    contactPoints: ContactPointProps[];
 }

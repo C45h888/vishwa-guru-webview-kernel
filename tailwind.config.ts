@@ -67,8 +67,10 @@ const config: Config = {
 				sm: "calc(var(--radius) - 4px)"
 			},
 			fontFamily: {
-				sans: [...fontFamily.sans]
-			},
+						sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+						serif: ['"Libre Caslon Display"', 'Georgia', 'serif'],
+						display: ['"Libre Caslon Display"', 'Georgia', 'serif'],
+					},
 			keyframes: {
 				"accordion-down": {
 					from: { height: "0" },

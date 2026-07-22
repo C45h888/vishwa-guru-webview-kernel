@@ -5,15 +5,17 @@
 
     interface Props {
         children: Snippet;
+        appName?: string;
+        appUrl?: string;
     }
 
-    let { children }: Props = $props();
+    let { children, appName = '', appUrl = '' }: Props = $props();
 </script>
 
 <div class="flex min-h-screen flex-col bg-background text-foreground">
     <SiteHeader />
-    <main class="container flex-1 py-8">
+    <main class="flex-1">
         {@render children()}
     </main>
-    <SiteFooter />
+    <SiteFooter {appName} {appUrl} />
 </div>
