@@ -45,16 +45,4 @@ final class EventsModule implements ModuleContract
             \App\Shared\Contracts\ModuleContract::class,
         ];
     }
-
-    /**
-     * Boot the module. Called once during application bootstrap, after
-     * every Service Provider has registered its bindings.
-     *
-     * The Events kernel does no work at boot time.
-     * EventsServiceProvider::boot() handles wiring.
-     */
-    public function boot(): void
-    {
-        // No-op. EventsServiceProvider::boot() handles wiring.
-    }
 }

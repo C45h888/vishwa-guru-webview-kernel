@@ -273,17 +273,40 @@ final class StaticPage implements EntityContract
     }
 
     /**
-     * Apply entity-level changes. State changes go through
-     * transitionTo() with the state machine — direct mutation here is a
-     * programming error.
+     * Narrow public-read summary (6 fields). Mirrors the fallback shape
+     * already emitted by HomeController when no homepage CMS row exists,
+     * and the StaticPageSummary TS interface declared in
+     * resources/js/domains/cms/types.ts. Controllers hand this to Inertia
+     * via `$rendered->page->toReadSummary()` instead of the full toArray()
+     * (which carries 20+ fields including body_json, body_html, audit
+     * timestamps, created_by/updated_by).
      *
-     * The typed homepageContent is carried through the round-trip so
-     * that mutators (title, body, hero banners, state) do not silently
-     * lose the homepage aggregate.
-     *
-     * @param  array<string, mixed>  $changes
+     * @return array<string, mixed>
      */
-    public function withChanges(array $changes): static
+    public function toReadSummary(): array
+    {
+        return [
+            'id'              => $this->id->value(),
+            'slug'            => $this->slug->value(),
+            'title'           => $this->title,
+            'meta_description' => $this->metaDescription,
+            'state'           => $this->state->value,
+            'is_homepage'     => $this->isHomepage,
+        ];
+    }
+
+/**
+ * Apply entity-level changes. State changes go through
+ * transitionTo() with the state machine — direct mutation here is a
+ * programming error.
+ *
+ * The typed homepageContent is carried through the round-trip so
+ * that mutators (title, body, hero banners, state) do not silently
+ * lose the homepage aggregate.
+ *
+ * @param  array<string, mixed>  $changes
+ */
+public function withChanges(array $changes): static
     {
         if (array_key_exists('state', $changes)) {
             throw new LogicException(

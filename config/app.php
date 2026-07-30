@@ -42,12 +42,9 @@ return [
     */
 
     /*
-    | The full app service-provider list lives in bootstrap/providers.php.
-    | This file only contributes Laravel-internal defaults (auth, queue,
-    | cache, ...) via ServiceProvider::defaultProviders(). Edit the
-    | canonical file when registering or reordering app kernels.
-    | See bootstrap/providers.php for the boot-order invariants and the
-    | reasoning behind each provider's position in the array.
+    | The canonical provider list is bootstrap/providers.php. This file
+    | only contributes Laravel-internal defaults via defaultProviders().
+    | See bootstrap/providers.php for the boot-order invariants.
     */
     'providers' => ServiceProvider::defaultProviders()->merge(
         require __DIR__.'/../bootstrap/providers.php'

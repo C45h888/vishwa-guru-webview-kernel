@@ -54,7 +54,7 @@ final class PaymentStatusResource
             'captured_at' => null,
             'failed_at' => null,
             'last_failure_reason' => null,
-            'public_key_id' => '',
+            'public_key_id' => null,
         ];
     }
 }

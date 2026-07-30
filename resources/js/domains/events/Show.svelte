@@ -14,6 +14,7 @@
         display_order: number;
         related?: EventSummaryProps[];
         created_at?: string;
+        metadata?: Record<string, unknown>;
     }
 
     let {

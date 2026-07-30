@@ -28,7 +28,7 @@ final class ReceiptController
         }
 
         return Inertia::render('payments/Receipt', [
-            'receipt' => $receipt->toArray(),
+            'receipt' => $receipt->toReadProjection(),
             'appName' => config('app.name', 'Temple Trust'),
             'appUrl' => config('app.url'),
         ]);

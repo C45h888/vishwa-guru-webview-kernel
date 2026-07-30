@@ -60,6 +60,10 @@ class Kernel extends HttpKernel
     protected $middlewareAliases = [
         'auth' => Authenticate::class,
         'throttle' => ThrottleRequests::class,
+        // NOTE: The `idempotency` alias here is the MIDDLEWARE alias — distinct
+        // from `idempotency_key`, which is the per-request DB column /
+        // DonationIntent payload key (App\Payments\Infrastructure\Repositories
+        // \IdempotencyKeyRepository). The two are unrelated concepts.
         'idempotency' => \App\Http\Middleware\IdempotencyMiddleware::class,
         'webhook-dedupe' => \App\Http\Middleware\WebhookDedupeMiddleware::class,
     ];

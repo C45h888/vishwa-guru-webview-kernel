@@ -136,7 +136,7 @@ final class HomeController
         PublicMediaPresentationService $media,
     ): array {
         return [
-            'page' => $rendered->page->toArray(),
+            'page' => $rendered->page->toReadSummary(),
             'homepageContent' => $this->enrichHomepageContent(
                 $rendered->homepageContent,
                 $media,

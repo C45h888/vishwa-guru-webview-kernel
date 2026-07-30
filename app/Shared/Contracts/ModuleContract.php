@@ -15,6 +15,12 @@ namespace App\Shared\Contracts;
  * The Module contract is the enforcement point for module discovery:
  * the Shared module uses it to validate that a registered module
  * declares its dependencies and ownership boundaries honestly.
+ *
+ * Note: this contract previously declared a `boot(): void` hook that
+ * was never invoked by any Service Provider — kernel wiring happens
+ * directly in the `boot()` method of each *ServiceProvider. The hook
+ * was removed; the actual boot-order invariants are pinned by
+ * tests/Unit/Bootstrap/ProviderOrderTest.php.
  */
 interface ModuleContract
 {
@@ -35,10 +41,4 @@ interface ModuleContract
      * @return list<class-string>
      */
     public function dependencies(): array;
-
-    /**
-     * Boot the module. Called once during application bootstrap, after
-     * every Service Provider has registered its bindings.
-     */
-    public function boot(): void;
 }

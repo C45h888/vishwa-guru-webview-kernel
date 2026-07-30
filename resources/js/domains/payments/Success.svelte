@@ -41,10 +41,23 @@
 
     function derivePollState(): PollState {
         const s = latestStatus.status;
-        if (s === 'captured' || s === 'settled' || s === 'settling') {
+        // Successful captures and refunds both end polling — refund is a
+        // post-capture state, so the donor sees the receipt link either way.
+        if (
+            s === 'captured' ||
+            s === 'settled' ||
+            s === 'settling' ||
+            s === 'refunded' ||
+            s === 'partially_refunded'
+        ) {
             return 'captured';
         }
-        if (s === 'failed') {
+        if (
+            s === 'failed' ||
+            s === 'disputed' ||
+            s === 'cancelled' ||
+            s === 'expired'
+        ) {
             return 'failed';
         }
         if (

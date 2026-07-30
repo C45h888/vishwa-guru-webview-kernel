@@ -5,31 +5,12 @@
     import { Button } from '$shared/ui/button';
     import Money from '$shared/components/Money.svelte';
     import { Download, ExternalLink } from 'lucide-svelte';
-    import type { AppPageProps } from '$shared/lib/inertia';
-
-    /**
-     * Shape coming from ReceiptController (Receipt::toArray()).
-     * Kept narrow on purpose — only fields the public UI displays.
-     */
-    interface ReceiptSummaryProps {
-        receipt_number: string;
-        campaign_title_snapshot: string;
-        donor_name: string;
-        donor_email: string | null;
-        amount_minor: number;
-        currency_code: string;
-        amount_in_words: string | null;
-        is_tax_deductible: boolean;
-        tax_80g_eligible: boolean;
-        content_hash: string;
-        state: string;
-        generated_at: string;
-    }
+    import type { AppPageProps, ReceiptProps } from '$shared/lib/inertia';
 
     let {
         receipt,
         appName,
-    }: AppPageProps<{ receipt: ReceiptSummaryProps }> = $props();
+    }: AppPageProps<{ receipt: ReceiptProps }> = $props();
 
     const shortHash = $derived(receipt.content_hash.slice(0, 12));
     const pdfUrl = $derived(`/receipts/${receipt.receipt_number}/download`);

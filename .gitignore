@@ -29,3 +29,6 @@ Thumbs.db
 .env.local
 .env.testing
 .env.testing.*.local
+
+# Codegen output for php artisan inertia:dump-types
+resources/js/shared/lib/inertia.generated.ts

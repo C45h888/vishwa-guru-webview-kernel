@@ -53,3 +53,19 @@ export function percentOf(raised: number, target: number | null | undefined): nu
 	if (target === null || target === undefined || target <= 0) return 0;
 	return Math.max(0, Math.min(100, Math.round((raised / target) * 100)));
 }
+
+/**
+ * Mirror of App\Payments\Domain\ValueObjects\Money. The wire shape
+ * remains (amount_minor: int, currency_code: string) — this is a
+ * structural type for components that handle money objects explicitly,
+ * not a replacement for the existing `formatMoney(amountMinor, currencyCode)`
+ * call sites. See PR 6 step 3 of the plan.
+ */
+export interface Money {
+	amount_minor: number;
+	currency_code: string;
+}
+
+export function formatMoneyObject(m: Money): string {
+	return formatMoney(m.amount_minor, m.currency_code);
+}

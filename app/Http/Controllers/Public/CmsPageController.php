@@ -12,7 +12,8 @@ use Inertia\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
- * Generic CMS page resolver for /about, /privacy, /terms, /trustee, /mission.
+ * Generic CMS page resolver for /about, /privacy, /terms, /trustee, /mission, /policies.
+ * (Slug whitelist is enforced at routes/web.php:29 — `(about|privacy|terms|trustee|mission|policies)`.)
  *
  * Doctrine: thin controller. Renders any published static page through
  * StaticPageRendererContract::renderBySlug — never reaches into a repository.
@@ -33,7 +34,7 @@ final class CmsPageController
         }
 
         return Inertia::render('cms/Page', [
-            'page' => $rendered->page->toArray(),
+            'page' => $rendered->page->toReadSummary(),
             'heroBanners' => array_map(
                 static fn ($b) => $media->enrich(
                     $media->enrich(

@@ -40,7 +40,8 @@
     "scripts": {
         "post-autoload-dump": [
             "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
-            "@php artisan package:discover --ansi"
+            "@php artisan package:discover --ansi",
+            "@php artisan inertia:dump-types"
         ],
         "post-install-cmd": [
             "@php -r \"exec('which npm', \\$o, \\$s); if (\\$s === 0) { passthru('npm ci && npm run build'); } else { fwrite(STDERR, '[composer] npm not on PATH; skipping JS install.\\n'); }\""

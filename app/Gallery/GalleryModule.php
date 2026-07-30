@@ -45,16 +45,4 @@ final class GalleryModule implements ModuleContract
             \App\Shared\Contracts\ModuleContract::class,
         ];
     }
-
-    /**
-     * Boot the module. Called once during application bootstrap, after
-     * every Service Provider has registered its bindings.
-     *
-     * The Gallery kernel does no work at boot time.
-     * GalleryServiceProvider::boot() handles wiring.
-     */
-    public function boot(): void
-    {
-        // No-op. GalleryServiceProvider::boot() handles wiring.
-    }
 }

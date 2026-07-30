@@ -57,19 +57,4 @@ final class CmsModule implements ModuleContract
             \App\Payments\Contracts\CampaignQueryContract::class,
         ];
     }
-
-    /**
-     * Boot the module. Called once during application bootstrap, after
-     * every Service Provider has registered its bindings.
-     *
-     * The CMS kernel does no work at boot time. CmsServiceProvider's
-     * boot() method handles wiring (RepositoryRegistry entries, cache
-     * invalidation listener registration). This method exists to satisfy
-     * the ModuleContract surface and to give Shared's discovery a
-     * deterministic hook for module-level bootstrap.
-     */
-    public function boot(): void
-    {
-        // No-op. CmsServiceProvider::boot() handles wiring.
-    }
 }

@@ -45,16 +45,4 @@ final class CampaignsModule implements ModuleContract
             \App\Shared\Contracts\ModuleContract::class,
         ];
     }
-
-    /**
-     * Boot the module. Called once during application bootstrap, after
-     * every Service Provider has registered its bindings.
-     *
-     * The Campaigns kernel does no work at boot time.
-     * CampaignsServiceProvider::boot() handles wiring.
-     */
-    public function boot(): void
-    {
-        // No-op. CampaignsServiceProvider::boot() handles wiring.
-    }
 }

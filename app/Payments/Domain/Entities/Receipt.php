@@ -299,6 +299,35 @@ final class Receipt implements EntityContract
     }
 
     /**
+     * Curated public-read projection — the canonical wire shape for the
+     * receipt detail page (resources/js/domains/payments/Receipt.svelte).
+     *
+     * Supersedes both `ReceiptDraftProps` (TS draft shape, used by
+     * receipt-generation paths) and `ReceiptSummaryProps` (local Svelte
+     * interface) as the canonical read surface. The Svelte side mirrors
+     * this shape in `ReceiptProps` declared in inertia.ts.
+     *
+     * @return array<string, mixed>
+     */
+    public function toReadProjection(): array
+    {
+        return [
+            'receipt_number'           => $this->receiptNumber,
+            'campaign_title_snapshot'  => $this->campaignTitleSnapshot,
+            'donor_name'               => $this->donorName,
+            'donor_email'              => $this->donorEmail,
+            'amount_minor'             => $this->amountMinor,
+            'currency_code'            => $this->currency->value,
+            'amount_in_words'          => $this->amountInWords,
+            'is_tax_deductible'        => $this->isTaxDeductible,
+            'tax_80g_eligible'         => $this->tax80gEligible,
+            'content_hash'             => $this->contentHash,
+            'state'                    => $this->state,
+            'generated_at'             => $this->generatedAt->format(DATE_ATOM),
+        ];
+    }
+
+    /**
      * Apply entity-level changes. Financial fields are immutable post-issue;
      * only delivery tracking fields may be changed, and ONLY via
      * transitionDelivery() with a ReceiptStateMachine.

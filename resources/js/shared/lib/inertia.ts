@@ -167,6 +167,8 @@ export interface DonationIntentProps {
     dedication: string | null;
     donor_message: string | null;
     idempotency_key: string | null;
+    internal_notes?: string | null;
+    metadata?: Record<string, unknown>;
 }
 
 /**
@@ -183,18 +185,40 @@ export interface PaymentResultProps {
 }
 
 /**
+ * Narrow union of the TransactionStatus cases the success-page poll
+ * actually transitions through. Mirrors App\Payments\Domain\Enums\TransactionStatus.
+ * `null` is the missing-state shape from PaymentStatusResource::missing().
+ *
+ * Cases not in the union (disputed, cancelled, expired) would only
+ * appear on already-terminal states that the success page should not
+ * be polling for; if they ever show up, the TS compiler will surface
+ * the gap here.
+ */
+export type PaymentStatusCase =
+    | 'initialized'
+    | 'pending'
+    | 'authorized'
+    | 'captured'
+    | 'settling'
+    | 'settled'
+    | 'failed'
+    | 'refunded'
+    | 'partially_refunded'
+    | null;
+
+/**
  * Donation success page read-shape (PaymentStatusResource::fromEntity output).
  */
 export interface PaymentStatusProps {
     gateway_order_id: string;
-    status: string | null;
+    status: PaymentStatusCase;
     amount_minor: number | null;
     currency_code: string | null;
     provider_code: string | null;
     captured_at: string | null;
     failed_at: string | null;
     last_failure_reason: string | null;
-    public_key_id: string;
+    public_key_id: string | null;
 }
 
 /**
@@ -210,6 +234,31 @@ export interface ReceiptDraftProps {
     delivery_channel: string | null;
     delivery_address: string | null;
     amount_in_words: string;
+}
+
+/**
+ * Canonical public-read shape for the receipt detail page. Mirrors
+ * `App\Payments\Domain\Entities\Receipt::toReadProjection()` exactly
+ * (12 keys, snake_case). Supersedes the local `ReceiptSummaryProps`
+ * interface that used to live in resources/js/domains/payments/Receipt.svelte.
+ *
+ * Keep this in sync with Receipt::toReadProjection() — both ends are
+ * hand-maintained; the codegen at `php artisan inertia:dump-types` covers
+ * DTOs/ValueObjects, not Entities, so this projection is not auto-generated.
+ */
+export interface ReceiptProps {
+    receipt_number: string;
+    campaign_title_snapshot: string;
+    donor_name: string;
+    donor_email: string | null;
+    amount_minor: number;
+    currency_code: string;
+    amount_in_words: string | null;
+    is_tax_deductible: boolean;
+    tax_80g_eligible: boolean;
+    content_hash: string;
+    state: string;
+    generated_at: string;
 }
 
 /* ──────────────────────────────────────────────────────────────────────
