@@ -10,8 +10,19 @@ return [
 
     'ensure_pages_exist' => false,
 
+    /*
+     * Page-discovery root (the directory under resources/js/ where Inertia
+     * pages live). Single source of truth: the runtime and testing blocks
+     * below both derive `page_paths` from this value, and the matching TS
+     * constant in resources/js/app.ts (`const PAGES_ROOT = '...'`) is
+     * asserted against this by InertiaPagesRootConsistencyTest.
+     *
+     * Override per-environment via the INERTIA_PAGES_ROOT env var.
+     */
+    'js_pages_root' => env('INERTIA_PAGES_ROOT', 'domains'),
+
     'page_paths' => [
-        resource_path('js/domains'),
+        resource_path('js/' . env('INERTIA_PAGES_ROOT', 'domains')),
     ],
 
     'page_extensions' => [
@@ -28,7 +39,7 @@ return [
     'testing' => [
         'ensure_pages_exist' => true,
         'page_paths' => [
-            resource_path('js/domains'),
+            resource_path('js/' . env('INERTIA_PAGES_ROOT', 'domains')),
         ],
         'page_extensions' => [
             'js',

@@ -6,6 +6,7 @@
   :root {
     --background: 60 60% 96%;
     --foreground: 30 30% 12%;
+    --ivory: 42 50% 92%;
     --muted: 40 30% 93%;
     --muted-foreground: 30 15% 38%;
     --popover: 60 50% 99%;
@@ -37,6 +38,7 @@
   .dark {
     --background: 30 20% 8%;
     --foreground: 60 30% 92%;
+    --ivory: 35 18% 14%;
     --muted: 30 15% 18%;
     --muted-foreground: 60 15% 65%;
     --popover: 30 20% 12%;

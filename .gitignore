@@ -1,6 +1,8 @@
 /vendor/
 /node_modules/
 /public/build/
+/public/hot
+node_modules/.vite
 /.env
 /.env.backup
 /.env.production
@@ -9,6 +11,12 @@
 Homestead.yaml
 Homestead.json
 /storage/*.key
+/storage/framework/sessions/*
+!/storage/framework/sessions/.gitkeep
+/storage/framework/views/*
+!/storage/framework/views/.gitkeep
+/storage/framework/cache/*
+!/storage/framework/cache/.gitkeep
 /.idea
 /.vscode
 /.fleet

@@ -12,7 +12,7 @@ use App\Payments\Domain\Entities\Payment;
 use App\Payments\Domain\Enums\DonationState;
 use App\Payments\Domain\Enums\PaymentProvider;
 use App\Payments\Domain\Enums\TransactionStatus;
-use App\Payments\Domain\Exceptions\PaymentInitializationFailedException;
+use App\Payments\Domain\Exceptions\GatewaySelectionException;
 use App\Payments\Domain\Exceptions\RefundExceededException;
 use App\Payments\Domain\Repositories\AuditEventRepositoryContract;
 use App\Payments\Domain\Repositories\DonationRepositoryContract;
@@ -20,7 +20,6 @@ use App\Payments\Domain\Repositories\DonorRepositoryContract;
 use App\Payments\Domain\Repositories\PaymentRepositoryContract;
 use App\Payments\Domain\StateMachines\DonationStateMachine;
 use App\Payments\Domain\StateMachines\PaymentStateMachine;
-use App\Payments\Domain\StateMachines\StateTransitionEvent;
 use App\Payments\Domain\ValueObjects\DonationIntent;
 use App\Payments\Domain\ValueObjects\DonorIdentity;
 use App\Payments\Domain\ValueObjects\PaymentIntent;
@@ -32,7 +31,6 @@ use App\Shared\Support\Clock;
 use App\Shared\Support\IdentifierGenerator;
 use App\Shared\Support\Result;
 use App\Shared\ValueObjects\Identifier;
-use DateTimeImmutable;
 
 /**
  * The conductor of the Financial Kernel.
@@ -96,8 +94,9 @@ class PaymentOrchestrator
      * Steps 3-5 happen inside a single transaction so a gateway
      * failure leaves no orphan Donation row.
      *
-     * @phpstan-return Result<PaymentResult>|Result<Donor|null>|Result<null>
      * @return Result<PaymentResult>
+     *
+     * @phpstan-return Result<PaymentResult>|Result<Donor|null>|Result<null>
      */
     public function initialize(DonationIntent $intent): Result
     {
@@ -153,21 +152,19 @@ class PaymentOrchestrator
         }
 
         $gatewayPayload = $gatewayResult->value();
-        $gatewayOrderId = (string) $gatewayPayload['order_id'];
+        $gatewayOrderId = (string) $gatewayPayload->gatewayOrderId();
         if ($gatewayOrderId === '') {
             return Result::failure('gateway_response_missing_order_id');
         }
 
-        $donationIdUlid = $this->ids->next();
-        $paymentIdUlid = $this->ids->next();
         $now = $this->clock->now();
 
         $persist = $this->coordinator->execute(function () use (
             $intent, $donorId, $provider, $paymentRequest,
-            $gatewayOrderId, $donationIdUlid, $paymentIdUlid, $now, $purpose,
+            $gatewayOrderId, $now, $purpose,
         ): PaymentResult {
             $donation = Donation::draft(
-                campaignId: EntityId::fromString($intent->campaignId()->value()),
+                campaignId: $intent->campaignId(),
                 donor: $intent->donor(),
                 amountMinor: $intent->amountMinor(),
                 currency: $intent->currency(),
@@ -177,7 +174,7 @@ class PaymentOrchestrator
                 internalNotes: $intent->internalNotes(),
                 idempotencyKey: $intent->idempotencyKey(),
                 metadata: $intent->metadata(),
-                id: EntityId::fromString($donationIdUlid),
+                id: EntityId::generate('donation'),
             );
             $this->donations->save($donation);
 
@@ -191,7 +188,7 @@ class PaymentOrchestrator
                     'purpose' => $purpose,
                     'gateway_order_id' => $gatewayOrderId,
                 ],
-                id: EntityId::fromString($paymentIdUlid),
+                id: EntityId::generate('payment'),
             );
             $this->payments->save($payment);
 
@@ -227,8 +224,9 @@ class PaymentOrchestrator
     }
 
     /**
-     * @phpstan-return Result<Payment>|Result<null>
      * @return Result<Payment>
+     *
+     * @phpstan-return Result<Payment>|Result<null>
      */
     public function handleWebhook(WebhookPayload $payload): Result
     {
@@ -293,6 +291,7 @@ class PaymentOrchestrator
                     'correlation_id' => $payload->providerEventId() ?: null,
                 ],
             );
+
             return Result::failure(
                 'verification_failed: '.$verified->error(),
             );
@@ -368,8 +367,9 @@ class PaymentOrchestrator
     /**
      * Refund a payment in full or partially.
      *
-     * @phpstan-return Result<Payment>|Result<PaymentGatewayContract>|Result<null>
      * @return Result<Payment>
+     *
+     * @phpstan-return Result<Payment>|Result<PaymentGatewayContract>|Result<null>
      */
     public function refund(Identifier $transactionId, int $amountMinor): Result
     {
@@ -451,8 +451,9 @@ class PaymentOrchestrator
     }
 
     /**
-     * @phpstan-return Result<TransactionStatus>|Result<PaymentGatewayContract>|Result<null>
      * @return Result<TransactionStatus>
+     *
+     * @phpstan-return Result<TransactionStatus>|Result<PaymentGatewayContract>|Result<null>
      */
     public function getStatus(Identifier $transactionId): Result
     {
@@ -489,8 +490,9 @@ class PaymentOrchestrator
      * donations.donor_id IS NULL). Returns the persisted Donor
      * entity for identified donors.
      *
-     * @phpstan-return Result<Donor>|Result<null>
      * @return Result<Donor|null>
+     *
+     * @phpstan-return Result<Donor>|Result<null>
      */
     private function resolveDonor(DonorIdentity $identity): Result
     {
@@ -511,7 +513,7 @@ class PaymentOrchestrator
             return Result::failure('donor_name_required_for_identified_donor');
         }
 
-        $id = EntityId::fromString($this->ids->next());
+        $id = EntityId::generate('donor');
         $donor = Donor::identified(
             name: $name,
             email: $identity->email(),
@@ -542,15 +544,16 @@ class PaymentOrchestrator
     /**
      * Resolve the PaymentGatewayContract for a payment's provider.
      *
-     * @phpstan-return Result<PaymentGatewayContract>|Result<null>
      * @return Result<PaymentGatewayContract>
+     *
+     * @phpstan-return Result<PaymentGatewayContract>|Result<null>
      */
     private function resolveGatewayFor(Payment $payment): Result
     {
         $provider = $payment->providerCode();
         $intent = new PaymentIntent(
             donationId: new Identifier($payment->donationId()->ulid()),
-            donor: new DonorIdentity(),
+            donor: new DonorIdentity,
             amountMinor: $payment->amountMinor(),
             currency: $payment->currency(),
             purpose: 'refund',
@@ -561,7 +564,7 @@ class PaymentOrchestrator
 
         try {
             return Result::success($this->selector->select($intent));
-        } catch (\App\Payments\Domain\Exceptions\GatewaySelectionException $e) {
+        } catch (GatewaySelectionException $e) {
             return Result::failure('gateway_resolve_failed: '.$e->getMessage());
         }
     }

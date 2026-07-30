@@ -114,6 +114,92 @@ final class ProductionSeeder extends Seeder
         'ends_at_offset_days' => 365,
     ];
 
+    /**
+     * Canonical About-page content. Mirrors the JS-side
+     * `resources/js/domains/cms/about-fallbacks.ts` defaults so the page
+     * renders with real, opinionated content the moment the row lands.
+     *
+     * The page-level `body` and `body_html` are intentionally empty in
+     * V1 — the structured sections (values / timeline / trustees / CTA)
+     * are the only content on the About page. Prose may be added in V2
+     * by populating `body_json` + re-running the body renderer.
+     */
+    private const ABOUT_PAGE = [
+        // Stable entity id: <entity_type>_<26-char canonical ULID>.
+        // Stable across reseeds so the ON CONFLICT (slug) path always
+        // matches and the id never changes underneath the renderer.
+        'id' => 'static_page_0001N6CAYNHGKPWRF7GDZ074RA',
+        'slug' => 'about',
+        'title' => 'About the Trust',
+        'meta_description' => 'Temple Trust is a registered charitable trust preserving the sacred rhythms of South Indian temple life through daily pooja, annadanam, and the care of the temple structure.',
+        'is_homepage' => false,
+        'display_order' => 10,
+        'about_page_content' => [
+            'version' => 1,
+            'values' => [
+                'eyebrow' => 'Our Values',
+                'title' => 'Seva, Satya, and Smriti',
+                'body' => 'The trust is sustained by three commitments: seva — the discipline of self-giving service; satya — clear, honest stewardship of every offering; and smriti — the careful preservation of the rhythms, language, and practices that make a temple a living tradition. We hold ourselves to these not as aspirations but as the operating doctrine of every decision the trust makes.',
+                'image_file_id' => null,
+                'alt_text' => null,
+            ],
+            'timeline' => [
+                [
+                    'year' => 1998,
+                    'title' => 'Temple founded',
+                    'description' => 'A small group of devotees established the temple on land donated by the founding family, with daily pooja as the anchor of every other activity to follow.',
+                ],
+                [
+                    'year' => 2005,
+                    'title' => 'Annadanam hall opens',
+                    'description' => 'A dedicated hall was added to serve the community meal every day of the year, regardless of festival or quiet season. Annadanam has been offered without interruption since.',
+                ],
+                [
+                    'year' => 2012,
+                    'title' => 'Priest training program',
+                    'description' => 'The trust began an in-house training program for temple priests, ensuring that the next generation of ritualists learn the full agamic discipline rather than a simplified subset.',
+                ],
+                [
+                    'year' => 2019,
+                    'title' => 'Temple structure restoration',
+                    'description' => 'A multi-year restoration of the vimana and outer prakara was completed using traditional materials and craftspeople, with funding drawn entirely from devotee offerings.',
+                ],
+                [
+                    'year' => 2024,
+                    'title' => 'Online donations and receipts',
+                    'description' => 'The trust launched its public digital platform so devotees anywhere in the world can offer seva and receive an official receipt and the temple\'s gratitude.',
+                ],
+            ],
+            'trustees' => [
+                [
+                    'name' => 'Dr. Anjali Rao',
+                    'role' => 'Chair, Board of Trustees',
+                    'photo_file_id' => null,
+                    'bio' => 'A Sanskrit scholar and practising devotee, Anjali has served on the board since 2014 and has chaired it since 2020. She guides the trust\'s academic and ritual standards.',
+                ],
+                [
+                    'name' => 'Sundaram Iyer',
+                    'role' => 'Treasurer',
+                    'photo_file_id' => null,
+                    'bio' => 'A retired banker, Sundaram has overseen the trust\'s finances for over a decade and is the principal author of the annual audit and donor receipts process.',
+                ],
+                [
+                    'name' => 'Lakshmi Narayanan',
+                    'role' => 'Trustee, Annadanam',
+                    'photo_file_id' => null,
+                    'bio' => 'Lakshmi leads the daily Annadanam programme and coordinates the volunteers who prepare and serve the community meal each day of the year.',
+                ],
+            ],
+            'donate_cta' => [
+                'eyebrow' => 'Offer Your Seva',
+                'title' => 'Help sustain the temple\'s daily work',
+                'body' => 'Every offering supports daily pooja, Annadanam, and the care of this sacred place. Contributions of any size are received with gratitude and acknowledged with a receipt.',
+                'cta_label' => 'Donate Now',
+                'cta_url' => '/donate',
+            ],
+        ],
+    ];
+
     public function run(): void
     {
         $adapter = $this->container->make(PersistenceAdapterContract::class);
@@ -123,6 +209,7 @@ final class ProductionSeeder extends Seeder
         $this->seedCurrencies($adapter);
         $this->seedPaymentProviders($adapter);
         $this->seedSampleCampaign($adapter);
+        $this->seedAboutPage($adapter);
 
         $this->command->info('ProductionSeeder: complete.');
     }
@@ -259,6 +346,86 @@ final class ProductionSeeder extends Seeder
         );
         if ($r->isFailure()) {
             $this->command->error('    ! sample campaign: '.$r->error());
+        }
+    }
+
+    /**
+     * Idempotent seed of the /about static page with structured
+     * `about_page_content` JSONB. Mirrors the JS-side
+     * `about-fallbacks.ts` defaults so the page is fully rendered the
+     * moment the row lands.
+     */
+    private function seedAboutPage(PersistenceAdapterContract $adapter): void
+    {
+        $this->command->info('  → static_pages (about)');
+        $now = (new \DateTimeImmutable())->format(DATE_ATOM);
+
+        $a = self::ABOUT_PAGE;
+        $aboutContentJson = json_encode(
+            $a['about_page_content'],
+            JSON_THROW_ON_ERROR,
+        );
+
+        $bodyJson = json_encode(
+            ['version' => 1, 'blocks' => []],
+            JSON_THROW_ON_ERROR,
+        );
+        $seoJson = json_encode(
+            [
+                'metaTitle' => null,
+                'metaDescription' => $a['meta_description'],
+                'canonicalUrl' => null,
+                'ogImageFileId' => null,
+                'keywords' => [],
+            ],
+            JSON_THROW_ON_ERROR,
+        );
+
+        $r = $adapter->execute(
+            "INSERT INTO static_pages (
+                id, slug, title, meta_description,
+                body_json, body_html, seo_metadata,
+                homepage_content, about_page_content,
+                state, is_homepage, display_order,
+                published_at, last_published_at,
+                created_at, updated_at, created_by, updated_by
+             ) VALUES (
+                :id, :slug, :title, :meta_description,
+                :body_json, :body_html, :seo_metadata,
+                NULL, :about_page_content,
+                'published', :is_homepage, :display_order,
+                :now, :now,
+                :now, :now, 'system', 'system'
+             )
+             ON CONFLICT (slug) WHERE deleted_at IS NULL DO UPDATE SET
+                title              = EXCLUDED.title,
+                meta_description   = EXCLUDED.meta_description,
+                body_html          = EXCLUDED.body_html,
+                seo_metadata       = EXCLUDED.seo_metadata,
+                about_page_content = EXCLUDED.about_page_content,
+                state              = EXCLUDED.state,
+                is_homepage        = EXCLUDED.is_homepage,
+                display_order      = EXCLUDED.display_order,
+                published_at       = EXCLUDED.published_at,
+                last_published_at  = EXCLUDED.last_published_at,
+                updated_at         = EXCLUDED.updated_at,
+                updated_by         = EXCLUDED.updated_by",
+            [
+                'id'                 => $a['id'],
+                'slug'               => $a['slug'],
+                'title'              => $a['title'],
+                'meta_description'   => $a['meta_description'],
+                'body_json'          => $bodyJson,
+                'body_html'          => '',
+                'seo_metadata'       => $seoJson,
+                'about_page_content' => $aboutContentJson,
+                'is_homepage'        => $a['is_homepage'] ? 'true' : 'false',
+                'display_order'      => $a['display_order'],
+                'now'                => $now,
+            ]
+        );
+        if ($r->isFailure()) {
+            $this->command->error('    ! about page: '.$r->error());
         }
     }
 }

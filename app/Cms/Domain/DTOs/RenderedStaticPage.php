@@ -6,6 +6,8 @@ namespace App\Cms\Domain\DTOs;
 
 use App\Cms\Domain\Entities\HeroBanner;
 use App\Cms\Domain\Entities\StaticPage;
+use App\Cms\Domain\ValueObjects\AboutPageContent;
+use App\Cms\Domain\ValueObjects\HomepageContent;
 use DateTimeImmutable;
 
 /**
@@ -13,7 +15,9 @@ use DateTimeImmutable;
  *
  * Contains the StaticPage entity, its resolved hero banners, its
  * resolved references (campaign payloads, etc.), the pre-rendered HTML,
- * and a timestamp indicating when this assembly was produced.
+ * optional typed HomepageContent and AboutPageContent aggregates
+ * carried by the row, and a timestamp indicating when this assembly
+ * was produced.
  */
 final readonly class RenderedStaticPage
 {
@@ -27,6 +31,8 @@ final readonly class RenderedStaticPage
         public array $resolvedReferences,
         public string $html,
         public DateTimeImmutable $resolvedAt,
+        public ?HomepageContent $homepageContent = null,
+        public ?AboutPageContent $aboutPageContent = null,
     ) {
     }
 }

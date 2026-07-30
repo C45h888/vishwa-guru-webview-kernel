@@ -3,22 +3,36 @@
 declare(strict_types=1);
 
 use App\Http\Controllers\Public\Donate\ReceiptController;
+use App\Http\Controllers\Public\Donate\ReceiptDownloadController;
+use App\Payments\Infrastructure\Receipts\ReceiptNumberAllocator;
 use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
-| Receipt detail route — Sub-project 3 (Phase 3)
+| Receipt Routes — Sub-project 3 (Phase 3)
 |--------------------------------------------------------------------------
 |
-| Single page: GET /receipts/{receiptNumber}.
+| Two GET routes for the canonical receipt surface:
 |
-| The receiptNumber parameter is constrained to the canonical format
-| TR-YYYY-{shortId} via a regex. Reserved in Sub-project 1; the
-| public Inertia page lands in Sub-project 3.
+|   GET /receipts/{number}            — full Inertia receipt page (cms/Receipt)
+|   GET /receipts/{number}/download   — PDF stream via ReceiptPdfGenerator
+|
+| Both constrained to the canonical receipt format
+| TR-{FY_year}-{06_digit_sequence} via ReceiptNumberAllocator::PATTERN.
+| The pattern is the single source of truth shared between the allocator
+| that *produces* receipt numbers and the routes that *match* them.
+| ReceiptNumberPatternTest (tests/Unit/Payments/Infrastructure/Receipts/)
+| asserts the two stay in lockstep.
 */
 
 Route::get(
     '/receipts/{receiptNumber}',
     ReceiptController::class,
-)->where('receiptNumber', 'TR-\d{4}-[A-Z0-9]{4,32}')
+)->where('receiptNumber', ReceiptNumberAllocator::PATTERN)
     ->name('receipts.show');
+
+Route::get(
+    '/receipts/{receiptNumber}/download',
+    ReceiptDownloadController::class,
+)->where('receiptNumber', ReceiptNumberAllocator::PATTERN)
+    ->name('receipts.download');

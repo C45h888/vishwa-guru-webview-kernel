@@ -5,6 +5,9 @@ declare(strict_types=1);
 namespace Tests\Unit\Payments\Services;
 
 use App\Payments\Contracts\PaymentGatewayContract;
+use App\Payments\Domain\DTOs\GatewayResponseDTO;
+use App\Payments\Domain\Entities\Donation;
+use App\Payments\Domain\Entities\Payment;
 use App\Payments\Domain\Enums\Currency;
 use App\Payments\Domain\Enums\DonationState;
 use App\Payments\Domain\Enums\PaymentProvider;
@@ -14,25 +17,25 @@ use App\Payments\Domain\Repositories\AuditEventRepositoryContract;
 use App\Payments\Domain\Repositories\DonationRepositoryContract;
 use App\Payments\Domain\Repositories\DonorRepositoryContract;
 use App\Payments\Domain\Repositories\PaymentRepositoryContract;
-use App\Payments\Domain\StateMachines\DonationStateMachine;
 use App\Payments\Domain\StateMachines\PaymentStateMachine;
+use App\Payments\Domain\StateMachines\DonationStateMachine;
 use App\Payments\Domain\ValueObjects\DonationIntent;
 use App\Payments\Domain\ValueObjects\DonorIdentity;
-use App\Payments\Domain\ValueObjects\PaymentRequest;
-use App\Payments\Domain\ValueObjects\PaymentResult;
 use App\Payments\Domain\ValueObjects\WebhookPayload;
 use App\Payments\Services\FailureStateService;
 use App\Payments\Services\PaymentOrchestrator;
 use App\Payments\Services\PaymentProviderSelector;
-use App\Payments\Services\PaymentService;
 use App\Payments\Services\PaymentVerificationService;
 use App\Payments\Services\ReceiptService;
 use App\Payments\Services\TransactionCoordinator;
+use App\Persistence\Contracts\PersistenceAdapterContract;
+use App\Persistence\ValueObjects\EntityId;
 use App\Shared\Support\Clock;
 use App\Shared\Support\FrozenClock;
 use App\Shared\Support\IdentifierGenerator;
 use App\Shared\Support\Result;
 use App\Shared\ValueObjects\Identifier;
+use App\Shared\Support\UlidGenerator;
 use DateTimeImmutable;
 use PHPUnit\Framework\TestCase;
 
@@ -84,7 +87,7 @@ final class PaymentOrchestratorTest extends TestCase
         $orchestrator = $this->makeOrchestrator();
 
         $result = $orchestrator->refund(
-            new Identifier(\App\Shared\Support\UlidGenerator::generate()),
+            new Identifier(UlidGenerator::generate()),
             0,
         );
 
@@ -100,7 +103,7 @@ final class PaymentOrchestratorTest extends TestCase
         $orchestrator = $this->makeOrchestrator(payments: $payments);
 
         $result = $orchestrator->refund(
-            new Identifier(\App\Shared\Support\UlidGenerator::generate()),
+            new Identifier(UlidGenerator::generate()),
             5000,
         );
 
@@ -136,7 +139,7 @@ final class PaymentOrchestratorTest extends TestCase
         $orchestrator = $this->makeOrchestrator(payments: $payments);
 
         $result = $orchestrator->getStatus(
-            new Identifier(\App\Shared\Support\UlidGenerator::generate()),
+            new Identifier(UlidGenerator::generate()),
         );
 
         $this->assertTrue($result->isFailure());
@@ -194,7 +197,7 @@ final class PaymentOrchestratorTest extends TestCase
     private function makeIntent(): DonationIntent
     {
         return new DonationIntent(
-            campaignId: new Identifier(\App\Shared\Support\UlidGenerator::generate()),
+            campaignId: EntityId::generate('campaign'),
             donor: DonorIdentity::anonymous(),
             amountMinor: 50000,
             currency: Currency::INR,
@@ -202,10 +205,10 @@ final class PaymentOrchestratorTest extends TestCase
         );
     }
 
-    private function makePayment(int $captured, int $refunded): \App\Payments\Domain\Entities\Payment
+    private function makePayment(int $captured, int $refunded): Payment
     {
-        $payment = \App\Payments\Domain\Entities\Payment::initialize(
-            donationId: \App\Persistence\ValueObjects\EntityId::generate('donation'),
+        $payment = Payment::initialize(
+            donationId: EntityId::generate('donation'),
             providerCode: PaymentProvider::RAZORPAY,
             amountMinor: 10_000,
             currency: Currency::INR,
@@ -219,17 +222,17 @@ final class PaymentOrchestratorTest extends TestCase
         $row['amount_captured_minor'] = $captured;
         $row['amount_refunded_minor'] = $refunded;
 
-        return \App\Payments\Domain\Entities\Payment::fromRow($row);
+        return Payment::fromRow($row);
     }
 
     private function forceStatus(
-        \App\Payments\Domain\Entities\Payment $payment,
+        Payment $payment,
         TransactionStatus $status,
-    ): \App\Payments\Domain\Entities\Payment {
+    ): Payment {
         $row = $payment->toArray();
         $row['status'] = $status->value;
 
-        return \App\Payments\Domain\Entities\Payment::fromRow($row);
+        return Payment::fromRow($row);
     }
 
     private function makeOrchestrator(
@@ -249,7 +252,7 @@ final class PaymentOrchestratorTest extends TestCase
             coordinator: $coordinator,
             auditLog: $this->createMock(AuditEventRepositoryContract::class),
             clock: $this->clock,
-            ids: new \App\Shared\Support\UlidGenerator(),
+            ids: new UlidGenerator(),
             payments: $payments ?? $this->createMock(PaymentRepositoryContract::class),
             donations: $this->createMock(DonationRepositoryContract::class),
             donors: $this->createMock(DonorRepositoryContract::class),
@@ -263,9 +266,9 @@ final class PaymentOrchestratorTest extends TestCase
         return new PaymentProviderSelector($gateway !== null ? [$gateway] : []);
     }
 
-    private function makeConnectedAdapter(): \App\Persistence\Contracts\PersistenceAdapterContract
+    private function makeConnectedAdapter(): PersistenceAdapterContract
     {
-        $adapter = $this->createMock(\App\Persistence\Contracts\PersistenceAdapterContract::class);
+        $adapter = $this->createMock(PersistenceAdapterContract::class);
         $adapter->method('isConnected')->willReturn(true);
         $adapter->method('transaction')->willReturnCallback(
             function (callable $callback): Result {

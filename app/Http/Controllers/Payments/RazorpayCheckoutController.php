@@ -9,7 +9,7 @@ use App\Payments\Domain\Enums\Currency;
 use App\Payments\Domain\ValueObjects\DonationIntent;
 use App\Payments\Domain\ValueObjects\DonorIdentity;
 use App\Payments\Services\PaymentService;
-use App\Shared\ValueObjects\Identifier;
+use App\Persistence\ValueObjects\EntityId;
 use Illuminate\Http\JsonResponse;
 
 /**
@@ -44,7 +44,7 @@ final class RazorpayCheckoutController
         $validated = $request->validated();
 
         $intent = new DonationIntent(
-            campaignId: new Identifier($validated['campaign_id']),
+            campaignId: EntityId::fromString((string) $validated['campaign_id']),
             donor: $this->buildDonor($validated['donor'] ?? []),
             amountMinor: (int) $validated['amount_minor'],
             currency: Currency::from($validated['currency']),

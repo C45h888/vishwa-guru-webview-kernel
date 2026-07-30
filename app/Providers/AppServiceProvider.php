@@ -16,9 +16,8 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
-        // Vite 5 emits the manifest at build/.vite/manifest.json by default;
-        // Laravel's @vite() helper looks for build/manifest.json. Tell it
-        // where to find the actual file.
-        Vite::useManifestFilename('.vite/manifest.json');
+        // Vite is configured (vite.config.ts) to emit the manifest at
+        // build/manifest.json. Laravel's default lookup matches that path,
+        // so no override is required.
     }
 }

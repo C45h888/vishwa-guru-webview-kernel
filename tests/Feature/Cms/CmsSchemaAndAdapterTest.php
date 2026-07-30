@@ -57,6 +57,24 @@ final class CmsSchemaAndAdapterTest extends InfrastructureTestCase
         }
     }
 
+    public function testStaticPagesHomepageContentColumnExists(): void
+    {
+        $result = $this->adapter->query(
+            "PRAGMA table_info('static_pages')",
+            [],
+        );
+
+        $this->assertFalse($result->isFailure(), 'PRAGMA table_info failed');
+
+        $columns = array_column($result->value(), 'name');
+
+        $this->assertContains(
+            'homepage_content',
+            $columns,
+            "static_pages.homepage_content column is missing after migration"
+        );
+    }
+
     public function testStaticPageInsertAndReadRoundTrip(): void
     {
         // Skipped: this test instantiates a ParagraphBlock which

@@ -36,7 +36,12 @@ final class RazorpayCheckoutRequest extends FormRequest
         return [
             'amount_minor' => ['required', 'integer', 'min:1'],
             'currency' => ['required', 'string', 'in:INR'],
-            'campaign_id' => ['required', 'string', 'min:1', 'max:26'],
+            'campaign_id' => [
+                'required',
+                'string',
+                'size:35',
+                'regex:/^campaign_[0-9A-HJKMNP-TV-Z]{26}$/',
+            ],
 
             'donor' => ['sometimes', 'array'],
             'donor.name' => ['sometimes', 'string', 'min:1', 'max:120'],

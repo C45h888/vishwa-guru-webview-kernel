@@ -7,7 +7,9 @@ namespace App\Cms\Domain\Entities;
 use App\Cms\Domain\Enums\CmsTransitionEvent;
 use App\Cms\Domain\Enums\StaticPageState;
 use App\Cms\Domain\StateMachines\StaticPageStateMachine;
+use App\Cms\Domain\ValueObjects\AboutPageContent;
 use App\Cms\Domain\ValueObjects\HeroBannerSlot;
+use App\Cms\Domain\ValueObjects\HomepageContent;
 use App\Cms\Domain\ValueObjects\PageBody;
 use App\Cms\Domain\ValueObjects\PageSlug;
 use App\Cms\Domain\ValueObjects\SeoMetadata;
@@ -35,6 +37,14 @@ use LogicException;
  * StaticPageService on every state transition that produces publicly-
  * readable content (PUBLISHED, UPDATED); public reads do not re-render.
  *
+ * homepage_content is a JSONB column whose value is parsed by
+ * HomepageContentFactory (which validates the nested cms_media_assets
+ * references) and carried here as a typed HomepageContent. Because
+ * HomepageContent cannot self-validate without a database query, every
+ * hydration through `fromRow()` must supply the already-validated typed
+ * override. Direct callers that don't have a typed value pass null and
+ * the entity treats a populated raw column as a programming error.
+ *
  * @see /Users/kamii/Vishwaguru-webview-kernel/vishwa-guru-webview-kernel/cms-architecture.md §3.3.1
  */
 final class StaticPage implements EntityContract
@@ -52,6 +62,8 @@ final class StaticPage implements EntityContract
         private readonly PageBody $body,
         private readonly ?string $bodyHtml,
         private readonly SeoMetadata $seoMetadata,
+        private readonly ?HomepageContent $homepageContent,
+        private readonly ?AboutPageContent $aboutPageContent,
         private readonly StaticPageState $state,
         private readonly bool $isHomepage,
         private readonly int $displayOrder,
@@ -79,6 +91,8 @@ final class StaticPage implements EntityContract
         int $displayOrder,
         ?string $createdBy = null,
         ?EntityId $id = null,
+        ?HomepageContent $homepageContent = null,
+        ?AboutPageContent $aboutPageContent = null,
     ): self {
         if (trim($title) === '') {
             throw new InvalidArgumentException('StaticPage title cannot be empty');
@@ -97,6 +111,8 @@ final class StaticPage implements EntityContract
             body: $body,
             bodyHtml: '',
             seoMetadata: $seoMetadata,
+            homepageContent: $homepageContent,
+            aboutPageContent: $aboutPageContent,
             state: StaticPageState::DRAFT,
             isHomepage: $isHomepage,
             displayOrder: $displayOrder,
@@ -118,10 +134,20 @@ final class StaticPage implements EntityContract
     /**
      * Rehydrate from a database row.
      *
+     * The homepage_content and about_page_content columns are JSONB and
+     * cannot self-validate without a database query. Therefore the repository
+     * supplies the already-validated typed VOs as the second and third
+     * arguments. A populated raw column without a typed override is a
+     * programming error: callers must go through HomepageContentFactory
+     * and AboutPageContentFactory respectively.
+     *
      * @param  array<string, mixed>  $row
      */
-    public static function fromRow(array $row): self
-    {
+    public static function fromRow(
+        array $row,
+        ?HomepageContent $homepageContent = null,
+        ?AboutPageContent $aboutPageContent = null,
+    ): self {
         $required = ['id', 'slug', 'title', 'state', 'created_at', 'updated_at'];
         foreach ($required as $key) {
             if (! array_key_exists($key, $row)) {
@@ -158,6 +184,28 @@ final class StaticPage implements EntityContract
             }
         }
 
+        $rawHomepageContent = $row['homepage_content'] ?? null;
+        $hasRawHomepageContent = $rawHomepageContent !== null
+            && $rawHomepageContent !== ''
+            && $rawHomepageContent !== '{}';
+        if ($hasRawHomepageContent && $homepageContent === null) {
+            throw new LogicException(
+                'StaticPage row has populated homepage_content; callers must supply '
+                .'the typed HomepageContent via HomepageContentFactory.'
+            );
+        }
+
+        $rawAboutPageContent = $row['about_page_content'] ?? null;
+        $hasRawAboutPageContent = $rawAboutPageContent !== null
+            && $rawAboutPageContent !== ''
+            && $rawAboutPageContent !== '{}';
+        if ($hasRawAboutPageContent && $aboutPageContent === null) {
+            throw new LogicException(
+                'StaticPage row has populated about_page_content; callers must supply '
+                .'the typed AboutPageContent via AboutPageContentFactory.'
+            );
+        }
+
         return new self(
             id: EntityId::fromString((string) $row['id']),
             slug: new PageSlug((string) $row['slug']),
@@ -166,6 +214,8 @@ final class StaticPage implements EntityContract
             body: $body,
             bodyHtml: isset($row['body_html']) ? (string) $row['body_html'] : null,
             seoMetadata: $seo,
+            homepageContent: $homepageContent,
+            aboutPageContent: $aboutPageContent,
             state: StaticPageState::from((string) $row['state']),
             isHomepage: (bool) ($row['is_homepage'] ?? false),
             displayOrder: (int) ($row['display_order'] ?? 0),
@@ -203,6 +253,12 @@ final class StaticPage implements EntityContract
             'body_json' => json_encode($this->body->toArray(), JSON_THROW_ON_ERROR),
             'body_html' => $this->bodyHtml,
             'seo_metadata' => json_encode($this->seoMetadata->toArray(), JSON_THROW_ON_ERROR),
+            'homepage_content' => $this->homepageContent === null
+                ? null
+                : json_encode($this->homepageContent->toArray(), JSON_THROW_ON_ERROR),
+            'about_page_content' => $this->aboutPageContent === null
+                ? null
+                : json_encode($this->aboutPageContent->toArray(), JSON_THROW_ON_ERROR),
             'state' => $this->state->value,
             'is_homepage' => $this->isHomepage,
             'display_order' => $this->displayOrder,
@@ -221,6 +277,10 @@ final class StaticPage implements EntityContract
      * transitionTo() with the state machine — direct mutation here is a
      * programming error.
      *
+     * The typed homepageContent is carried through the round-trip so
+     * that mutators (title, body, hero banners, state) do not silently
+     * lose the homepage aggregate.
+     *
      * @param  array<string, mixed>  $changes
      */
     public function withChanges(array $changes): static
@@ -235,7 +295,7 @@ final class StaticPage implements EntityContract
         $merged = array_merge($row, $changes);
         $merged['updated_at'] = (new DateTimeImmutable())->format(DATE_ATOM);
 
-        return self::fromRow($merged);
+        return self::fromRow($merged, $this->homepageContent, $this->aboutPageContent);
     }
 
     /**
@@ -263,7 +323,7 @@ final class StaticPage implements EntityContract
         }
         $row['updated_at'] = (new DateTimeImmutable())->format(DATE_ATOM);
 
-        return self::fromRow($row);
+        return self::fromRow($row, $this->homepageContent, $this->aboutPageContent);
     }
 
     /**
@@ -292,7 +352,7 @@ final class StaticPage implements EntityContract
         $row['is_homepage'] = true;
         $row['updated_at'] = (new DateTimeImmutable())->format(DATE_ATOM);
 
-        return self::fromRow($row);
+        return self::fromRow($row, $this->homepageContent, $this->aboutPageContent);
     }
 
     public function clearHomepage(): self
@@ -301,7 +361,7 @@ final class StaticPage implements EntityContract
         $row['is_homepage'] = false;
         $row['updated_at'] = (new DateTimeImmutable())->format(DATE_ATOM);
 
-        return self::fromRow($row);
+        return self::fromRow($row, $this->homepageContent, $this->aboutPageContent);
     }
 
     public function withBody(PageBody $body, ?string $newBodyHtml = null): self
@@ -313,7 +373,29 @@ final class StaticPage implements EntityContract
         }
         $row['updated_at'] = (new DateTimeImmutable())->format(DATE_ATOM);
 
-        return self::fromRow($row);
+        return self::fromRow($row, $this->homepageContent, $this->aboutPageContent);
+    }
+
+    public function withHomepageContent(?HomepageContent $homepageContent): self
+    {
+        $row = $this->toArray();
+        $row['homepage_content'] = $homepageContent === null
+            ? null
+            : json_encode($homepageContent->toArray(), JSON_THROW_ON_ERROR);
+        $row['updated_at'] = (new DateTimeImmutable())->format(DATE_ATOM);
+
+        return self::fromRow($row, $homepageContent, $this->aboutPageContent);
+    }
+
+    public function withAboutPageContent(?AboutPageContent $aboutPageContent): self
+    {
+        $row = $this->toArray();
+        $row['about_page_content'] = $aboutPageContent === null
+            ? null
+            : json_encode($aboutPageContent->toArray(), JSON_THROW_ON_ERROR);
+        $row['updated_at'] = (new DateTimeImmutable())->format(DATE_ATOM);
+
+        return self::fromRow($row, $this->homepageContent, $aboutPageContent);
     }
 
     public function attachHeroBanner(HeroBannerSlot $slot): self
@@ -338,7 +420,7 @@ final class StaticPage implements EntityContract
         );
         $row['updated_at'] = (new DateTimeImmutable())->format(DATE_ATOM);
 
-        return self::fromRow($row);
+        return self::fromRow($row, $this->homepageContent, $this->aboutPageContent);
     }
 
     public function detachHeroBanner(EntityId $bannerId): self
@@ -359,7 +441,7 @@ final class StaticPage implements EntityContract
         );
         $row['updated_at'] = (new DateTimeImmutable())->format(DATE_ATOM);
 
-        return self::fromRow($row);
+        return self::fromRow($row, $this->homepageContent, $this->aboutPageContent);
     }
 
     // ─── Getters ────────────────────────────────────────────────────────
@@ -392,6 +474,16 @@ final class StaticPage implements EntityContract
     public function seoMetadata(): SeoMetadata
     {
         return $this->seoMetadata;
+    }
+
+    public function homepageContent(): ?HomepageContent
+    {
+        return $this->homepageContent;
+    }
+
+    public function aboutPageContent(): ?AboutPageContent
+    {
+        return $this->aboutPageContent;
     }
 
     public function state(): StaticPageState

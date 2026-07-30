@@ -43,6 +43,7 @@ final class StaticPageService
         private readonly StaticPageStateMachine $stateMachine,
         private readonly PersistenceAdapterContract $adapter,
         private readonly StaticPageBodyRenderer $bodyRenderer,
+        private readonly HomepageContentFactory $homepageContentFactory,
     ) {
     }
 
@@ -72,6 +73,16 @@ final class StaticPageService
             return Result::failure('homepage.conflict');
         }
 
+        // 2c. Re-validate any supplied homepageContent against the current
+        // database state so a fabricated ID set cannot bypass the boundary.
+        if ($input->homepageContent !== null) {
+            try {
+                $this->homepageContentFactory->assertStillValid($input->homepageContent);
+            } catch (\InvalidArgumentException $e) {
+                return Result::failure('homepage_content.invalid:'.$e->getMessage());
+            }
+        }
+
         // 3. Persist inside transaction
         $result = $this->adapter->transaction(function () use ($input, $slug): Result {
             try {
@@ -88,6 +99,7 @@ final class StaticPageService
                     isHomepage: $input->isHomepage,
                     displayOrder: $input->displayOrder,
                     createdBy: $input->createdBy,
+                    homepageContent: $input->homepageContent,
                 );
                 $this->pages->save($page);
 
@@ -104,6 +116,16 @@ final class StaticPageService
 
     public function updateContent(EntityId $id, StaticPageUpdateInput $input): Result
     {
+        // Pre-validate any supplied homepageContent before opening the
+        // transaction so we can fail fast with a clean error.
+        if ($input->homepageContent !== null) {
+            try {
+                $this->homepageContentFactory->assertStillValid($input->homepageContent);
+            } catch (\InvalidArgumentException $e) {
+                return Result::failure('homepage_content.invalid:'.$e->getMessage());
+            }
+        }
+
         return $this->adapter->transaction(function () use ($id, $input): Result {
             $locked = $this->pages->lockByIdForUpdate($id);
             if ($locked === null) {
@@ -134,11 +156,18 @@ final class StaticPageService
                 $changes['updated_by'] = $input->updatedBy;
             }
 
-            if ($changes === []) {
+            $updated = $changes === [] ? $locked : $locked->withChanges($changes);
+
+            if ($input->homepageContent !== null) {
+                $updated = $updated->withHomepageContent($input->homepageContent);
+            } elseif ($input->clearHomepageContent) {
+                $updated = $updated->withHomepageContent(null);
+            }
+
+            if ($updated === $locked) {
                 return Result::success($locked);
             }
 
-            $updated = $locked->withChanges($changes);
             $this->pages->update($updated);
 
             // Event dispatched post-commit (transaction wrapper completes below)

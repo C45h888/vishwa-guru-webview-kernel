@@ -22,6 +22,10 @@ export default defineConfig({
     },
     build: {
         outDir: 'public/build',
-        manifest: true,
+        // Vite 5 defaults manifest to `.vite/manifest.json` but Laravel 10's
+        // Vite helper (Illuminate\Foundation\Vite::manifestPath) still expects
+        // `public/build/manifest.json`. Pass the filename explicitly so the
+        // framework can resolve assets and emit <link>/<script> tags.
+        manifest: 'manifest.json',
     },
 });

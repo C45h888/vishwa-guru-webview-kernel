@@ -91,16 +91,12 @@ final class DonorRepository implements DonorRepositoryContract
             id, full_name, email, phone, country_code,
             address_line_1, address_line_2, city, state_region, postal_code,
             pan_number, preferred_lang, is_anonymized, notes,
-            metadata, created_at, updated_at, deleted_at,
-            first_donation_at, last_donation_at, donation_count,
-            lifetime_contribution_minor
+            created_at, updated_at, deleted_at
         ) VALUES (
             :id, :full_name, :email, :phone, :country_code,
             :address_line_1, :address_line_2, :city, :state_region, :postal_code,
             :pan_number, :preferred_lang, :is_anonymized, :notes,
-            :metadata, :created_at, :updated_at, :deleted_at,
-            :first_donation_at, :last_donation_at, :donation_count,
-            :lifetime_contribution_minor
+            :created_at, :updated_at, :deleted_at
         )';
 
         // Donor entity stores address as a JSON object; schema uses separate columns.
@@ -124,16 +120,9 @@ final class DonorRepository implements DonorRepositoryContract
             'preferred_lang' => $row['preferred_lang'] ?? null,
             'is_anonymized' => $row['is_anonymized'],
             'notes' => $row['notes'] ?? null,
-            'metadata' => is_string($row['metadata'])
-                ? $row['metadata']
-                : json_encode($row['metadata'] ?? [], JSON_THROW_ON_ERROR),
             'created_at' => $row['created_at'],
             'updated_at' => $row['updated_at'],
             'deleted_at' => $row['deleted_at'],
-            'first_donation_at' => $row['first_donation_at'],
-            'last_donation_at' => $row['last_donation_at'],
-            'donation_count' => $row['donation_count'] ?? 0,
-            'lifetime_contribution_minor' => $row['lifetime_contribution_minor'] ?? 0,
         ];
 
         $exec = $this->adapter->execute($sql, $params);

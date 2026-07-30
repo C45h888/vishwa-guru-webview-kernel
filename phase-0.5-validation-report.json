@@ -1,103 +1,105 @@
 {
   "branch": "phase-0.5-db (from .neon)",
-  "ran_at": "2026-07-15T10:34:49.326Z",
+  "ran_at": "2026-07-23T16:27:24.585Z",
   "total": 35,
-  "passed": 35,
-  "failed": 0,
+  "passed": 33,
+  "failed": 2,
   "probes": [
     {
-      "ran_at": "2026-07-15T10:34:40.387Z",
+      "ran_at": "2026-07-23T16:27:17.445Z",
       "id": "h1",
       "name": "currencies — INR/USD/EUR",
       "kind": "happy",
       "status": "pass"
     },
     {
-      "ran_at": "2026-07-15T10:34:40.639Z",
+      "ran_at": "2026-07-23T16:27:17.641Z",
       "id": "h2",
       "name": "payment_providers — razorpay + paypal",
       "kind": "happy",
       "status": "pass"
     },
     {
-      "ran_at": "2026-07-15T10:34:40.907Z",
+      "ran_at": "2026-07-23T16:27:17.840Z",
       "id": "h3",
       "name": "donors — full PII + anonymized",
       "kind": "happy",
       "status": "pass"
     },
     {
-      "ran_at": "2026-07-15T10:34:41.135Z",
+      "ran_at": "2026-07-23T16:27:18.039Z",
       "id": "h4",
       "name": "campaign — active, INR",
       "kind": "happy",
       "status": "pass"
     },
     {
-      "ran_at": "2026-07-15T10:34:41.385Z",
+      "ran_at": "2026-07-23T16:27:18.233Z",
       "id": "h5",
       "name": "idempotency_keys — donation + payment",
       "kind": "happy",
       "status": "pass"
     },
     {
-      "ran_at": "2026-07-15T10:34:41.632Z",
+      "ran_at": "2026-07-23T16:27:18.433Z",
       "id": "h6",
       "name": "donation — non-anonymous, INR 1000, completed",
       "kind": "happy",
       "status": "pass"
     },
     {
-      "ran_at": "2026-07-15T10:34:41.884Z",
+      "ran_at": "2026-07-23T16:27:18.636Z",
       "id": "h7",
       "name": "payment — captured INR 1000",
       "kind": "happy",
       "status": "pass"
     },
     {
-      "ran_at": "2026-07-15T10:34:42.194Z",
+      "ran_at": "2026-07-23T16:27:18.830Z",
       "id": "h8",
       "name": "file_assets — receipt PDF + 80G cert",
       "kind": "happy",
       "status": "pass"
     },
     {
-      "ran_at": "2026-07-15T10:34:42.444Z",
+      "ran_at": "2026-07-23T16:27:19.039Z",
       "id": "h9",
       "name": "receipt — generated",
       "kind": "happy",
-      "status": "pass"
+      "status": "fail",
+      "observed_sqlstate": "23503",
+      "error": "insert or update on table \"receipts\" violates foreign key constraint \"receipts_file_payment_boundary_fk\""
     },
     {
-      "ran_at": "2026-07-15T10:34:42.661Z",
+      "ran_at": "2026-07-23T16:27:19.240Z",
       "id": "h10",
       "name": "donations UPDATE → completed (no-op, already completed)",
       "kind": "happy",
       "status": "pass"
     },
     {
-      "ran_at": "2026-07-15T10:34:42.870Z",
+      "ran_at": "2026-07-23T16:27:19.433Z",
       "id": "h11",
       "name": "payments UPDATE → settled",
       "kind": "happy",
       "status": "pass"
     },
     {
-      "ran_at": "2026-07-15T10:34:43.105Z",
+      "ran_at": "2026-07-23T16:27:19.628Z",
       "id": "h12",
       "name": "receipts UPDATE → delivered",
       "kind": "happy",
       "status": "pass"
     },
     {
-      "ran_at": "2026-07-15T10:34:43.347Z",
+      "ran_at": "2026-07-23T16:27:19.828Z",
       "id": "h13",
       "name": "audit_events — append-only INSERT",
       "kind": "happy",
       "status": "pass"
     },
     {
-      "ran_at": "2026-07-15T10:34:43.584Z",
+      "ran_at": "2026-07-23T16:27:20.021Z",
       "id": "n01",
       "name": "currencies.minor_unit_digits > 4 → CHECK (23514)",
       "kind": "negative",
@@ -106,7 +108,7 @@
       "observed_sqlstate": "23514"
     },
     {
-      "ran_at": "2026-07-15T10:34:43.814Z",
+      "ran_at": "2026-07-23T16:27:20.213Z",
       "id": "n02",
       "name": "donor with no contact AND not anonymized → CHECK (23514)",
       "kind": "negative",
@@ -115,7 +117,7 @@
       "observed_sqlstate": "23514"
     },
     {
-      "ran_at": "2026-07-15T10:34:44.042Z",
+      "ran_at": "2026-07-23T16:27:20.409Z",
       "id": "n03",
       "name": "donations.is_anonymous=true with PII snapshots → CHECK (23514)",
       "kind": "negative",
@@ -124,7 +126,7 @@
       "observed_sqlstate": "23514"
     },
     {
-      "ran_at": "2026-07-15T10:34:44.279Z",
+      "ran_at": "2026-07-23T16:27:20.598Z",
       "id": "n04",
       "name": "donations.amount_minor <= 0 → CHECK (23514)",
       "kind": "negative",
@@ -133,7 +135,7 @@
       "observed_sqlstate": "23514"
     },
     {
-      "ran_at": "2026-07-15T10:34:44.496Z",
+      "ran_at": "2026-07-23T16:27:20.783Z",
       "id": "n05",
       "name": "donations state=completed with completed_at IS NULL → CHECK (23514)",
       "kind": "negative",
@@ -142,7 +144,7 @@
       "observed_sqlstate": "23514"
     },
     {
-      "ran_at": "2026-07-15T10:34:44.717Z",
+      "ran_at": "2026-07-23T16:27:20.968Z",
       "id": "n06",
       "name": "donations state=failed with failed_at IS NULL → CHECK (23514)",
       "kind": "negative",
@@ -151,7 +153,7 @@
       "observed_sqlstate": "23514"
     },
     {
-      "ran_at": "2026-07-15T10:34:44.939Z",
+      "ran_at": "2026-07-23T16:27:21.157Z",
       "id": "n07",
       "name": "payments status=refunded with refund=0 → CHECK (23514)",
       "kind": "negative",
@@ -160,7 +162,7 @@
       "observed_sqlstate": "23514"
     },
     {
-      "ran_at": "2026-07-15T10:34:45.179Z",
+      "ran_at": "2026-07-23T16:27:21.350Z",
       "id": "n08",
       "name": "payments refund > captured → CHECK (23514)",
       "kind": "negative",
@@ -169,7 +171,7 @@
       "observed_sqlstate": "23514"
     },
     {
-      "ran_at": "2026-07-15T10:34:45.409Z",
+      "ran_at": "2026-07-23T16:27:21.547Z",
       "id": "n09",
       "name": "payments status=settled with settled_at IS NULL → CHECK (23514)",
       "kind": "negative",
@@ -178,7 +180,7 @@
       "observed_sqlstate": "23514"
     },
     {
-      "ran_at": "2026-07-15T10:34:45.640Z",
+      "ran_at": "2026-07-23T16:27:21.736Z",
       "id": "n10",
       "name": "failure_states retry_count > max_retries → CHECK (23514)",
       "kind": "negative",
@@ -187,7 +189,7 @@
       "observed_sqlstate": "23514"
     },
     {
-      "ran_at": "2026-07-15T10:34:45.854Z",
+      "ran_at": "2026-07-23T16:27:21.921Z",
       "id": "n11",
       "name": "idempotency_keys expires_at <= created_at → CHECK (23514)",
       "kind": "negative",
@@ -196,7 +198,7 @@
       "observed_sqlstate": "23514"
     },
     {
-      "ran_at": "2026-07-15T10:34:46.084Z",
+      "ran_at": "2026-07-23T16:27:22.112Z",
       "id": "n12",
       "name": "file_assets.file_size_bytes <= 0 → CHECK (23514)",
       "kind": "negative",
@@ -205,14 +207,14 @@
       "observed_sqlstate": "23514"
     },
     {
-      "ran_at": "2026-07-15T10:34:46.310Z",
+      "ran_at": "2026-07-23T16:27:22.306Z",
       "id": "h-prep-n13",
       "name": "static_pages — first homepage",
       "kind": "happy",
       "status": "pass"
     },
     {
-      "ran_at": "2026-07-15T10:34:46.536Z",
+      "ran_at": "2026-07-23T16:27:22.490Z",
       "id": "n13",
       "name": "static_pages second is_homepage=true → EXCLUDE (23P01)",
       "kind": "negative",
@@ -221,14 +223,14 @@
       "observed_sqlstate": "23P01"
     },
     {
-      "ran_at": "2026-07-15T10:34:46.780Z",
+      "ran_at": "2026-07-23T16:27:22.680Z",
       "id": "h-prep-n14",
       "name": "webhook_events — first event",
       "kind": "happy",
       "status": "pass"
     },
     {
-      "ran_at": "2026-07-15T10:34:47.052Z",
+      "ran_at": "2026-07-23T16:27:22.865Z",
       "id": "n14",
       "name": "webhook_events duplicate (provider_code, provider_event_id) → UNIQUE (23505)",
       "kind": "negative",
@@ -237,7 +239,7 @@
       "observed_sqlstate": "23505"
     },
     {
-      "ran_at": "2026-07-15T10:34:47.293Z",
+      "ran_at": "2026-07-23T16:27:23.048Z",
       "id": "n15",
       "name": "donations.campaign_id nonexistent → FK (23503)",
       "kind": "negative",
@@ -246,7 +248,7 @@
       "observed_sqlstate": "23503"
     },
     {
-      "ran_at": "2026-07-15T10:34:47.537Z",
+      "ran_at": "2026-07-23T16:27:23.243Z",
       "id": "n16",
       "name": "receipts.donation_id nonexistent → FK (23503)",
       "kind": "negative",
@@ -255,7 +257,7 @@
       "observed_sqlstate": "23503"
     },
     {
-      "ran_at": "2026-07-15T10:34:47.992Z",
+      "ran_at": "2026-07-23T16:27:23.620Z",
       "id": "n17",
       "name": "soft-delete + reuse slug → partial unique allows",
       "kind": "negative",
@@ -263,7 +265,7 @@
       "expected": "no_error"
     },
     {
-      "ran_at": "2026-07-15T10:34:48.268Z",
+      "ran_at": "2026-07-23T16:27:23.812Z",
       "id": "c01",
       "name": "DELETE campaign with donations → RESTRICT (23001)",
       "kind": "negative",
@@ -272,7 +274,7 @@
       "observed_sqlstate": "23001"
     },
     {
-      "ran_at": "2026-07-15T10:34:48.870Z",
+      "ran_at": "2026-07-23T16:27:24.327Z",
       "id": "c02",
       "name": "hero_banner DELETE CASCADES hero_banner_pages → junction rows removed",
       "kind": "cascade",
@@ -281,12 +283,13 @@
       "cascade_rows_removed": 1
     },
     {
-      "ran_at": "2026-07-15T10:34:49.326Z",
+      "ran_at": "2026-07-23T16:27:24.585Z",
       "id": "c03",
       "name": "campaign.cover_image_file_id = SET NULL on file_assets DELETE",
       "kind": "cascade",
-      "status": "pass",
-      "expected": "set_null"
+      "status": "fail",
+      "expected": "set_null",
+      "error": "insert or update on table \"campaigns\" violates foreign key constraint \"campaigns_cover_cms_boundary_fk\""
     }
   ]
 }

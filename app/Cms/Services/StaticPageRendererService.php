@@ -118,6 +118,8 @@ final class StaticPageRendererService implements StaticPageRendererContract
             resolvedReferences: $resolved,
             html: $page->bodyHtml() ?? '',
             resolvedAt: $this->clock->now(),
+            homepageContent: $page->homepageContent(),
+            aboutPageContent: $page->aboutPageContent(),
         );
     }
 }

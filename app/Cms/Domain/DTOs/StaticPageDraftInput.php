@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Cms\Domain\DTOs;
 
+use App\Cms\Domain\ValueObjects\HomepageContent;
 use App\Cms\Domain\ValueObjects\SeoMetadata;
 use InvalidArgumentException;
 
@@ -28,6 +29,7 @@ final readonly class StaticPageDraftInput
         public bool $isHomepage = false,
         public int $displayOrder = 0,
         public ?string $createdBy = null,
+        public ?HomepageContent $homepageContent = null,
     ) {
         if (trim($title) === '') {
             throw new InvalidArgumentException('StaticPageDraftInput title cannot be empty');

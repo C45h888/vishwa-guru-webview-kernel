@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Payments\Contracts;
 
+use App\Payments\Domain\DTOs\GatewayResponseDTO;
 use App\Payments\Domain\Enums\Currency;
 use App\Payments\Domain\Enums\TransactionStatus;
 use App\Payments\Domain\ValueObjects\PaymentRequest;
@@ -26,7 +27,7 @@ interface PaymentGatewayContract
      * Initialize a new payment transaction.
      * Returns an order identifier from the gateway.
      *
-     * @return Result<array{order_id: string, amount: int, currency: Currency}>
+     * @return Result<GatewayResponseDTO>
      */
     public function initialize(PaymentRequest $request): Result;
 

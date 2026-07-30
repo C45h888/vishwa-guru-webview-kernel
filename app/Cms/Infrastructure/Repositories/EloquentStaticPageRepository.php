@@ -10,6 +10,8 @@ use App\Cms\Domain\Exceptions\DuplicatePageSlugException;
 use App\Cms\Domain\Exceptions\HomepageAlreadyAssignedException;
 use App\Cms\Domain\Repositories\StaticPageRepositoryContract;
 use App\Cms\Domain\ValueObjects\PageSlug;
+use App\Cms\Services\AboutPageContentFactory;
+use App\Cms\Services\HomepageContentFactory;
 use App\Persistence\Contracts\PersistenceAdapterContract;
 use App\Persistence\ValueObjects\EntityId;
 use RuntimeException;
@@ -22,6 +24,12 @@ use RuntimeException;
  * homepage) into domain exceptions at this boundary so callers see
  * clean business errors.
  *
+ * Hydration of the homepage_content and about_page_content columns goes
+ * through HomepageContentFactory and AboutPageContentFactory respectively
+ * — the entity is constructed only with already-validated typed VOs.
+ * Persistence writes call factory->assertStillValid() to close the
+ * load-to-write validation interval.
+ *
  * @see /Users/kamii/Vishwaguru-webview-kernel/vishwa-guru-webview-kernel/cms-architecture.md §5.1
  *
  * @implements StaticPageRepositoryContract
@@ -30,6 +38,8 @@ final class EloquentStaticPageRepository implements StaticPageRepositoryContract
 {
     public function __construct(
         private readonly PersistenceAdapterContract $adapter,
+        private readonly HomepageContentFactory $homepageContentFactory,
+        private readonly AboutPageContentFactory $aboutPageContentFactory,
     ) {
     }
 
@@ -43,7 +53,7 @@ final class EloquentStaticPageRepository implements StaticPageRepositoryContract
             return null;
         }
 
-        return StaticPage::fromRow($result->value()[0]);
+        return $this->hydrate($result->value()[0]);
     }
 
     public function findBySlug(PageSlug $slug): ?StaticPage
@@ -56,7 +66,7 @@ final class EloquentStaticPageRepository implements StaticPageRepositoryContract
             return null;
         }
 
-        return StaticPage::fromRow($result->value()[0]);
+        return $this->hydrate($result->value()[0]);
     }
 
     public function findHomepage(): ?StaticPage
@@ -69,7 +79,7 @@ final class EloquentStaticPageRepository implements StaticPageRepositoryContract
             return null;
         }
 
-        return StaticPage::fromRow($result->value()[0]);
+        return $this->hydrate($result->value()[0]);
     }
 
     public function listPublished(?int $limit = null, ?int $offset = null): array
@@ -118,16 +128,27 @@ final class EloquentStaticPageRepository implements StaticPageRepositoryContract
 
     public function save(StaticPage $page): void
     {
+        // Re-validate homepageContent against current DB state before
+        // persistence — the value object's existence check was performed
+        // when the typed object was constructed, but anything could have
+        // changed since.
+        if ($page->homepageContent() !== null) {
+            $this->homepageContentFactory->assertStillValid($page->homepageContent());
+        }
+        if ($page->aboutPageContent() !== null) {
+            $this->aboutPageContentFactory->assertStillValid($page->aboutPageContent());
+        }
+
         $row = $page->toArray();
 
         $sql = 'INSERT INTO static_pages (
             id, slug, title, meta_description, body_json, body_html,
-            seo_metadata, state, is_homepage, display_order,
+            seo_metadata, homepage_content, about_page_content, state, is_homepage, display_order,
             published_at, last_published_at, created_at, updated_at,
             deleted_at, created_by, updated_by
         ) VALUES (
             :id, :slug, :title, :meta_description, :body_json, :body_html,
-            :seo_metadata, :state, :is_homepage, :display_order,
+            :seo_metadata, :homepage_content, :about_page_content, :state, :is_homepage, :display_order,
             :published_at, :last_published_at, :created_at, :updated_at,
             :deleted_at, :created_by, :updated_by
         )';
@@ -140,6 +161,8 @@ final class EloquentStaticPageRepository implements StaticPageRepositoryContract
             'body_json' => $row['body_json'],
             'body_html' => $row['body_html'],
             'seo_metadata' => $row['seo_metadata'],
+            'homepage_content' => $row['homepage_content'],
+            'about_page_content' => $row['about_page_content'],
             'state' => $row['state'],
             'is_homepage' => $row['is_homepage'],
             'display_order' => $row['display_order'],
@@ -160,6 +183,14 @@ final class EloquentStaticPageRepository implements StaticPageRepositoryContract
 
     public function update(StaticPage $page): void
     {
+        // Re-validate before persistence.
+        if ($page->homepageContent() !== null) {
+            $this->homepageContentFactory->assertStillValid($page->homepageContent());
+        }
+        if ($page->aboutPageContent() !== null) {
+            $this->aboutPageContentFactory->assertStillValid($page->aboutPageContent());
+        }
+
         $row = $page->toArray();
 
         $sql = 'UPDATE static_pages SET
@@ -169,6 +200,8 @@ final class EloquentStaticPageRepository implements StaticPageRepositoryContract
             body_json = :body_json,
             body_html = :body_html,
             seo_metadata = :seo_metadata,
+            homepage_content = :homepage_content,
+            about_page_content = :about_page_content,
             state = :state,
             is_homepage = :is_homepage,
             display_order = :display_order,
@@ -187,6 +220,8 @@ final class EloquentStaticPageRepository implements StaticPageRepositoryContract
             'body_json' => $row['body_json'],
             'body_html' => $row['body_html'],
             'seo_metadata' => $row['seo_metadata'],
+            'homepage_content' => $row['homepage_content'],
+            'about_page_content' => $row['about_page_content'],
             'state' => $row['state'],
             'is_homepage' => $row['is_homepage'],
             'display_order' => $row['display_order'],
@@ -242,7 +277,7 @@ final class EloquentStaticPageRepository implements StaticPageRepositoryContract
             return null;
         }
 
-        return StaticPage::fromRow($result->value()[0]);
+        return $this->hydrate($result->value()[0]);
     }
 
     public function lockByIdForUpdate(EntityId $id): ?StaticPage
@@ -255,7 +290,7 @@ final class EloquentStaticPageRepository implements StaticPageRepositoryContract
             return null;
         }
 
-        return StaticPage::fromRow($result->value()[0]);
+        return $this->hydrate($result->value()[0]);
     }
 
     public function countByState(StaticPageState $state): int
@@ -272,6 +307,21 @@ final class EloquentStaticPageRepository implements StaticPageRepositoryContract
     }
 
     /**
+     * @param  array<string, mixed>  $row
+     */
+    private function hydrate(array $row): StaticPage
+    {
+        $homepageContent = $this->homepageContentFactory->fromDatabaseValue(
+            $row['homepage_content'] ?? null,
+        );
+        $aboutPageContent = $this->aboutPageContentFactory->fromDatabaseValue(
+            $row['about_page_content'] ?? null,
+        );
+
+        return StaticPage::fromRow($row, $homepageContent, $aboutPageContent);
+    }
+
+    /**
      * @param  array<string, mixed>  $params
      * @return list<StaticPage>
      */
@@ -283,7 +333,7 @@ final class EloquentStaticPageRepository implements StaticPageRepositoryContract
         }
 
         return array_map(
-            static fn (array $row) => StaticPage::fromRow($row),
+            fn (array $row): StaticPage => $this->hydrate($row),
             $result->value(),
         );
     }

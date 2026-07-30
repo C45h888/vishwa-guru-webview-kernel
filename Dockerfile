@@ -79,6 +79,34 @@ RUN docker-php-ext-install -j"$(nproc)" \
 # Install composer (image: composer:2 is the official image)
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
+# Install Node.js (image: node:22-bookworm is the official image) so the
+# frontend build runs inside this container and not on the host. The
+# composer.json post-install-cmd invokes `npm ci && npm run build` when
+# npm is on PATH; before this layer the build silently no-op'd and the
+# app rendered against a stale (or missing) public/build/manifest.json.
+#
+# Doctrine: ONE runtime. The container owns the build so `docker compose
+# up -d` is the canonical dev workflow — no host-side `npm run build`,
+# no host-side `vite` dev server, no public/hot bridge file.
+#
+# Copy the full Node distribution, not just the binaries — npm/npx need
+# their adjacent /usr/local/lib/node_modules/npm lib directory or they
+# crash with `Cannot find module '../lib/cli.js'`.
+COPY --from=node:22-bookworm /usr/local/bin/node /usr/local/bin/node
+COPY --from=node:22-bookworm /usr/local/bin/npm /usr/local/bin/npm
+COPY --from=node:22-bookworm /usr/local/bin/npx /usr/local/bin/npx
+COPY --from=node:22-bookworm /usr/local/lib/node_modules /usr/local/lib/node_modules
+
+# Restore the symlinks that the official node:22-bookworm image ships
+# with. BuildKit's COPY resolved those symlinks and copied the script
+# bodies instead of preserving the indirection, which makes npm's
+# shebang (`require('../lib/cli.js')`) point at a non-existent file.
+# Pointing the bin entries back at the lib's bin scripts restores the
+# layout npm expects and matches what `node:22-bookworm` provides
+# natively.
+RUN ln -sf /usr/local/lib/node_modules/npm/bin/npm-cli.js /usr/local/bin/npm \
+ && ln -sf /usr/local/lib/node_modules/npm/bin/npx-cli.js /usr/local/bin/npx
+
 # Sane PHP defaults for a Laravel application runtime
 #   - memory_limit: 512M (queue workers need headroom for batch jobs)
 #   - upload_max_filesize: 20M (receipt PDFs, gallery images)

@@ -12,6 +12,7 @@ use App\Payments\Domain\ValueObjects\PaymentResult;
 use App\Payments\Domain\ValueObjects\WebhookPayload;
 use App\Payments\Services\PaymentOrchestrator;
 use App\Payments\Services\PaymentService;
+use App\Persistence\ValueObjects\EntityId;
 use App\Shared\Support\FrozenClock;
 use App\Shared\Support\Result;
 use App\Shared\ValueObjects\Identifier;
@@ -135,7 +136,7 @@ final class PaymentServiceTest extends TestCase
     private function makeIntent(): DonationIntent
     {
         return new DonationIntent(
-            campaignId: new Identifier(\App\Shared\Support\UlidGenerator::generate()),
+            campaignId: EntityId::generate('campaign'),
             donor: DonorIdentity::anonymous(),
             amountMinor: 50000,
             currency: Currency::INR,

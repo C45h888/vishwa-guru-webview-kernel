@@ -1,25 +1,17 @@
 <script lang="ts">
-    import {
-        Receipt,
-        Shield,
-        Building2,
-        BadgeCheck,
-    } from 'lucide-svelte';
-    import { Badge } from '$shared/ui/badge';
+    import { Shield } from 'lucide-svelte';
 
-    const badges = [
-        { icon: Receipt, label: '80G Tax Benefit' },
-        { icon: Shield, label: 'Secure Payments' },
-        { icon: Building2, label: 'Registered Trust' },
-        { icon: BadgeCheck, label: 'Official Site' },
-    ];
+    const signals = ['80G Tax Benefit', 'Razorpay Secure', 'Registered Trust'];
 </script>
 
-<div class="flex flex-wrap items-center justify-center gap-2">
-    {#each badges as { icon: Icon, label } (label)}
-        <Badge variant="secondary" class="gap-1.5 py-1.5 px-3 text-xs">
-            <Icon class="h-3.5 w-3.5" aria-hidden="true" />
+<div class="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-sm text-muted-foreground">
+    {#each signals as label, i (label)}
+        <span class="inline-flex items-center gap-1.5">
+            <Shield class="h-3.5 w-3.5 text-primary/70" aria-hidden="true" />
             <span>{label}</span>
-        </Badge>
+        </span>
+        {#if i < signals.length - 1}
+            <span class="text-border" aria-hidden="true">·</span>
+        {/if}
     {/each}
 </div>

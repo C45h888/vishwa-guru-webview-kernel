@@ -211,3 +211,131 @@ export interface ReceiptDraftProps {
     delivery_address: string | null;
     amount_in_words: string;
 }
+
+/* ──────────────────────────────────────────────────────────────────────
+ * Homepage prose aggregate
+ * ──────────────────────────────────────────────────────────────────────
+ *
+ * Mirrors App\Cms\Domain\ValueObjects\HomepageContent. The payload
+ * flows from PHP into the Svelte layer as snake_case keys (matching
+ * the JSONB column convention) and the Svelte layer treats a null
+ * homepageContent (HomePageProps) as a request to use
+ * FALLBACK_HOMEPAGE_CONTENT from resources/js/domains/cms/homepage-fallbacks.ts.
+ *
+ * Programs is a fixed-length 3-tuple mirroring the backend invariant
+ * (pooja, annadanam, temple_care in canonical order). Image references
+ * are null when no media is attached; the Svelte layer falls back to
+ * gradient panels in that case.
+ */
+
+export type HomepageProgramKey = 'pooja' | 'annadanam' | 'temple_care';
+
+export interface HomepageStoryProps {
+    eyebrow: string;
+    title: string;
+    body: string;
+    cta_label: string | null;
+    cta_url: string | null;
+    image_file_id: string | null;
+    alt_text: string | null;
+    image: PublicMediaProps | null;
+}
+
+export interface HomepageMissionQuoteProps {
+    eyebrow: string;
+    quote: string;
+    attribution: string | null;
+}
+
+export interface HomepageProgramProps {
+    key: HomepageProgramKey;
+    eyebrow: string;
+    title: string;
+    body: string;
+    image_file_id: string | null;
+    alt_text: string | null;
+    image: PublicMediaProps | null;
+}
+
+export interface HomepageTrustPanelProps {
+    eyebrow: string;
+    title: string;
+    registration: string;
+    tax_status: string;
+    operating_principles: string[];
+    vows: string[];
+}
+
+export interface HomepageDonateCtaProps {
+    eyebrow: string;
+    title: string;
+    body: string;
+    cta_label: string;
+    cta_url: string;
+}
+
+export interface HomepageContentProps {
+    version: 1;
+    story: HomepageStoryProps;
+    mission_quote: HomepageMissionQuoteProps;
+    programs: [HomepageProgramProps, HomepageProgramProps, HomepageProgramProps];
+    trust_panel: HomepageTrustPanelProps;
+    donate_cta: HomepageDonateCtaProps;
+}
+
+/* ──────────────────────────────────────────────────────────────────────
+ * About-page structured aggregate
+ * ──────────────────────────────────────────────────────────────────────
+ *
+ * Mirrors App\Cms\Domain\ValueObjects\AboutPageContent. The payload
+ * flows from PHP into the Svelte layer as snake_case keys (matching
+ * the JSONB column convention) and the Svelte layer treats a null
+ * aboutContent (AboutPageProps) as a request to use
+ * FALLBACK_ABOUT_PAGE_CONTENT from resources/js/domains/cms/about-fallbacks.ts.
+ *
+ * The timeline is an ordered list (oldest first; the backend emits
+ * ascending by year). Trustees is an ordered list (editor's chosen
+ * display order). The donate_cta shape is identical to the Home page's
+ * donate_cta — the same Svelte component (`DonateCtaBand`) renders
+ * both. Image references are null when no media is attached; the
+ * Svelte layer falls back to gradient placeholders.
+ */
+
+export interface AboutValueProps {
+    eyebrow: string;
+    title: string;
+    body: string;
+    image_file_id: string | null;
+    alt_text: string | null;
+    image: PublicMediaProps | null;
+}
+
+export interface AboutTimelineEntryProps {
+    year: number;
+    title: string;
+    description: string;
+}
+
+export interface AboutTrusteeProps {
+    name: string;
+    role: string;
+    photo_file_id: string | null;
+    bio: string | null;
+    photo: PublicMediaProps | null;
+}
+
+export interface AboutDonateCtaProps {
+    eyebrow: string;
+    title: string;
+    body: string;
+    cta_label: string;
+    cta_url: string;
+}
+
+export interface AboutPageContentProps {
+    version: 1;
+    values: AboutValueProps;
+    timeline: AboutTimelineEntryProps[];
+    trustees: AboutTrusteeProps[];
+    donate_cta: AboutDonateCtaProps;
+}

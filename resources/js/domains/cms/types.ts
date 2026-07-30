@@ -4,7 +4,32 @@ import type {
     CampaignSummaryProps,
     EventSummaryProps,
     GallerySummaryProps,
+    HomepageContentProps,
+    HomepageStoryProps,
+    HomepageMissionQuoteProps,
+    HomepageProgramProps,
+    HomepageTrustPanelProps,
+    HomepageDonateCtaProps,
+    AboutPageContentProps,
+    AboutValueProps,
+    AboutTimelineEntryProps,
+    AboutTrusteeProps,
+    AboutDonateCtaProps,
 } from '$shared/lib/inertia';
+
+export type {
+    HomepageContentProps,
+    HomepageStoryProps,
+    HomepageMissionQuoteProps,
+    HomepageProgramProps,
+    HomepageTrustPanelProps,
+    HomepageDonateCtaProps,
+    AboutPageContentProps,
+    AboutValueProps,
+    AboutTimelineEntryProps,
+    AboutTrusteeProps,
+    AboutDonateCtaProps,
+};
 
 export interface HeroBannerProps {
     id: string;
@@ -53,16 +78,11 @@ export type HomeFeaturedGallery = GallerySummaryProps;
 
 export interface HomePageProps extends AppPageProps {
     page: StaticPageSummary;
+    homepageContent: HomepageContentProps | null;
     heroBanners: HeroBannerProps[];
     resolvedReferences: ResolvedReferenceProps[];
     html: string;
     resolvedAt: string;
-    featuredCampaigns: HomeFeaturedCampaign[];
-    featuredEvents: HomeFeaturedEvent[];
-    featuredGalleries: HomeFeaturedGallery[];
-}
-
-export interface HomeEmptyProps extends AppPageProps {
     featuredCampaigns: HomeFeaturedCampaign[];
     featuredEvents: HomeFeaturedEvent[];
     featuredGalleries: HomeFeaturedGallery[];
@@ -86,4 +106,12 @@ export interface ContactPointProps {
 
 export interface ContactPageProps extends AppPageProps {
     contactPoints: ContactPointProps[];
+}
+
+export interface AboutPageProps extends AppPageProps {
+    page: StaticPageSummary;
+    aboutContent: AboutPageContentProps | null;
+    heroBanners: HeroBannerProps[];
+    html: string;
+    resolvedAt: string;
 }

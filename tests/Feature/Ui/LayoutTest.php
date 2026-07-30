@@ -33,22 +33,25 @@ final class LayoutTest extends TestCase
         $this->app->instance(GalleryQueryContract::class, $this->emptyQuery(GalleryQueryContract::class));
 
         $this->app->instance(StaticPageRendererContract::class, Mockery::mock(StaticPageRendererContract::class, function ($m) {
-            $m->shouldReceive('renderHomepage')->andReturn(new RenderedStaticPage(
-                page: StaticPage::draft(
-                    slug: new PageSlug('home'),
-                    title: 'Temple Home',
-                    metaDescription: null,
-                    body: new PageBody(version: 1, blocks: []),
-                    seoMetadata: new SeoMetadata(),
-                    isHomepage: true,
-                    displayOrder: 0,
-                    createdBy: 'test',
-                ),
-                heroBanners: [],
-                resolvedReferences: [],
-                html: '<p>Layout payload</p>',
-                resolvedAt: new DateTimeImmutable('2026-07-21T00:00:00+00:00'),
-            ));
+            $m->shouldReceive('renderBySlug')
+                ->with(Mockery::on(static fn (PageSlug $slug): bool => $slug->value() === 'home'))
+                ->andReturn(new RenderedStaticPage(
+                    page: StaticPage::draft(
+                        slug: new PageSlug('home'),
+                        title: 'Temple Home',
+                        metaDescription: null,
+                        body: new PageBody(version: 1, blocks: []),
+                        seoMetadata: new SeoMetadata(),
+                        isHomepage: true,
+                        displayOrder: 0,
+                        createdBy: 'test',
+                    ),
+                    heroBanners: [],
+                    resolvedReferences: [],
+                    html: '<p>Layout payload</p>',
+                    resolvedAt: new DateTimeImmutable('2026-07-21T00:00:00+00:00'),
+                    homepageContent: null,
+                ));
         }));
 
         $response = $this->get('/');
@@ -63,6 +66,7 @@ final class LayoutTest extends TestCase
             ->has('resolvedReferences')
             ->has('html')
             ->has('resolvedAt')
+            ->has('homepageContent')
             ->etc()
         );
 

@@ -181,10 +181,6 @@ Defines header name, key prefix, default TTL (24h donation / 7d webhook), scope 
 
 Added `'idempotency' => IdempotencyMiddleware::class` to `$middlewareAliases`. The first custom alias added to Kernel; the existing `auth` and `throttle` aliases are unchanged.
 
-## Probes — `scripts/phase-2-http-probes.php`
-
-5 probes (http01-http05) verify: middleware alias registration, `IDEMPOTENCY_KEY_HEADER` env presence, `config('idempotency.header')` default, `config('idempotency.default_ttl')` value, and the donation route file's idempotency middleware application. Operator runs: `php scripts/phase-2-http-probes.php`.
-
 ---
 
 # Webhook Dedupe Middleware — `app/Http/Middleware/` (Phase 2 — Inbound webhook dedupe Layer 3 of 3)
@@ -219,10 +215,6 @@ Defines key prefix (`idem:webhook:`), default TTL (7d = 604800s), per-provider h
 ## Kernel — `app/Http/Kernel.php`
 
 Added `'webhook-dedupe' => WebhookDedupeMiddleware::class` to `$middlewareAliases`. The `idempotency` alias (Layer 1) is unchanged.
-
-## Probes — `scripts/phase-2-webhook-probes.php`
-
-5 probes (wh01-wh05) verify: middleware alias registration, `config('webhook.default_ttl')` default, `routes/webhook.php` route file + middleware application, per-provider header mapping. Operator runs: `php scripts/phase-2-webhook-probes.php`.
 
 ## Repository additions — `WebhookEventRepository::reserve()`
 
@@ -600,14 +592,6 @@ Global prefix: `REDIS_PREFIX=temple_trust_` (configurable).
 | `Dockerfile` | php:8.3-cli + ext-redis via `docker-php-ext-install redis`; also installs ext-pdo_pgsql, ext-intl, ext-zip, ext-bcmath, opcache |
 | `docker-compose.yml` | Local dev stack: Redis 7-alpine (AOF on, requirepass=dev), Postgres 15-alpine, PHP app |
 
-## Validation — `scripts/phase-2-redis-probes.php`
-
-Mirrors `phase-0.5-validation-report.json`. Probes the Redis substrate at
-runtime: extension loaded, contract resolves, four DBs configured, all four
-PING succeed, Cache::put round-trip, idempotency SET NX, webhook SET NX EX,
-configured prefix, optional connect-timeout probe.
-
-
 ---
 
 # Queue Module — `app/Queue/`
@@ -668,7 +652,7 @@ All env-driven via `QUEUE_GENERAL_TRIES`, `QUEUE_GENERAL_BACKOFF`, etc.
 
 ## Database — Neon production
 
-Tables live on Neon production (verified by `scripts/phase-2-queue-probes.php`):
+Tables live on Neon production:
 
 | Table | Purpose |
 |---|---|
@@ -678,16 +662,3 @@ Tables live on Neon production (verified by `scripts/phase-2-queue-probes.php`):
 
 Applied via the Doctrine-correct `php artisan migrate --force` path
 against Neon production after Phase 1 fix unblocked the doctrine path.
-
-## Validation — `scripts/phase-2-queue-probes.php`
-
-Mirrors `phase-0.5-validation-report.json` and `phase-2-redis-probes.php`.
-16 probes covering:
-- QueueConnectorContract resolution
-- Queue driver validation (redis|sync|database|...)
-- Redis DB 2 connection (queue)
-- failed_jobs / jobs / job_batches table presence
-- Connector API safety (no-throw semantics on ping/size)
-- Retry config (general.tries=3, financial.tries=1, prune=720)
-- AbstractQueuedJob defaults
-- QueuedJob factories (general + financial)

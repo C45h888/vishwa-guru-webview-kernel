@@ -1,11 +1,13 @@
 <script lang="ts">
     import { router } from '@inertiajs/svelte';
     import PublicLayout from '$shared/components/PublicLayout.svelte';
+    import EventCard from '$shared/components/EventCard.svelte';
     import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '$shared/ui/card';
     import { Button } from '$shared/ui/button';
     import { Input } from '$shared/ui/input';
     import { Label } from '$shared/ui/label';
     import { Alert } from '$shared/ui/alert';
+    import { Download, ArrowLeft } from 'lucide-svelte';
     import type {
         CampaignSummaryProps,
         AppPageProps,
@@ -15,26 +17,36 @@
         campaigns,
         defaultCurrency,
         preselectSlug,
+        preselectAmountRupees,
+        preselectRecurring,
+        preselectAnonymous,
         appName,
     }: AppPageProps<{
         campaigns: CampaignSummaryProps[];
         defaultCurrency: string;
         preselectSlug: string | null;
+        preselectAmountRupees: string | null;
+        preselectRecurring: string | null;
+        preselectAnonymous: boolean;
     }> = $props();
 
-    let selectedCampaign = $state<string>(preselectSlug ?? campaigns[0]?.slug ?? '');
-    let amountRupees = $state<string>('1000');
+    // Initialize state from deep-link params (or defaults).
+    let selectedCampaign = $state<string>(
+        preselectSlug ?? campaigns[0]?.slug ?? '',
+    );
+    let amountRupees = $state<string>(preselectAmountRupees ?? '1000');
+    let isAnonymous = $state<boolean>(preselectAnonymous);
+    let isRecurring = $state<string>(preselectRecurring ?? '');
     let donorName = $state<string>('');
     let donorEmail = $state<string>('');
     let donorPhone = $state<string>('');
     let donorMessage = $state<string>('');
-    let isAnonymous = $state(false);
 
     let submitting = $state(false);
     let errorMessage = $state<string | null>(null);
 
     const selectedCampaignData = $derived(
-        campaigns.find((c) => c.slug === String(selectedCampaign)) ?? null
+        campaigns.find((c) => c.slug === String(selectedCampaign)) ?? null,
     );
 
     // Convert rupee input → minor units (Razorpay expects integer paise).
@@ -61,9 +73,10 @@
         submitting = true;
         errorMessage = null;
 
-        const idempotencyKey = (typeof crypto !== 'undefined' && 'randomUUID' in crypto)
-            ? crypto.randomUUID()
-            : `idemp_${Date.now()}_${Math.random().toString(36).slice(2)}`;
+        const idempotencyKey =
+            typeof crypto !== 'undefined' && 'randomUUID' in crypto
+                ? crypto.randomUUID()
+                : `idemp_${Date.now()}_${Math.random().toString(36).slice(2)}`;
 
         const payload = {
             amount_minor: amountMinor,
@@ -79,7 +92,12 @@
         };
 
         try {
-            const csrfToken = (document.querySelector('meta[name="csrf-token"]') as HTMLMetaElement | null)?.content ?? '';
+            const csrfToken =
+                (
+                    document.querySelector(
+                        'meta[name="csrf-token"]',
+                    ) as HTMLMetaElement | null
+                )?.content ?? '';
             const response = await fetch('/api/v1/razorpay/checkout', {
                 method: 'POST',
                 headers: {
@@ -95,9 +113,9 @@
             if (!response.ok) {
                 const data = await response.json().catch(() => ({}));
                 errorMessage =
-                    data.message
-                    ?? data.error
-                    ?? `Submission failed (HTTP ${response.status}).`;
+                    data.message ??
+                    data.error ??
+                    `Submission failed (HTTP ${response.status}).`;
                 submitting = false;
                 return;
             }
@@ -110,9 +128,11 @@
                 return;
             }
 
-            // Navigate to Success page; it loads Razorpay checkout.js
+            // Navigate to status page; it loads Razorpay checkout.js
             // with the returned key_id and opens the modal client-side.
-            router.visit(`/donate/success?gateway_order_id=${encodeURIComponent(orderId)}`);
+            router.visit(
+                `/donate/success?gateway_order_id=${encodeURIComponent(orderId)}`,
+            );
         } catch (err) {
             errorMessage = err instanceof Error ? err.message : 'Network error.';
             submitting = false;
@@ -122,15 +142,27 @@
 
 <svelte:head>
     <title>Donate — {appName}</title>
-    <meta name="description" content="Support a campaign at {appName} via Razorpay." />
+    <meta
+        name="description"
+        content="Support a campaign at {appName} via Razorpay."
+    />
 </svelte:head>
 
 <PublicLayout>
     <div class="mx-auto max-w-2xl space-y-6">
+        <a
+            href="/"
+            class="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-primary"
+        >
+            <ArrowLeft class="h-4 w-4" aria-hidden="true" />
+            Back to home
+        </a>
+
         <header class="space-y-2">
-            <h1 class="text-3xl font-semibold">Donate</h1>
+            <h1 class="font-serif text-3xl font-semibold lg:text-4xl">Donate</h1>
             <p class="text-sm text-muted-foreground">
-                Your contribution goes directly to the chosen campaign via Razorpay test gateway.
+                Your contribution goes directly to the chosen campaign via
+                Razorpay.
             </p>
         </header>
 
@@ -143,7 +175,9 @@
                 <Card>
                     <CardHeader>
                         <CardTitle>Choose a campaign</CardTitle>
-                        <CardDescription>Pick where your donation should go.</CardDescription>
+                        <CardDescription>
+                            Pick where your donation should go.
+                        </CardDescription>
                     </CardHeader>
                     <CardContent class="space-y-3">
                         <Label for="campaign">Campaign</Label>
@@ -153,7 +187,9 @@
                             class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
                         >
                             {#each campaigns as campaign (campaign.id)}
-                                <option value={campaign.slug}>{campaign.title}</option>
+                                <option value={campaign.slug}
+                                    >{campaign.title}</option
+                                >
                             {/each}
                         </select>
                         {#if selectedCampaignData}
@@ -188,7 +224,8 @@
                     <CardHeader>
                         <CardTitle>Donor information</CardTitle>
                         <CardDescription>
-                            Optional. Below ₹2,000 the donation may remain anonymous.
+                            Optional. Below ₹2,000 the donation may remain
+                            anonymous.
                         </CardDescription>
                     </CardHeader>
                     <CardContent class="space-y-3">
@@ -250,9 +287,7 @@
                 </Card>
 
                 {#if errorMessage}
-                    <Alert variant="destructive">
-                        {errorMessage}
-                    </Alert>
+                    <Alert variant="destructive">{errorMessage}</Alert>
                 {/if}
 
                 <div class="flex items-center justify-between">

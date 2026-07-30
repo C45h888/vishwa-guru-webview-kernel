@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Payments\Domain\ValueObjects;
 
 use App\Payments\Domain\Enums\Currency;
-use App\Shared\ValueObjects\Identifier;
+use App\Persistence\ValueObjects\EntityId;
 use InvalidArgumentException;
 
 /**
@@ -23,7 +23,7 @@ final class DonationIntent
      * @param  array<string, mixed>  $metadata
      */
     public function __construct(
-        private readonly Identifier $campaignId,
+        private readonly EntityId $campaignId,
         private readonly DonorIdentity $donor,
         private readonly int $amountMinor,
         private readonly Currency $currency,
@@ -45,7 +45,7 @@ final class DonationIntent
         }
     }
 
-    public function campaignId(): Identifier
+    public function campaignId(): EntityId
     {
         return $this->campaignId;
     }
@@ -118,10 +118,15 @@ final class DonationIntent
             return $this->idempotencyKey;
         }
 
+        $donorFingerprint = $this->donor->email()
+            ?? ($this->donor->phone() !== null
+                ? 'anon:'.$this->donor->phone()
+                : 'anon:unknown');
+
         $fingerprint = hash('sha256', sprintf(
             '%s|%s|%d|%s',
             $this->campaignId->value(),
-            $this->donor->email() ?? 'anon:'.$this->donor->phone() ?? 'anon:unknown',
+            $donorFingerprint,
             $this->amountMinor,
             $this->currency->value,
         ));

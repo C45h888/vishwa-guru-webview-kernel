@@ -21,6 +21,14 @@ use InvalidArgumentException;
  */
 final class ReceiptNumberAllocator
 {
+    /**
+     * Canonical regex (pattern body, no delimiters) for the receipt-number
+     * format produced by this allocator: TR-{4-digit FY year}-{6-digit
+     * zero-padded sequence}. Routes/receipts.php imports this constant for
+     * its constraint; ReceiptNumberPatternTest locks the invariant.
+     */
+    public const PATTERN = 'TR-\d{4}-\d{6}';
+
     public function __construct(
         private readonly ReceiptRepositoryContract $receipts,
         private readonly Clock $clock,
