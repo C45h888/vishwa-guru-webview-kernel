@@ -412,6 +412,66 @@ Phase 4 work (Authentication module, Notifications module, admin CMS editing sur
 
 ---
 
+# Phase 4: Admin Kernel
+
+Lands now (per user decision 2026-08-02). The Authentication module + admin CMS editing surface have their own dedicated constitution section, satisfying the "must not be partially implemented" rule above.
+
+## Scope
+
+The admin kernel has exactly TWO surfaces:
+
+  1. Campaigns — admin can edit existing campaigns, create new ones (Pass 2).
+  2. Events — admin can create new upcoming events and end upcoming events to move them into the past-events surface (Pass 3).
+
+Both surfaces are gated behind a single canonical admin role (`'admin'`). One admin, env-driven credentials, no public registration. The notifications module remains deferred to its own pass — receipt delivery currently uses the PDF download fallback documented elsewhere.
+
+## Canonical references
+
+  - DB schema: applied via Neon MCP. Source of truth is the live Neon `br-shiny-poetry-aow2d8mt` branch.
+  - Laravel migration mirrors: `database/migrations/2026_08_02_000011_create_users_table_postgres.php` (PG, guarded) + `2026_08_02_000012_create_users_table_sqlite.php` (SQLite test mirror).
+  - Auth architecture mirrors Laravel Breeze 1.x's `inertia-common` stubs (controllers + middleware + routes) so a future Laravel 11 / Breeze 2.x upgrade is a swap, not a rewrite. The Svelte login page is hand-rolled because Breeze 1.x ships only React/Vue stubs for Laravel 10.
+
+## Authentication surface
+
+  - Login: `POST /login` (form via Inertia on `resources/js/domains/Auth/Login.svelte`).
+  - Logout: `POST /logout` (session invalidate + CSRF token regen, Breeze canonical).
+  - NOT BUILT (and intentionally absent): register, forgot-password, reset-password, email-verification, confirm-password. Single canonical admin authenticates via env-driven credentials only.
+  - Throttle: 5 failed attempts per email+IP per minute (Breeze canonical).
+
+## Authorization model
+
+  - Single role: `'admin'`. CHECK constraint on the table rejects any other value. Multi-role expansion is a follow-on migration, not a code redesign.
+  - Middleware aliases in `app/Http/Kernel.php`:
+      - `auth`   — Illuminate's canonical, redirects unauthenticated → /login
+      - `guest`  — `App\Http\Middleware\RedirectIfAuthenticated` redirects authenticated → /admin
+      - `admin`  — `App\Http\Middleware\EnsureUserIsAdmin` enforces `User::isAdmin() === true`, else 403
+  - Route group: `/admin/*` mounted under `['web', 'auth', 'admin']` (see `routes/admin.php`).
+
+## Canonical admin seeding
+
+  - `database/seeders/AdminSeeder.php` reads `ADMIN_EMAIL` / `ADMIN_PASSWORD` / `ADMIN_NAME` from env.
+  - Idempotent: re-runs update the existing row's password + role + name via `ON CONFLICT (email) DO UPDATE`.
+  - Default password `changeme-admin-2026` is intentionally weak so a missing env var produces a loud warning to stderr; production must override.
+
+## Architectural invariants
+
+  - The admin kernel does NOT introduce new domain modules. It is a separate `App\Http\Controllers\Admin\` namespace; business modules (Campaigns, Events) own their own contracts and services, and the admin controllers delegate to those contracts.
+  - Admin mutations live in services, not controllers. Pass 2 / Pass 3 add new `CampaignAuthoringService` / `EventAuthoringService` contracts to the existing Campaigns + Events modules; the admin controllers are thin shells around them.
+  - The admin uses Inertia + Svelte 5. No Blade admin views, no Alpine.js, no shadcn-svelte variant other than bits-ui.
+  - File upload UI is built when the corresponding authoring surface lands (Pass 2 for campaigns, Pass 3 for events). The V1 `StubImageUrlResolver` is replaced when the first upload UI ships.
+  - Audit log: `created_by` / `updated_by` columns on `campaigns` / `events` are populated with the admin's user id by the authoring services. Wiring the `audit_events` table is deferred to a follow-on pass — Pass 1 keeps the surface tight.
+
+## Non-goals (deliberately excluded from Pass 1)
+
+  - Cover/banner image upload UI (Pass 2 / Pass 3).
+  - State machines (replaced with FormRequest validation, per user decision 2026-08-02).
+  - Audit log wiring (Pass 2/3 if needed).
+  - Email verification (single canonical admin doesn't need it).
+  - Password reset (single canonical admin uses env-var override).
+  - Multi-admin management UI (single canonical admin only).
+
+---
+
 # Mission
 
 Every contribution made by an AI coding agent should leave the repository in a cleaner, more maintainable, and more understandable state than it was found.
