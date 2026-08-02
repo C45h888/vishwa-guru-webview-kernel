@@ -9,10 +9,17 @@
         Phone,
         MapPin,
         Link as LinkIcon,
+        MessageCircle,
     } from 'lucide-svelte';
     import type { ContactPageProps } from './types';
 
     let { contactPoints, appName }: ContactPageProps = $props();
+
+    // WhatsApp link — wa.me takes the number with the leading + stripped
+    // and the country code prefixed. +91 98441 32318 → 919844132318.
+    const WHATSAPP_NUMBER = '919844132318';
+    const WHATSAPP_URL = `https://wa.me/${WHATSAPP_NUMBER}`;
+    const WHATSAPP_DISPLAY = '+91 98441 32318';
 
     function iconFor(type: string) {
         const t = type.toLowerCase();
@@ -71,6 +78,42 @@
                 </div>
             </div>
         </div>
+    </section>
+
+    <section class="container py-8 lg:py-10">
+        <a
+            href={WHATSAPP_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            class="group flex items-center justify-between gap-4 rounded-md bg-[#25D366] px-5 py-4 text-white shadow-sm transition-all hover:bg-[#1ebe5d] hover:shadow-md sm:px-7 sm:py-5"
+        >
+            <div class="flex items-center gap-4">
+                <span
+                    class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-white/15"
+                >
+                    <MessageCircle class="h-5 w-5" aria-hidden="true" />
+                </span>
+                <div class="space-y-0.5">
+                    <p
+                        class="text-xs font-semibold uppercase tracking-[0.2em] text-white/85"
+                    >
+                        Chat with us
+                    </p>
+                    <p class="font-serif text-lg font-semibold sm:text-xl">
+                        WhatsApp the temple office
+                    </p>
+                </div>
+            </div>
+            <div class="hidden flex-col items-end sm:flex">
+                <span class="text-sm font-medium">{WHATSAPP_DISPLAY}</span>
+                <span
+                    class="text-xs text-white/80 transition-transform group-hover:translate-x-0.5"
+                    aria-hidden="true"
+                >
+                    Open chat →
+                </span>
+            </div>
+        </a>
     </section>
 
     <section class="container pb-16 lg:pb-24">

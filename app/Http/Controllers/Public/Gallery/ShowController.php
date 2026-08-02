@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Public\Gallery;
 
 use App\Gallery\Contracts\GalleryQueryContract;
+use App\Gallery\Domain\DTOs\GallerySummaryDTO;
 use App\Cms\Services\PublicMediaPresentationService;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -28,6 +29,18 @@ final class ShowController
             throw new NotFoundHttpException("Gallery [{$slug}] not found");
         }
 
+        // Lightweight sibling list for prev/next navigation. Display order
+        // matches the public /gallery index, so the "next" link lines up
+        // with where the visitor came from.
+        $siblings = array_map(
+            static fn (GallerySummaryDTO $dto): array => [
+                'slug'        => $dto->slug,
+                'title'       => $dto->title,
+                'image_count' => $dto->imageCount,
+            ],
+            $gallery->listDisplayable(1, 50)->items,
+        );
+
         return Inertia::render('gallery/Show', [
             'gallery' => $media->enrichNestedMany(
                 $media->enrich($detail->toArray(), 'cover_image_file_id', 'cover_image'),
@@ -35,6 +48,7 @@ final class ShowController
                 'file_asset_id',
                 'image',
             ),
+            'siblings' => $siblings,
             'appName' => config('app.name', 'Temple Trust'),
             'appUrl' => config('app.url'),
         ]);

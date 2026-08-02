@@ -1,12 +1,11 @@
 <script lang="ts">
-    import { router } from '@inertiajs/svelte';
     import PublicLayout from '$shared/components/PublicLayout.svelte';
-    import GalleryCard from '$shared/components/GalleryCard.svelte';
+    import PublicMediaImage from '$shared/components/PublicMediaImage.svelte';
     import MandalaDecoration from '$shared/components/MandalaDecoration.svelte';
     import TrustBadgeRow from '$shared/components/TrustBadgeRow.svelte';
     import BottomCtaBand from '$shared/components/BottomCtaBand.svelte';
     import { Button } from '$shared/ui/button';
-    import { Camera } from 'lucide-svelte';
+    import { ArrowRight, Camera } from 'lucide-svelte';
     import type {
         GallerySummaryProps,
         PaginationProps,
@@ -22,30 +21,31 @@
         pagination: PaginationProps;
     }> = $props();
 
-    const featuredGalleries = $derived(
-        galleries.filter((g) => g.is_featured),
-    );
-    const otherGalleries = $derived(
-        galleries.filter((g) => !g.is_featured),
-    );
     const hasContent = $derived(galleries.length > 0);
-
-    function goToPage(page: number) {
-        router.get('/gallery', { page }, { preserveScroll: true });
-    }
 </script>
 
 <svelte:head>
     <title>Gallery — {appName}</title>
+    <meta
+        name="description"
+        content="Sacred rituals, festivals, and community life from the temple."
+    />
 </svelte:head>
 
 <PublicLayout>
+    <!-- ═══ INTRO HEAD ═══ -->
     <section class="relative overflow-hidden bg-background">
         <div
-            class="pointer-events-none absolute -right-20 top-0 opacity-[0.10]"
+            class="pointer-events-none absolute -right-24 top-0 opacity-[0.08]"
             aria-hidden="true"
         >
-            <MandalaDecoration size={320} tint="gold" />
+            <MandalaDecoration size={420} tint="gold" />
+        </div>
+        <div
+            class="pointer-events-none absolute -left-20 bottom-0 opacity-[0.06]"
+            aria-hidden="true"
+        >
+            <MandalaDecoration size={260} tint="gold" />
         </div>
 
         <div class="container relative py-16 lg:py-24">
@@ -55,75 +55,111 @@
                 >
                     From the temple
                 </p>
-                <h1 class="font-serif text-4xl font-semibold lg:text-5xl">
+                <h1
+                    class="font-serif text-4xl font-semibold leading-tight lg:text-6xl"
+                >
                     Gallery
                 </h1>
-                <p class="text-base text-muted-foreground lg:text-lg">
-                    Daily darshan, festivals, and moments from the temple.
+                <p
+                    class="text-base text-muted-foreground lg:text-lg"
+                >
+                    Three windows into the daily practice, the festivals,
+                    and the community that sustains the temple.
                 </p>
                 <div class="pt-2">
                     <TrustBadgeRow />
-                </div>
-                <div
-                    class="flex flex-wrap items-center justify-center gap-3 pt-2"
-                >
-                    <Button href="/donate" size="lg">
-                        Donate to support the temple
-                    </Button>
-                    <Button href="/campaigns" size="lg" variant="outline">
-                        Browse campaigns
-                    </Button>
                 </div>
             </div>
         </div>
     </section>
 
+    <!-- ═══ THREE PILLARS ═══ -->
     {#if hasContent}
-        {#if featuredGalleries.length > 0}
-            <section class="container space-y-6 py-12 lg:py-16">
-                <div class="flex items-end justify-between gap-4">
-                    <h2 class="font-serif text-3xl font-semibold lg:text-4xl">
-                        Featured
-                    </h2>
-                </div>
-                <div
-                    class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3"
+        <section class="container space-y-10 py-12 lg:space-y-14 lg:py-16">
+            <div class="mx-auto max-w-3xl text-center">
+                <p
+                    class="text-xs font-semibold uppercase tracking-[0.25em] text-primary"
                 >
-                    {#each featuredGalleries as gallery (gallery.id)}
-                        <GalleryCard
-                            {gallery}
-                            href={`/gallery/${gallery.slug}`}
-                        />
-                    {/each}
-                </div>
-            </section>
-        {/if}
+                    The three pillars
+                </p>
+                <h2
+                    class="mt-3 font-serif text-2xl font-semibold lg:text-3xl"
+                >
+                    Choose a window
+                </h2>
+            </div>
 
-        {#if otherGalleries.length > 0}
-            <section class="container space-y-6 py-12 lg:py-16">
-                <div class="flex items-end justify-between gap-4">
-                    <h2 class="font-serif text-3xl font-semibold lg:text-4xl">
-                        All galleries
-                        <span
-                            class="ml-2 text-base font-normal text-muted-foreground"
+            <div class="grid grid-cols-1 gap-6 md:grid-cols-3 lg:gap-8">
+                {#each galleries as gallery (gallery.id)}
+                    <a
+                        href={`/gallery/${gallery.slug}`}
+                        class="group flex flex-col"
+                        aria-label={`Open the ${gallery.title} gallery`}
+                    >
+                        <!-- Image card -->
+                        <div
+                            class="relative aspect-square w-full overflow-hidden rounded-md border border-border/40 bg-ivory"
                         >
-                            {pagination.total}
-                        </span>
-                    </h2>
-                </div>
-                <div
-                    class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3"
-                >
-                    {#each otherGalleries as gallery (gallery.id)}
-                        <GalleryCard
-                            {gallery}
-                            href={`/gallery/${gallery.slug}`}
-                        />
-                    {/each}
-                </div>
-            </section>
-        {/if}
+                            {#if gallery.cover_image}
+                                <PublicMediaImage
+                                    media={gallery.cover_image}
+                                    alt={gallery.title}
+                                    class="h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.06]"
+                                />
+                            {:else}
+                                <div
+                                    class="flex h-full w-full items-center justify-center"
+                                >
+                                    <Camera
+                                        class="h-10 w-10 text-primary/40"
+                                        aria-hidden="true"
+                                    />
+                                </div>
+                            {/if}
 
+                            <!-- Photo count chip -->
+                            <span
+                                class="absolute right-3 top-3 rounded-full bg-black/60 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.18em] text-white backdrop-blur"
+                            >
+                                {gallery.image_count} photo{gallery.image_count === 1 ? '' : 's'}
+                            </span>
+                        </div>
+
+                        <!-- Text block -->
+                        <div class="mt-5 space-y-3">
+                            <p
+                                class="text-xs font-semibold uppercase tracking-[0.25em] text-primary"
+                            >
+                                Pillar · {gallery.title}
+                            </p>
+                            <h3
+                                class="font-serif text-2xl font-semibold leading-tight lg:text-3xl"
+                            >
+                                {gallery.title}
+                            </h3>
+                            {#if gallery.short_description}
+                                <p
+                                    class="text-sm leading-relaxed text-muted-foreground"
+                                >
+                                    {gallery.short_description}
+                                </p>
+                            {/if}
+                            <div
+                                class="inline-flex items-center gap-2 pt-1 text-sm font-semibold text-primary transition group-hover:gap-3"
+                            >
+                                <span>Enter the gallery</span>
+                                <ArrowRight
+                                    class="h-4 w-4"
+                                    aria-hidden="true"
+                                />
+                            </div>
+                        </div>
+                    </a>
+                {/each}
+            </div>
+        </section>
+
+        <!-- ═══ PAGINATION (only if there are more than one page) ═══ -->
         {#if pagination.has_more || pagination.page > 1}
             <nav
                 class="container flex items-center justify-between pb-12"
@@ -133,7 +169,7 @@
                     variant="outline"
                     size="sm"
                     disabled={pagination.page <= 1}
-                    onclick={() => goToPage(pagination.page - 1)}
+                    href={pagination.page > 1 ? `?page=${pagination.page - 1}` : undefined}
                 >
                     ← Previous
                 </Button>
@@ -144,7 +180,9 @@
                     variant="outline"
                     size="sm"
                     disabled={!pagination.has_more}
-                    onclick={() => goToPage(pagination.page + 1)}
+                    href={pagination.has_more
+                        ? `?page=${pagination.page + 1}`
+                        : undefined}
                 >
                     Next →
                 </Button>

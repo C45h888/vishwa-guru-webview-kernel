@@ -12,10 +12,11 @@ use Inertia\Response;
 /**
  * Browse page for temple events.
  *
- * Replaces the 501 stub reserved at routes/events.php:19-24.
- * Splits displayable events into two sections — upcoming (top, no
- * pagination, limited to 12) and past (paginated). Each EventSummaryDTO
- * is serialised via toArray() before reaching Inertia.
+ * The live upcoming/past feeds come from the events module (currently
+ * empty). The journal articles from event-articles.php are also passed
+ * through and rendered as the "Past events" preview list on the page.
+ * Once the events table is populated, the live `past` feed will
+ * shadow the journal preview.
  */
 final class IndexController
 {
@@ -36,6 +37,20 @@ final class IndexController
             $pastResult->items,
         ), 'banner_file_id', 'banner_image');
 
+        $articles = require app_path('Events/Content/event-articles.php');
+        $pastArticles = array_map(static function (array $a): array {
+            return [
+                'slug' => $a['slug'],
+                'category' => $a['category'],
+                'category_label' => $a['category_label'],
+                'eyebrow' => $a['eyebrow'],
+                'title' => $a['title'],
+                'excerpt' => $a['excerpt'],
+                'image' => $a['image'],
+                'image_alt' => $a['image_alt'],
+            ];
+        }, $articles);
+
         return Inertia::render('events/Index', [
             'upcoming' => $upcoming,
             'past' => $past,
@@ -45,6 +60,7 @@ final class IndexController
                 'total' => $pastResult->total,
                 'has_more' => $pastResult->hasMore,
             ],
+            'pastArticles' => $pastArticles,
             'appName' => config('app.name', 'Temple Trust'),
             'appUrl' => config('app.url'),
         ]);

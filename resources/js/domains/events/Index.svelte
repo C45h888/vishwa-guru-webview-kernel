@@ -1,45 +1,43 @@
 <script lang="ts">
-    import { router } from '@inertiajs/svelte';
     import PublicLayout from '$shared/components/PublicLayout.svelte';
-    import EventCard from '$shared/components/EventCard.svelte';
     import EventHeroSlideshow from '$shared/components/EventHeroSlideshow.svelte';
-    import TrustBadgeRow from '$shared/components/TrustBadgeRow.svelte';
     import BottomCtaBand from '$shared/components/BottomCtaBand.svelte';
-    import { Button } from '$shared/ui/button';
     import { EVENT_SLIDES } from '$domains/events/event-slides';
-    import type {
-        EventSummaryProps,
-        PaginationProps,
-        AppPageProps,
-    } from '$shared/lib/inertia';
+    import type { AppPageProps } from '$shared/lib/inertia';
+
+    interface PastArticleCard {
+        slug: string;
+        category: string;
+        category_label: string;
+        eyebrow: string;
+        title: string;
+        excerpt: string;
+        image: string;
+        image_alt: string;
+    }
 
     let {
-        upcoming,
-        past,
-        pagination,
+        pastArticles,
         appName,
     }: AppPageProps<{
-        upcoming: EventSummaryProps[];
-        past: EventSummaryProps[];
-        pagination: PaginationProps;
+        pastArticles: PastArticleCard[];
     }> = $props();
 
-    function goToPage(page: number) {
-        router.get('/events', { page }, { preserveScroll: true });
-    }
+    const hasArticles = $derived(pastArticles.length > 0);
 
-    function formatDate(iso: string | null, tz: string): string {
-        if (!iso) return '';
-        try {
-            return new Intl.DateTimeFormat('en-IN', {
-                dateStyle: 'medium',
-                timeStyle: 'short',
-                timeZone: tz || 'Asia/Kolkata',
-            }).format(new Date(iso));
-        } catch {
-            return iso;
-        }
-    }
+    // Current events: the recurring featured entries from the journal
+    // catalog (the three that anchor the hero slideshow).
+    const currentSlugs = [
+        'varalakshmi-vratam',
+        'bharatanatyam-vrinda-samsthanam',
+        'brahmotsavam',
+    ];
+    const currentArticles = $derived(
+        currentSlugs
+            .map((slug) => pastArticles.find((a) => a.slug === slug))
+            .filter((a): a is PastArticleCard => a !== undefined),
+    );
+    const hasCurrent = $derived(currentArticles.length > 0);
 </script>
 
 <svelte:head>
@@ -49,29 +47,77 @@
 <PublicLayout>
     <EventHeroSlideshow slides={EVENT_SLIDES} />
 
-    <section class="container space-y-6 py-12 lg:py-16">
-        <h2 class="font-serif text-3xl font-semibold lg:text-4xl">
-            Upcoming
-        </h2>
-        {#if upcoming.length === 0}
-            <p class="text-sm text-muted-foreground">
-                No upcoming events scheduled. Follow our
+    {#if hasCurrent}
+        <section class="container space-y-6 py-12 lg:py-16">
+            <div class="flex items-end justify-between gap-4">
+                <div class="space-y-2">
+                    <p
+                        class="text-xs font-semibold uppercase tracking-[0.25em] text-primary"
+                    >
+                        Current events
+                    </p>
+                    <h2 class="font-serif text-3xl font-semibold lg:text-4xl">
+                        Featured at the temple
+                    </h2>
+                </div>
                 <a
-                    href="/gallery"
-                    class="font-medium text-primary hover:underline"
+                    href="/events/journal"
+                    class="inline-flex items-center gap-1 text-sm font-medium text-primary transition-transform hover:translate-x-0.5"
                 >
-                    gallery
+                    Read the events journal
+                    <span aria-hidden="true">→</span>
                 </a>
-                for the latest.
-            </p>
-        {:else}
-            <div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-                {#each upcoming as event (event.id)}
-                    <EventCard {event} href={`/events/${event.slug}`} />
+            </div>
+
+            <div class="space-y-4">
+                {#each currentArticles as article (article.slug)}
+                    <a
+                        href={`/events/journal/${article.slug}`}
+                        class="group block overflow-hidden rounded-md border border-border/60 bg-background transition-colors hover:border-primary/40"
+                    >
+                        <div class="grid grid-cols-1 sm:grid-cols-12">
+                            <div class="sm:col-span-4">
+                                <div
+                                    class="aspect-[4/3] w-full overflow-hidden sm:aspect-auto sm:h-full"
+                                >
+                                    <img
+                                        src={article.image}
+                                        alt={article.image_alt}
+                                        class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+                                        loading="lazy"
+                                        decoding="async"
+                                    />
+                                </div>
+                            </div>
+                            <div class="space-y-2 p-5 sm:col-span-8 sm:p-6">
+                                <p
+                                    class="text-xs font-semibold uppercase tracking-[0.25em] text-primary"
+                                >
+                                    {article.eyebrow} · {article.category_label}
+                                </p>
+                                <h3
+                                    class="font-serif text-xl font-semibold leading-tight transition-colors group-hover:text-primary lg:text-2xl"
+                                >
+                                    {article.title}
+                                </h3>
+                                <p
+                                    class="text-sm leading-relaxed text-muted-foreground"
+                                >
+                                    {article.excerpt}
+                                </p>
+                                <span
+                                    class="inline-flex items-center gap-1 pt-1 text-sm font-medium text-primary transition-transform group-hover:translate-x-0.5"
+                                >
+                                    Read the entry
+                                    <span aria-hidden="true">→</span>
+                                </span>
+                            </div>
+                        </div>
+                    </a>
                 {/each}
             </div>
-        {/if}
-    </section>
+        </section>
+    {/if}
 
     <section class="container space-y-6 py-12 lg:py-16">
         <div class="flex items-end justify-between gap-4">
@@ -87,69 +133,58 @@
             </a>
         </div>
 
-        {#if past.length === 0}
-            <p class="text-sm text-muted-foreground">
-                No past events yet.
-            </p>
-        {:else}
-            <div class="space-y-3">
-                {#each past as event (event.id)}
+        {#if hasArticles}
+            <div class="space-y-4">
+                {#each pastArticles as article (article.slug)}
                     <a
-                        href={`/events/${event.slug}`}
-                        class="flex flex-col gap-2 rounded-md border border-border/60 bg-background p-5 transition-colors hover:border-primary/40 sm:flex-row sm:items-center sm:justify-between"
+                        href={`/events/journal/${article.slug}`}
+                        class="group block overflow-hidden rounded-md border border-border/60 bg-background transition-colors hover:border-primary/40"
                     >
-                        <div class="space-y-1">
-                            <h3
-                                class="font-serif text-lg font-semibold"
-                            >
-                                {event.title}
-                            </h3>
-                            {#if event.short_description}
-                                <p class="text-sm text-muted-foreground">
-                                    {event.short_description}
-                                </p>
-                            {/if}
-                        </div>
-                        <div
-                            class="text-sm text-muted-foreground sm:text-right"
-                        >
-                            <div class="font-medium">
-                                {formatDate(event.starts_at, event.timezone)}
+                        <div class="grid grid-cols-1 sm:grid-cols-12">
+                            <div class="sm:col-span-4">
+                                <div
+                                    class="aspect-[4/3] w-full overflow-hidden sm:aspect-auto sm:h-full"
+                                >
+                                    <img
+                                        src={article.image}
+                                        alt={article.image_alt}
+                                        class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+                                        loading="lazy"
+                                        decoding="async"
+                                    />
+                                </div>
                             </div>
-                            {#if event.venue}
-                                <div class="text-xs">{event.venue}</div>
-                            {/if}
+                            <div class="space-y-2 p-5 sm:col-span-8 sm:p-6">
+                                <p
+                                    class="text-xs font-semibold uppercase tracking-[0.25em] text-primary"
+                                >
+                                    {article.eyebrow} · {article.category_label}
+                                </p>
+                                <h3
+                                    class="font-serif text-xl font-semibold leading-tight transition-colors group-hover:text-primary lg:text-2xl"
+                                >
+                                    {article.title}
+                                </h3>
+                                <p
+                                    class="text-sm leading-relaxed text-muted-foreground"
+                                >
+                                    {article.excerpt}
+                                </p>
+                                <span
+                                    class="inline-flex items-center gap-1 pt-1 text-sm font-medium text-primary transition-transform group-hover:translate-x-0.5"
+                                >
+                                    Read the entry
+                                    <span aria-hidden="true">→</span>
+                                </span>
+                            </div>
                         </div>
                     </a>
                 {/each}
             </div>
-
-            {#if pagination.has_more || pagination.page > 1}
-                <nav
-                    class="flex items-center justify-between pt-4"
-                    aria-label="Pagination"
-                >
-                    <Button
-                        variant="outline"
-                        size="sm"
-                        disabled={pagination.page <= 1}
-                        onclick={() => goToPage(pagination.page - 1)}
-                    >
-                        ← Previous
-                    </Button>
-                    <span class="text-sm text-muted-foreground">
-                        Page {pagination.page}
-                    </span>
-                    <Button
-                        variant="outline"
-                        size="sm"
-                        disabled={!pagination.has_more}
-                        onclick={() => goToPage(pagination.page + 1)}
-                    >
-                        Next →
-                    </Button>
-                </nav>
-            {/if}
+        {:else}
+            <p class="text-sm text-muted-foreground">
+                No past events yet.
+            </p>
         {/if}
     </section>
 

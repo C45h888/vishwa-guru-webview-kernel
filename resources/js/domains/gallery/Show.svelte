@@ -4,12 +4,20 @@
     import MandalaDecoration from '$shared/components/MandalaDecoration.svelte';
     import TrustBadgeRow from '$shared/components/TrustBadgeRow.svelte';
     import GradientPanel from '$shared/components/GradientPanel.svelte';
-    import { Camera } from 'lucide-svelte';
+    import BottomCtaBand from '$shared/components/BottomCtaBand.svelte';
+    import Lightbox from '$shared/components/Lightbox.svelte';
+    import { Camera, ChevronLeft, ChevronRight, ArrowLeft } from 'lucide-svelte';
     import type {
         GalleryImageProps,
         GallerySummaryProps,
         AppPageProps,
     } from '$shared/lib/inertia';
+
+    interface SiblingGallery {
+        slug: string;
+        title: string;
+        image_count: number;
+    }
 
     interface GalleryDetailProps extends GallerySummaryProps {
         description?: string | null;
@@ -21,12 +29,39 @@
 
     let {
         gallery,
+        siblings = [],
         appName,
-    }: AppPageProps<{ gallery: GalleryDetailProps }> = $props();
+    }: AppPageProps<{
+        gallery: GalleryDetailProps;
+        siblings?: SiblingGallery[];
+    }> = $props();
 
-    const images = $derived(gallery.images ?? []);
+    // Exclude the cover image from the grid (it already appears in the hero)
+    const allImages = $derived(gallery.images ?? []);
+    const coverFileId = $derived(gallery.cover_image_file_id ?? null);
+    const gridImages = $derived(
+        allImages.filter((img) => img.file_asset_id !== coverFileId),
+    );
+
     const heroImage = $derived(gallery.cover_image ?? null);
     const hasHeroImage = $derived(heroImage !== null);
+
+    // Lightbox state
+    let lightboxOpen = $state(false);
+    let lightboxIndex = $state(0);
+
+    function openLightbox(idx: number) {
+        lightboxIndex = idx;
+        lightboxOpen = true;
+    }
+
+    function closeLightbox() {
+        lightboxOpen = false;
+    }
+
+    function navigateLightbox(newIdx: number) {
+        lightboxIndex = newIdx;
+    }
 
     function imageAlt(image: GalleryImageProps): string {
         return (
@@ -35,6 +70,19 @@
             `Photo ${(image.display_order ?? 0) + 1}`
         );
     }
+
+    // Prev/next gallery (cycle through siblings in display order)
+    const currentIdx = $derived(
+        siblings.findIndex((s) => s.slug === gallery.slug),
+    );
+    const prevGallery = $derived(
+        currentIdx > 0 ? siblings[currentIdx - 1] : siblings[siblings.length - 1],
+    );
+    const nextGallery = $derived(
+        currentIdx >= 0 && currentIdx < siblings.length - 1
+            ? siblings[currentIdx + 1]
+            : siblings[0],
+    );
 </script>
 
 <svelte:head>
@@ -45,6 +93,20 @@
 </svelte:head>
 
 <PublicLayout>
+    <!-- ═══ BREADCRUMBS ═══ -->
+    <nav
+        class="container pt-6 text-xs uppercase tracking-[0.18em] text-muted-foreground"
+        aria-label="Breadcrumb"
+    >
+        <ol class="flex flex-wrap items-center gap-2">
+            <li><a href="/" class="hover:text-primary">Home</a></li>
+            <li aria-hidden="true">›</li>
+            <li><a href="/gallery" class="hover:text-primary">Gallery</a></li>
+            <li aria-hidden="true">›</li>
+            <li class="text-foreground">{gallery.title}</li>
+        </ol>
+    </nav>
+
     <article>
         <!-- ═══ HERO ═══ -->
         <section class="relative overflow-hidden bg-background">
@@ -56,6 +118,17 @@
             </div>
 
             <div class="container relative py-12 lg:py-20">
+                <!-- Back nav -->
+                <div class="mb-6">
+                    <a
+                        href="/gallery"
+                        class="inline-flex items-center gap-2 text-sm text-muted-foreground transition hover:text-primary"
+                    >
+                        <ArrowLeft class="h-4 w-4" aria-hidden="true" />
+                        <span>All galleries</span>
+                    </a>
+                </div>
+
                 <div class="grid grid-cols-1 items-center gap-10 lg:grid-cols-12 lg:gap-16">
                     <div class="space-y-5 lg:col-span-7">
                         <p
@@ -105,15 +178,18 @@
 
                     <div class="relative lg:col-span-5">
                         {#if hasHeroImage}
-                            <div
-                                class="overflow-hidden rounded-md border border-border/40"
+                            <button
+                                type="button"
+                                onclick={() => openLightbox(0)}
+                                class="group block w-full overflow-hidden rounded-md border border-border/40"
+                                aria-label="Open cover photo in viewer"
                             >
                                 <PublicMediaImage
                                     media={heroImage!}
                                     alt={gallery.title}
-                                    class="aspect-[4/5] w-full object-cover"
+                                    class="aspect-[4/5] w-full object-cover transition-transform duration-500 group-hover:scale-[1.04]"
                                 />
-                            </div>
+                            </button>
                         {:else}
                             <GradientPanel
                                 aspectRatio="portrait"
@@ -165,16 +241,19 @@
                         </h2>
                     </div>
 
-                    {#if images.length > 0}
+                    {#if gridImages.length > 0}
                         <div
                             class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3"
                         >
-                            {#each images as image (image.id)}
+                            {#each gridImages as image, i (image.id)}
                                 <figure
                                     class="group overflow-hidden rounded-md border border-border/40 bg-background"
                                 >
-                                    <div
-                                        class="aspect-square overflow-hidden bg-ivory"
+                                    <button
+                                        type="button"
+                                        onclick={() => openLightbox(i)}
+                                        class="block aspect-square w-full cursor-zoom-in overflow-hidden bg-ivory"
+                                        aria-label={`Open photo ${imageAlt(image)} in viewer`}
                                     >
                                         {#if image.image}
                                             <PublicMediaImage
@@ -192,7 +271,7 @@
                                                 />
                                             </div>
                                         {/if}
-                                    </div>
+                                    </button>
                                     {#if image.caption || image.photographer_credit || image.taken_at}
                                         <figcaption
                                             class="space-y-1 p-3 text-xs"
@@ -233,5 +312,62 @@
                 </div>
             </div>
         </section>
+
+        <!-- ═══ PREV/NEXT GALLERY ═══ -->
+        {#if siblings.length > 1 && prevGallery && nextGallery}
+            <section class="container py-16 lg:py-24">
+                <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+                    <a
+                        href={`/gallery/${prevGallery.slug}`}
+                        class="group flex items-center justify-between gap-4 rounded-md border border-border/40 bg-background p-6 transition hover:border-primary hover:bg-primary/5"
+                    >
+                        <div class="flex items-center gap-3 text-muted-foreground transition group-hover:text-primary">
+                            <ChevronLeft class="h-5 w-5" aria-hidden="true" />
+                            <span class="text-xs uppercase tracking-[0.18em]">Previous</span>
+                        </div>
+                        <div class="text-right">
+                            <p class="font-serif text-lg font-semibold text-foreground">
+                                {prevGallery.title}
+                            </p>
+                            <p class="text-xs text-muted-foreground">
+                                {prevGallery.image_count} photo{prevGallery.image_count === 1 ? '' : 's'}
+                            </p>
+                        </div>
+                    </a>
+                    <a
+                        href={`/gallery/${nextGallery.slug}`}
+                        class="group flex items-center justify-between gap-4 rounded-md border border-border/40 bg-background p-6 transition hover:border-primary hover:bg-primary/5"
+                    >
+                        <div class="text-left">
+                            <p class="font-serif text-lg font-semibold text-foreground">
+                                {nextGallery.title}
+                            </p>
+                            <p class="text-xs text-muted-foreground">
+                                {nextGallery.image_count} photo{nextGallery.image_count === 1 ? '' : 's'}
+                            </p>
+                        </div>
+                        <div class="flex items-center gap-3 text-muted-foreground transition group-hover:text-primary">
+                            <span class="text-xs uppercase tracking-[0.18em]">Next</span>
+                            <ChevronRight class="h-5 w-5" aria-hidden="true" />
+                        </div>
+                    </a>
+                </div>
+            </section>
+        {/if}
     </article>
+
+    <BottomCtaBand
+        title="Support our work"
+        body="Your contributions make every darshan, festival, and seva possible."
+        ctaLabel="Donate Now"
+        ctaHref="/donate"
+    />
+
+    <Lightbox
+        images={gridImages}
+        index={lightboxIndex}
+        open={lightboxOpen}
+        onClose={closeLightbox}
+        onNavigate={navigateLightbox}
+    />
 </PublicLayout>
