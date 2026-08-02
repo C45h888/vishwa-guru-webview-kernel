@@ -4,13 +4,19 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Cms;
 
+use App\Cms\Domain\Enums\PublicMediaState;
+use App\Cms\Domain\Enums\PublicMediaType;
+use App\Cms\Domain\Repositories\CmsMediaAssetRepositoryContract;
 use App\Cms\Domain\Repositories\StaticPageRepositoryContract;
+use App\Cms\Domain\ValueObjects\CmsMediaAssetRecord;
 use App\Cms\Domain\ValueObjects\HomepageContent;
 use App\Cms\Domain\ValueObjects\PageBody;
 use App\Cms\Domain\ValueObjects\PageSlug;
 use App\Cms\Domain\ValueObjects\SeoMetadata;
 use App\Cms\Services\HomepageContentFactory;
 use App\Cms\Domain\Entities\StaticPage;
+use App\Payments\Domain\Repositories\FileAssetRepositoryContract;
+use App\Payments\Domain\ValueObjects\FileAssetRecord;
 use App\Persistence\ValueObjects\EntityId;
 use InvalidArgumentException;
 use Tests\Feature\Payments\Infrastructure\InfrastructureTestCase;
@@ -94,30 +100,32 @@ final class HomepageContentPersistenceTest extends InfrastructureTestCase
     private function insertMediaAsset(string $mediaType, string $seed): string
     {
         $fileAssetId = 'file_asset_'.bin2hex(random_bytes(13));
-        $mediaAssetId = 'cms_media_asset_'.bin2hex(random_bytes(13));
+        $mediaAssetId = 'cms_media_'.bin2hex(random_bytes(13));
 
-        $this->adapter->execute(
-            'INSERT INTO file_assets (id, owner_type, owner_id, storage_disk, storage_path, mime_type, file_size_bytes, content_hash, created_at, updated_at) '
-            ."VALUES (:id, 'static_page_attachment', 'homepage-test', 'local', :path, 'image/jpeg', 1024, :hash, :now, :now)",
-            [
-                'id' => $fileAssetId,
-                'path' => 'homepage/'.$seed.'.jpg',
-                'hash' => bin2hex(random_bytes(16)),
-                'now' => (new \DateTimeImmutable())->format(DATE_ATOM),
-            ],
-        );
+        /** @var FileAssetRepositoryContract $fileRepo */
+        $fileRepo = $this->app->make(FileAssetRepositoryContract::class);
+        $fileRepo->save(FileAssetRecord::create(
+            id: $fileAssetId,
+            ownerType: 'static_page_attachment',
+            ownerId: $mediaAssetId,
+            originalFilename: $seed.'.jpg',
+            storageDisk: 'public',
+            storagePath: 'cms-media/'.$seed.'.jpg',
+            mimeType: 'image/jpeg',
+            fileSizeBytes: 1024,
+            fileHashSha256: bin2hex(random_bytes(32)), // 64-char hex SHA-256
+        ));
 
-        $this->adapter->execute(
-            'INSERT INTO cms_media_assets (id, file_asset_id, media_type, state, alt_text, created_at, updated_at) '
-            ."VALUES (:id, :file_id, :type, 'published', :alt, :now, :now)",
-            [
-                'id' => $mediaAssetId,
-                'file_id' => $fileAssetId,
-                'type' => $mediaType,
-                'alt' => 'Test media',
-                'now' => (new \DateTimeImmutable())->format(DATE_ATOM),
-            ],
-        );
+        /** @var CmsMediaAssetRepositoryContract $mediaRepo */
+        $mediaRepo = $this->app->make(CmsMediaAssetRepositoryContract::class);
+        $mediaRepo->save(CmsMediaAssetRecord::create(
+            id: $mediaAssetId,
+            fileAssetId: $fileAssetId,
+            mediaType: PublicMediaType::from($mediaType),
+            state: PublicMediaState::PUBLISHED,
+            altText: 'Test media',
+            createdBy: 'test',
+        ));
 
         return $mediaAssetId;
     }

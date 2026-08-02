@@ -1,19 +1,57 @@
 <script lang="ts">
     import SiteNav from './SiteNav.svelte';
     import MandalaDecoration from './MandalaDecoration.svelte';
+
+    interface Props {
+        appName?: string;
+    }
+
+    let { appName = 'Temple Trust' }: Props = $props();
 </script>
 
-<header class="border-b border-border/30 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
-    <div class="container flex h-20 items-center justify-between gap-6">
-        <a href="/" class="flex items-center gap-3">
-            <MandalaDecoration size={36} tint="gold" class="shrink-0" />
-            <span class="font-serif text-xl font-semibold tracking-tight">
-                Temple Trust
-            </span>
-        </a>
+<header class="sticky top-0 z-40">
+    <div
+        class="relative overflow-hidden border-b border-primary/30 bg-background/90 backdrop-blur-md"
+    >
+        <div
+            class="pointer-events-none absolute -right-20 top-1/2 hidden -translate-y-1/2 opacity-[0.10] md:block"
+            aria-hidden="true"
+        >
+            <MandalaDecoration size={320} tint="gold" />
+        </div>
 
-        <nav class="hidden md:block">
-            <SiteNav />
-        </nav>
+        <div class="container relative">
+            <div class="flex h-20 items-center justify-between gap-6">
+                <a href="/" class="flex items-center gap-3">
+                    <MandalaDecoration
+                        size={56}
+                        tint="gold"
+                        class="shrink-0"
+                    />
+                    <span
+                        class="whitespace-nowrap font-serif text-sm font-semibold leading-tight tracking-tight text-foreground lg:text-base"
+                    >
+                        {appName}
+                    </span>
+                </a>
+
+                <nav class="hidden md:block">
+                    <SiteNav />
+                </nav>
+
+                <div class="hidden md:block">
+                    <a
+                        href="/donate"
+                        class="inline-flex h-9 items-center justify-center rounded-sm bg-primary px-5 text-xs font-semibold uppercase tracking-[0.2em] text-primary-foreground transition-colors hover:bg-accent"
+                    >
+                        Donate
+                    </a>
+                </div>
+
+                <div class="md:hidden">
+                    <SiteNav />
+                </div>
+            </div>
+        </div>
     </div>
 </header>

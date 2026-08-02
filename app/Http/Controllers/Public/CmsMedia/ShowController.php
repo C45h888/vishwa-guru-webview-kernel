@@ -6,11 +6,12 @@ namespace App\Http\Controllers\Public\CmsMedia;
 
 use App\Cms\Contracts\PublicMediaQueryContract;
 use Illuminate\Http\Response;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Illuminate\Support\Facades\Storage;
 
 final class ShowController
 {
-    public function __invoke(string $id, PublicMediaQueryContract $media): Response
+    public function __invoke(string $id, PublicMediaQueryContract $media): Response|BinaryFileResponse
     {
         $projection = $media->find($id);
         abort_if($projection === null || ! $projection->isDisplayable(), 404);

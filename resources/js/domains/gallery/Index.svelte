@@ -6,8 +6,7 @@
     import TrustBadgeRow from '$shared/components/TrustBadgeRow.svelte';
     import BottomCtaBand from '$shared/components/BottomCtaBand.svelte';
     import { Button } from '$shared/ui/button';
-    import { Badge } from '$shared/ui/badge';
-    import { MessageCircle } from 'lucide-svelte';
+    import { Camera } from 'lucide-svelte';
     import type {
         GallerySummaryProps,
         PaginationProps,
@@ -41,24 +40,28 @@
 </svelte:head>
 
 <PublicLayout>
-    <!-- HERO -->
     <section class="relative overflow-hidden bg-background">
         <div
-            class="pointer-events-none absolute right-0 top-0 opacity-15"
+            class="pointer-events-none absolute -right-20 top-0 opacity-[0.10]"
             aria-hidden="true"
         >
-            <MandalaDecoration size={180} tint="gold" />
+            <MandalaDecoration size={320} tint="gold" />
         </div>
 
-        <div class="container relative py-14 lg:py-20">
+        <div class="container relative py-16 lg:py-24">
             <div class="mx-auto max-w-3xl space-y-5 text-center">
+                <p
+                    class="text-xs font-semibold uppercase tracking-[0.25em] text-primary"
+                >
+                    From the temple
+                </p>
                 <h1 class="font-serif text-4xl font-semibold lg:text-5xl">
                     Gallery
                 </h1>
                 <p class="text-base text-muted-foreground lg:text-lg">
                     Daily darshan, festivals, and moments from the temple.
                 </p>
-                <div class="pt-1">
+                <div class="pt-2">
                     <TrustBadgeRow />
                 </div>
                 <div
@@ -76,12 +79,13 @@
     </section>
 
     {#if hasContent}
-        <!-- FEATURED STRIP -->
         {#if featuredGalleries.length > 0}
             <section class="container space-y-6 py-12 lg:py-16">
-                <h2 class="font-serif text-3xl font-semibold lg:text-4xl">
-                    Featured
-                </h2>
+                <div class="flex items-end justify-between gap-4">
+                    <h2 class="font-serif text-3xl font-semibold lg:text-4xl">
+                        Featured
+                    </h2>
+                </div>
                 <div
                     class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3"
                 >
@@ -95,17 +99,18 @@
             </section>
         {/if}
 
-        <!-- ALL GALLERIES -->
         {#if otherGalleries.length > 0}
             <section class="container space-y-6 py-12 lg:py-16">
-                <h2 class="font-serif text-3xl font-semibold lg:text-4xl">
-                    All galleries
-                    <span
-                        class="ml-2 text-base font-normal text-muted-foreground"
-                    >
-                        {pagination.total}
-                    </span>
-                </h2>
+                <div class="flex items-end justify-between gap-4">
+                    <h2 class="font-serif text-3xl font-semibold lg:text-4xl">
+                        All galleries
+                        <span
+                            class="ml-2 text-base font-normal text-muted-foreground"
+                        >
+                            {pagination.total}
+                        </span>
+                    </h2>
+                </div>
                 <div
                     class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3"
                 >
@@ -119,7 +124,6 @@
             </section>
         {/if}
 
-        <!-- PAGINATION -->
         {#if pagination.has_more || pagination.page > 1}
             <nav
                 class="container flex items-center justify-between pb-12"
@@ -149,38 +153,18 @@
     {:else}
         <section class="container py-16 lg:py-20">
             <div
-                class="mx-auto max-w-xl rounded-md border border-dashed border-border bg-muted/30 p-8 text-center"
+                class="mx-auto max-w-xl rounded-md border border-dashed border-border bg-ivory/60 p-8 text-center"
             >
+                <Camera
+                    class="mx-auto mb-3 h-8 w-8 text-primary/60"
+                    aria-hidden="true"
+                />
                 <p class="text-sm text-muted-foreground">
                     No galleries yet. The site is being prepared.
                 </p>
             </div>
         </section>
     {/if}
-
-    <!-- WHATSAPP SOCIAL CTA (Instagram + YouTube placeholders dropped until Phase 4) -->
-    <section class="bg-muted/30 py-12 lg:py-16">
-        <div class="container">
-            <div class="mx-auto max-w-2xl space-y-4 text-center">
-                <h2 class="font-serif text-3xl font-semibold lg:text-4xl">
-                    Follow our daily darshan
-                </h2>
-                <p class="text-base text-muted-foreground">
-                    Stay connected with daily darshan and temple moments.
-                </p>
-                <div class="flex justify-center pt-2">
-                    <Badge variant="secondary" class="gap-2 py-2 px-4 text-sm">
-                        <MessageCircle class="h-4 w-4" aria-hidden="true" />
-                        <span>WhatsApp Channel · coming soon</span>
-                    </Badge>
-                </div>
-                <p class="text-xs text-muted-foreground">
-                    WhatsApp handle will be linked once the official channel
-                    is verified (Phase 4).
-                </p>
-            </div>
-        </div>
-    </section>
 
     <BottomCtaBand
         title="Support our work"

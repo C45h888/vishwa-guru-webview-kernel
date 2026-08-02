@@ -13,6 +13,7 @@ use App\Payments\Domain\Repositories\DonationRepositoryContract;
 use App\Payments\Domain\Repositories\PaymentRepositoryContract;
 use App\Payments\Domain\Repositories\ReceiptRepositoryContract;
 use App\Payments\Domain\StateMachines\ReceiptStateMachine;
+use App\Payments\Domain\ValueObjects\ReceiptDraft;
 use App\Payments\Services\FailureStateService;
 use App\Payments\Services\ReceiptService;
 use App\Persistence\ValueObjects\EntityId;
@@ -184,10 +185,41 @@ final class ReceiptServiceTest extends TestCase
             {
                 return Result::success([
                     'receipt_number' => $this->number,
-                    'content_hash' => $this->hash,
-                    'issued_at' => '2026-07-15T10:00:00+00:00',
-                    'download_url' => 'https://placeholder/'.$this->number.'.pdf',
+                    'content_hash'   => $this->hash,
+                    'issued_at'      => '2026-07-15T10:00:00+00:00',
+                    'download_url'   => 'https://placeholder/'.$this->number.'.pdf',
                 ]);
+            }
+
+            public function draft(Identifier $transactionId): Result
+            {
+                $issuedAt = new \DateTimeImmutable('2026-07-15T10:00:00+00:00');
+
+                // Normalise the hash: if it's already a valid 64-char hex SHA-256,
+                // use it directly; otherwise compute SHA-256 of the hash string itself
+                // to produce a valid 64-char hex digest. This handles real 64-char
+                // hashes from StubReceiptGenerator and the 1-char 'h' test fixture.
+                if (strlen($this->hash) === 64 && preg_match('/^[a-f0-9]{64}$/', $this->hash)) {
+                    $contentHash = $this->hash;
+                } else {
+                    $contentHash = hash('sha256', $this->hash);
+                }
+
+                $fileAssetId = EntityId::generate('file_asset');
+
+                $draft = ReceiptDraft::fromRenderer(
+                    transactionId:    $transactionId,
+                    donationId:       new Identifier('donor_stub_' . $transactionId->value()),
+                    receiptNumber:    $this->number,
+                    fileAssetId:      new Identifier($fileAssetId->value()),
+                    issuedAt:         $issuedAt,
+                    contentHash:      $contentHash,
+                    amountInWords:    null,
+                    deliveryChannel:  null,
+                    deliveryAddress:  null,
+                );
+
+                return Result::success($draft);
             }
 
             public function receiptNumber(Identifier $transactionId): string

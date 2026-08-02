@@ -28,7 +28,7 @@ namespace App\Redis\Enums;
  * Adding a new logical DB:
  *   1. Add a case here.
  *   2. Add the corresponding connection block to config/database.php.
- *   3. Add the env var for the DB number to .env.example.
+ *   3. Add the env var for the DB number to .env.local.
  *   4. If a Laravel facade needs to use it, update the corresponding
  *      config (cache.php, queue.php, session.php) to point at the new
  *      connection name.

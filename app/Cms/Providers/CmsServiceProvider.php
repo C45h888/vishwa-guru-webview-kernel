@@ -20,6 +20,7 @@ use App\Cms\Infrastructure\Rendering\BlockRenderers\ImageBlockRenderer;
 use App\Cms\Infrastructure\Rendering\BlockRenderers\ParagraphBlockRenderer;
 use App\Cms\Infrastructure\Rendering\StaticPageBodyRenderer;
 use App\Cms\Infrastructure\Repositories\EloquentContactInformationRepository;
+use App\Cms\Infrastructure\Repositories\EloquentCmsMediaAssetRepository;
 use App\Cms\Infrastructure\Repositories\EloquentHeroBannerRepository;
 use App\Cms\Infrastructure\Repositories\EloquentStaticPageReferenceRepository;
 use App\Cms\Infrastructure\Repositories\EloquentStaticPageRepository;
@@ -28,6 +29,7 @@ use App\Cms\Contracts\ImageUrlResolverContract;
 use App\Cms\Contracts\PublicMediaQueryContract;
 use App\Cms\Contracts\ResolvedPageCacheContract;
 use App\Cms\Contracts\StaticPageRendererContract;
+use App\Cms\Domain\Repositories\CmsMediaAssetRepositoryContract;
 use App\Cms\Domain\Repositories\ContactInformationRepositoryContract;
 use App\Cms\Domain\Repositories\HeroBannerRepositoryContract;
 use App\Cms\Domain\Repositories\StaticPageReferenceRepositoryContract;
@@ -95,6 +97,7 @@ final class CmsServiceProvider extends ServiceProvider
             HeroBannerRepositoryContract::class          => EloquentHeroBannerRepository::class,
             StaticPageReferenceRepositoryContract::class => EloquentStaticPageReferenceRepository::class,
             ContactInformationRepositoryContract::class  => EloquentContactInformationRepository::class,
+            CmsMediaAssetRepositoryContract::class      => EloquentCmsMediaAssetRepository::class,
         ];
         foreach ($repoBindings as $contract => $impl) {
             $app->bind($contract, $impl);
@@ -196,6 +199,7 @@ final class CmsServiceProvider extends ServiceProvider
             HeroBannerRepositoryContract::class,
             StaticPageReferenceRepositoryContract::class,
             ContactInformationRepositoryContract::class,
+            CmsMediaAssetRepositoryContract::class,
 
             // Rendering pipeline
             StaticPageBodyRenderer::class,

@@ -82,15 +82,15 @@ $probe('http01', 'IdempotencyMiddleware registered in Kernel::$middlewareAliases
     }
 });
 
-// ─── http02: IDEMPOTENCY_KEY_HEADER env key present in .env.example ─
-$probe('http02', 'IDEMPOTENCY_KEY_HEADER env key present in .env.example', function () {
-    $path = __DIR__ . '/../.env.example';
+// ─── http02: IDEMPOTENCY_KEY_HEADER env key present in .env.local ─
+$probe('http02', 'IDEMPOTENCY_KEY_HEADER env key present in .env.local', function () {
+    $path = __DIR__ . '/../.env.local';
     if (! is_readable($path)) {
-        throw new RuntimeException('.env.example not readable at ' . $path);
+        throw new RuntimeException('.env.local not readable at ' . $path);
     }
     $contents = file_get_contents($path);
     if (! str_contains($contents, 'IDEMPOTENCY_KEY_HEADER=')) {
-        throw new RuntimeException('IDEMPOTENCY_KEY_HEADER= not found in .env.example');
+        throw new RuntimeException('IDEMPOTENCY_KEY_HEADER= not found in .env.local');
     }
 });
 

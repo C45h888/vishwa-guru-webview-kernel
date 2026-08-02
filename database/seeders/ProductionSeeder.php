@@ -131,7 +131,7 @@ final class ProductionSeeder extends Seeder
         'id' => 'static_page_0001N6CAYNHGKPWRF7GDZ074RA',
         'slug' => 'about',
         'title' => 'About the Trust',
-        'meta_description' => 'Temple Trust is a registered charitable trust preserving the sacred rhythms of South Indian temple life through daily pooja, annadanam, and the care of the temple structure.',
+        'meta_description' => 'Sri Vishwaguru Sri Sri Sriram Shishyavrundham Mahasamsthanam is a registered charitable trust preserving the sacred rhythms of South Indian temple life through daily pooja, annadanam, and the care of the temple structure.',
         'is_homepage' => false,
         'display_order' => 10,
         'about_page_content' => [

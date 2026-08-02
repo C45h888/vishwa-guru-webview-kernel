@@ -1,7 +1,12 @@
 <script lang="ts">
-    import { Card, CardContent, CardHeader, CardTitle } from '$shared/ui/card';
+    import { Card, CardContent } from '$shared/ui/card';
     import EventCard from '$shared/components/EventCard.svelte';
     import PublicLayout from '$shared/components/PublicLayout.svelte';
+    import PublicMediaImage from '$shared/components/PublicMediaImage.svelte';
+    import MandalaDecoration from '$shared/components/MandalaDecoration.svelte';
+    import TrustBadgeRow from '$shared/components/TrustBadgeRow.svelte';
+    import GradientPanel from '$shared/components/GradientPanel.svelte';
+    import { CalendarDays, MapPin, Clock } from 'lucide-svelte';
     import type {
         EventSummaryProps,
         AppPageProps,
@@ -23,6 +28,21 @@
     }: AppPageProps<{ event: EventDetailProps }> = $props();
 
     const related = $derived(event.related ?? []);
+    const heroImage = $derived(event.banner_image ?? null);
+    const hasImage = $derived(heroImage !== null);
+
+    function formatDate(iso: string | null, tz: string): string {
+        if (!iso) return '';
+        try {
+            return new Intl.DateTimeFormat('en-IN', {
+                dateStyle: 'full',
+                timeStyle: 'short',
+                timeZone: tz || 'Asia/Kolkata',
+            }).format(new Date(iso));
+        } catch {
+            return iso;
+        }
+    }
 </script>
 
 <svelte:head>
@@ -33,49 +53,224 @@
 </svelte:head>
 
 <PublicLayout>
-    <article class="space-y-6">
-        <header class="space-y-2">
-            <h1 class="text-3xl font-semibold">{event.title}</h1>
-            {#if event.short_description}
-                <p class="text-sm text-muted-foreground">{event.short_description}</p>
-            {/if}
-            <div class="flex flex-wrap gap-2 text-xs uppercase tracking-wide">
-                <span class="rounded-full bg-secondary px-2 py-0.5">{event.state}</span>
-                {#if event.is_upcoming}
-                    <span class="rounded-full bg-primary px-2 py-0.5 text-primary-foreground">Upcoming</span>
-                {/if}
+    <article>
+        <!-- ═══ HERO ═══ -->
+        <section class="relative overflow-hidden bg-background">
+            <div
+                class="pointer-events-none absolute -right-20 top-0 opacity-[0.08]"
+                aria-hidden="true"
+            >
+                <MandalaDecoration size={320} tint="gold" />
             </div>
-        </header>
 
-        <Card>
-            <CardHeader>
-                <CardTitle>When &amp; where</CardTitle>
-            </CardHeader>
-            <CardContent class="space-y-2 text-sm">
-                {#if event.venue}
-                    <p><span class="text-muted-foreground">Venue:</span> {event.venue}</p>
-                {/if}
-                {#if event.venue_address}
-                    <p><span class="text-muted-foreground">Address:</span> {event.venue_address}</p>
-                {/if}
-                <p><span class="text-muted-foreground">Timezone:</span> {event.timezone}</p>
-            </CardContent>
-        </Card>
+            <div class="container relative py-12 lg:py-20">
+                <div class="grid grid-cols-1 items-center gap-10 lg:grid-cols-12 lg:gap-16">
+                    <div class="space-y-5 lg:col-span-7">
+                        <p
+                            class="text-xs font-semibold uppercase tracking-[0.25em] text-primary"
+                        >
+                            Event
+                        </p>
+                        <h1
+                            class="font-serif text-3xl font-semibold leading-tight lg:text-5xl"
+                        >
+                            {event.title}
+                        </h1>
+                        {#if event.short_description}
+                            <p
+                                class="max-w-xl text-base leading-relaxed text-muted-foreground lg:text-lg"
+                            >
+                                {event.short_description}
+                            </p>
+                        {/if}
 
+                        <div
+                            class="flex flex-wrap gap-2 pt-1 text-[10px] font-semibold uppercase tracking-[0.18em]"
+                        >
+                            <span
+                                class="rounded-full border border-primary/30 bg-primary/5 px-2.5 py-1 text-primary"
+                            >
+                                {event.state}
+                            </span>
+                            {#if event.is_upcoming}
+                                <span
+                                    class="rounded-full bg-primary px-2.5 py-1 text-primary-foreground"
+                                >
+                                    Upcoming
+                                </span>
+                            {/if}
+                        </div>
+
+                        <div class="pt-1">
+                            <TrustBadgeRow />
+                        </div>
+                    </div>
+
+                    <div class="relative lg:col-span-5">
+                        {#if hasImage}
+                            <div
+                                class="overflow-hidden rounded-md border border-border/40"
+                            >
+                                <PublicMediaImage
+                                    media={heroImage!}
+                                    alt={event.title}
+                                    class="aspect-[4/5] w-full object-cover"
+                                />
+                            </div>
+                        {:else}
+                            <GradientPanel
+                                aspectRatio="portrait"
+                                variant="gold"
+                            />
+                        {/if}
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ═══ WHEN & WHERE ═══ -->
+        <section class="bg-ivory py-14 lg:py-20">
+            <div class="container">
+                <div class="mx-auto max-w-3xl space-y-6">
+                    <p
+                        class="text-xs font-semibold uppercase tracking-[0.25em] text-primary"
+                    >
+                        When &amp; where
+                    </p>
+                    <h2
+                        class="font-serif text-2xl font-semibold lg:text-3xl"
+                    >
+                        Plan your visit
+                    </h2>
+
+                    <div
+                        class="grid grid-cols-1 gap-4 md:grid-cols-3"
+                    >
+                        <div
+                            class="flex items-start gap-3 rounded-md border border-border/40 bg-background p-4"
+                        >
+                            <div
+                                class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary"
+                            >
+                                <CalendarDays class="h-4 w-4" aria-hidden="true" />
+                            </div>
+                            <div class="min-w-0 flex-1">
+                                <p
+                                    class="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground"
+                                >
+                                    When
+                                </p>
+                                <p class="mt-0.5 text-sm font-medium">
+                                    {formatDate(
+                                        event.starts_at,
+                                        event.timezone,
+                                    )}
+                                </p>
+                            </div>
+                        </div>
+
+                        {#if event.venue}
+                            <div
+                                class="flex items-start gap-3 rounded-md border border-border/40 bg-background p-4"
+                            >
+                                <div
+                                    class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary"
+                                >
+                                    <MapPin class="h-4 w-4" aria-hidden="true" />
+                                </div>
+                                <div class="min-w-0 flex-1">
+                                    <p
+                                        class="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground"
+                                    >
+                                        Where
+                                    </p>
+                                    <p class="mt-0.5 text-sm font-medium">
+                                        {event.venue}
+                                    </p>
+                                    {#if event.venue_address}
+                                        <p class="text-xs text-muted-foreground">
+                                            {event.venue_address}
+                                        </p>
+                                    {/if}
+                                </div>
+                            </div>
+                        {/if}
+
+                        <div
+                            class="flex items-start gap-3 rounded-md border border-border/40 bg-background p-4"
+                        >
+                            <div
+                                class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary"
+                            >
+                                <Clock class="h-4 w-4" aria-hidden="true" />
+                            </div>
+                            <div class="min-w-0 flex-1">
+                                <p
+                                    class="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground"
+                                >
+                                    Timezone
+                                </p>
+                                <p class="mt-0.5 text-sm font-medium">
+                                    {event.timezone}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ═══ DESCRIPTION ═══ -->
         {#if event.description}
-            <section aria-labelledby="description-title" class="prose max-w-none">
-                <h2 id="description-title" class="text-xl font-semibold">About this event</h2>
-                <p>{event.description}</p>
+            <section class="container py-20 lg:py-28">
+                <div class="mx-auto max-w-3xl space-y-4">
+                    <p
+                        class="text-xs font-semibold uppercase tracking-[0.25em] text-primary"
+                    >
+                        About this event
+                    </p>
+                    <h2
+                        class="font-serif text-2xl font-semibold lg:text-3xl"
+                    >
+                        What to expect
+                    </h2>
+                    <div
+                        class="prose prose-stone max-w-none prose-a:text-primary"
+                    >
+                        <p>{event.description}</p>
+                    </div>
+                </div>
             </section>
         {/if}
 
+        <!-- ═══ RELATED EVENTS ═══ -->
         {#if related.length > 0}
-            <section aria-labelledby="related-title" class="space-y-3">
-                <h2 id="related-title" class="text-xl font-semibold">Related events</h2>
-                <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
-                    {#each related as rel (rel.id)}
-                        <EventCard event={rel} href={`/events/${rel.slug}`} />
-                    {/each}
+            <section class="bg-ivory py-20 lg:py-28">
+                <div class="container">
+                    <div class="mx-auto max-w-5xl space-y-8">
+                        <div class="space-y-2">
+                            <p
+                                class="text-xs font-semibold uppercase tracking-[0.25em] text-primary"
+                            >
+                                More from the temple
+                            </p>
+                            <h2
+                                class="font-serif text-2xl font-semibold lg:text-3xl"
+                            >
+                                Related events
+                            </h2>
+                        </div>
+                        <div
+                            class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3"
+                        >
+                            {#each related as rel (rel.id)}
+                                <EventCard
+                                    event={rel}
+                                    href={`/events/${rel.slug}`}
+                                />
+                            {/each}
+                        </div>
+                    </div>
                 </div>
             </section>
         {/if}

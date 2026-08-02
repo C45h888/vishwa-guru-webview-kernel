@@ -2,10 +2,11 @@
     import { router } from '@inertiajs/svelte';
     import PublicLayout from '$shared/components/PublicLayout.svelte';
     import EventCard from '$shared/components/EventCard.svelte';
-    import MandalaDecoration from '$shared/components/MandalaDecoration.svelte';
+    import EventHeroSlideshow from '$shared/components/EventHeroSlideshow.svelte';
     import TrustBadgeRow from '$shared/components/TrustBadgeRow.svelte';
     import BottomCtaBand from '$shared/components/BottomCtaBand.svelte';
     import { Button } from '$shared/ui/button';
+    import { EVENT_SLIDES } from '$domains/events/event-slides';
     import type {
         EventSummaryProps,
         PaginationProps,
@@ -46,42 +47,8 @@
 </svelte:head>
 
 <PublicLayout>
-    <!-- HERO -->
-    <section class="relative overflow-hidden bg-background">
-        <div
-            class="pointer-events-none absolute right-0 top-0 opacity-15"
-            aria-hidden="true"
-        >
-            <MandalaDecoration size={180} tint="gold" />
-        </div>
+    <EventHeroSlideshow slides={EVENT_SLIDES} />
 
-        <div class="container relative py-14 lg:py-20">
-            <div class="mx-auto max-w-3xl space-y-5 text-center">
-                <h1 class="font-serif text-4xl font-semibold lg:text-5xl">
-                    Events
-                </h1>
-                <p class="text-base text-muted-foreground lg:text-lg">
-                    Festivals, ceremonies, and community gatherings at the
-                    temple.
-                </p>
-                <div class="pt-1">
-                    <TrustBadgeRow />
-                </div>
-                <div
-                    class="flex flex-wrap items-center justify-center gap-3 pt-2"
-                >
-                    <Button href="/donate" size="lg">
-                        Donate to support festivals
-                    </Button>
-                    <Button href="/gallery" size="lg" variant="outline">
-                        View gallery
-                    </Button>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- UPCOMING -->
     <section class="container space-y-6 py-12 lg:py-16">
         <h2 class="font-serif text-3xl font-semibold lg:text-4xl">
             Upcoming
@@ -106,15 +73,18 @@
         {/if}
     </section>
 
-    <!-- PAST -->
     <section class="container space-y-6 py-12 lg:py-16">
         <div class="flex items-end justify-between gap-4">
             <h2 class="font-serif text-3xl font-semibold lg:text-4xl">
                 Past events
             </h2>
-            <span class="text-sm text-muted-foreground">
-                {pagination.total} archived
-            </span>
+            <a
+                href="/events/journal"
+                class="inline-flex items-center gap-1 text-sm font-medium text-primary transition-transform hover:translate-x-0.5"
+            >
+                Read the events journal
+                <span aria-hidden="true">→</span>
+            </a>
         </div>
 
         {#if past.length === 0}

@@ -12,7 +12,7 @@ import { mount, type Component } from 'svelte';
 const PAGES_ROOT = './domains';
 
 const pages = import.meta.glob<{ default: Component }>(
-    `${PAGES_ROOT}/**/*.svelte`,
+    './domains/**/*.svelte',
     { eager: false }
 );
 

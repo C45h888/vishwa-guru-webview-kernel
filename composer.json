@@ -40,8 +40,7 @@
     "scripts": {
         "post-autoload-dump": [
             "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
-            "@php artisan package:discover --ansi",
-            "@php artisan inertia:dump-types"
+            "@php artisan package:discover --ansi"
         ],
         "post-install-cmd": [
             "@php -r \"exec('which npm', \\$o, \\$s); if (\\$s === 0) { passthru('npm ci && npm run build'); } else { fwrite(STDERR, '[composer] npm not on PATH; skipping JS install.\\n'); }\""
@@ -50,7 +49,7 @@
             "@php artisan vendor:publish --tag=laravel-assets --ansi --force"
         ],
         "post-root-package-install": [
-            "@php -r \"file_exists('.env') || copy('.env.example', '.env');\""
+            "@php -r \"file_exists('.env') || copy('.env.testing', '.env');\""
         ],
         "post-create-project-cmd": [
             "@php artisan key:generate --ansi"

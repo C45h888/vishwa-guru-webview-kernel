@@ -1,5 +1,5 @@
 <script lang="ts">
-    import mandalaUrl from '$shared/assets/mandala.svg?url';
+    import logoUrl from '$shared/assets/logo.jpeg?url';
 
     interface Props {
         size?: number;
@@ -19,9 +19,9 @@
         'sepia(1) saturate(4) hue-rotate(-12deg) brightness(0.95)';
 </script>
 
-{#if mandalaUrl}
+{#if logoUrl}
     <img
-        src={mandalaUrl}
+        src={logoUrl}
         alt=""
         aria-hidden="true"
         width={size}

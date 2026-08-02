@@ -12,7 +12,7 @@ return [
         //
         // HOW IT WORKS:
         //   - Set DB_CONNECTION=pgsql  (the default — never needs changing)
-        //   - Set DATABASE_URL to your connection string (see .env.example)
+        //   - Set DATABASE_URL to your connection string (see .env.local)
         //     The pooled Neon endpoint (ep-xxx-pooler) is recommended for
         //     production (handles connection storm burst). Use the direct
         //     endpoint (port 5432, no -pooler suffix) for migrations or

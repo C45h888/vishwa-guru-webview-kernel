@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 use App\Http\Controllers\Public\Events\IndexController as EventsIndex;
 use App\Http\Controllers\Public\Events\ShowController as EventsShow;
+use App\Http\Controllers\Public\Events\JournalIndexController as JournalIndex;
+use App\Http\Controllers\Public\Events\JournalShowController as JournalShow;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -18,4 +20,6 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('/events', EventsIndex::class)->name('events.index');
+Route::get('/events/journal', JournalIndex::class)->name('events.journal');
+Route::get('/events/journal/{slug}', JournalShow::class)->name('events.journal.show');
 Route::get('/events/{slug}', EventsShow::class)->name('events.show');

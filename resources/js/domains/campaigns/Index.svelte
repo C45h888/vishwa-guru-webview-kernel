@@ -1,37 +1,121 @@
 <script lang="ts">
     import { router } from '@inertiajs/svelte';
     import PublicLayout from '$shared/components/PublicLayout.svelte';
-    import CampaignCard from '$shared/components/CampaignCard.svelte';
     import MandalaDecoration from '$shared/components/MandalaDecoration.svelte';
+    import CampaignCard from '$shared/components/CampaignCard.svelte';
     import TrustBadgeRow from '$shared/components/TrustBadgeRow.svelte';
     import BottomCtaBand from '$shared/components/BottomCtaBand.svelte';
     import { Button } from '$shared/ui/button';
+    import {
+        ArrowRight,
+        ChevronDown,
+        Filter,
+        Inbox,
+        X,
+    } from 'lucide-svelte';
     import type {
         CampaignSummaryProps,
         PaginationProps,
         AppPageProps,
     } from '$shared/lib/inertia';
 
+    type SortKey = 'featured' | 'newest' | 'ending';
+
     let {
         campaigns,
         pagination,
+        categories = [],
+        totalCampaigns = 0,
+        currentCategory = null,
+        currentSort = 'featured' as SortKey,
         appName,
     }: AppPageProps<{
-        campaigns: CampaignSummaryProps[];
+        campaigns: (CampaignSummaryProps & {
+            raised_amount_minor?: number | null;
+            donor_count?: number | null;
+        })[];
         pagination: PaginationProps;
+        categories?: string[];
+        totalCampaigns?: number;
+        currentCategory?: string | null;
+        currentSort?: SortKey;
     }> = $props();
 
-    const featuredCampaigns = $derived(
-        campaigns.filter((c) => c.is_featured),
+    const SORT_OPTIONS: { key: SortKey; label: string }[] = [
+        { key: 'featured', label: 'Featured first' },
+        { key: 'newest', label: 'Newest' },
+        { key: 'ending', label: 'Ending soonest' },
+    ];
+
+    const activeCategory = $derived(currentCategory ?? null);
+
+    function pushQuery(params: Record<string, string | null>) {
+        const url: Record<string, string> = {};
+        for (const [k, v] of Object.entries(params)) {
+            if (v !== null && v !== '') url[k] = v;
+        }
+        router.get('/campaigns', url, { preserveScroll: true });
+    }
+
+    function setCategory(category: string | null) {
+        pushQuery({ category, sort: currentSort, page: null });
+    }
+
+    function setSort(sort: SortKey) {
+        pushQuery({ category: activeCategory, sort, page: null });
+    }
+
+    function clearFilters() {
+        router.get('/campaigns', {}, { preserveScroll: true });
+    }
+
+    const hasActiveFilter = $derived(activeCategory !== null);
+
+    const visibleStart = $derived(
+        pagination.total === 0
+            ? 0
+            : (pagination.page - 1) * pagination.per_page + 1,
     );
-    const otherCampaigns = $derived(
-        campaigns.filter((c) => !c.is_featured),
+    const visibleEnd = $derived(
+        Math.min(pagination.page * pagination.per_page, pagination.total),
     );
+
     const hasContent = $derived(campaigns.length > 0);
 
-    function goToPage(page: number) {
-        router.get('/campaigns', { page }, { preserveScroll: true });
-    }
+    /**
+     * The 3 pillar cards. These are the Isha-style "Three Pillars"
+     * applied to the campaigns page — each is a large 1:1 image with
+     * a short editorial block beneath. Clicking just scrolls to the grid
+     * below; the user picks the campaign they want from there.
+     *
+     * Until Phase 2 (image migration), the photos are served as static
+     * assets from /public/campaign-pill-images/. The copy is generic-
+     * fit-for-any-photo — the user will refine the labels and write
+     * category-specific copy once the final photo selection is locked.
+     */
+    const PILLARS = [
+        {
+            src: '/campaign-pill-images/01-home.png',
+            alt: 'The daily rhythms that hold the temple together',
+            eyebrow: 'Daily offering',
+            title: 'The work that happens each day',
+            body: 'Pooja at sunrise, noon, and sunset. Annadanam served to all who arrive. The quiet, continuous labour of keeping the temple alive.',
+        },
+        {
+            src: '/campaign-pill-images/02-main.jpg',
+            alt: 'The care of the temple structure',
+            eyebrow: 'Sacred work',
+            title: 'The building, kept sound',
+            body: 'The sanctum, the prakara, the inner halls. Repairs done with traditional materials and craftspeople, so the structure can hold another century of practice.',
+        },
+        {
+            src: '/campaign-pill-images/03-second.jpg',
+            alt: 'A festival at the temple',
+            eyebrow: 'Festival',
+            title: 'Lamps through the year',
+            body: 'The special poojas, the sweets, the extended annadanam, the decorations. A single season of the temple\u2019s year, made possible by your support.',
+        },
+    ];
 </script>
 
 <svelte:head>
@@ -39,122 +123,313 @@
 </svelte:head>
 
 <PublicLayout>
-    <!-- HERO -->
-    <section class="relative overflow-hidden bg-background">
+    <!-- ═══ 1. THREE PILLARS — main header (Isha-style 3-image row) ═══ -->
+    <section class="relative overflow-hidden bg-ivory">
         <div
-            class="pointer-events-none absolute right-0 top-0 opacity-15"
+            class="pointer-events-none absolute -right-24 top-0 opacity-[0.07]"
             aria-hidden="true"
         >
-            <MandalaDecoration size={180} tint="gold" />
+            <MandalaDecoration size={420} tint="gold" />
         </div>
 
-        <div class="container relative py-14 lg:py-20">
+        <div class="container relative py-12 lg:py-20">
+            <ul
+                class="grid grid-cols-1 gap-6 sm:grid-cols-3 sm:gap-5 lg:gap-8"
+                aria-label="What the campaigns sustain"
+            >
+                {#each PILLARS as pillar, i (i)}
+                    <li>
+                        <a
+                            href="#campaigns-grid"
+                            class="group block focus:outline-none focus:ring-2 focus:ring-primary/40"
+                        >
+                            <div
+                                class="relative aspect-square overflow-hidden rounded-md border border-border/40 bg-ivory"
+                            >
+                                <img
+                                    src={pillar.src}
+                                    alt={pillar.alt}
+                                    class="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.04]"
+                                    loading="lazy"
+                                    decoding="async"
+                                />
+                                <div
+                                    class="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/55 via-black/10 to-transparent opacity-90"
+                                    aria-hidden="true"
+                                ></div>
+                                <div
+                                    class="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-500 group-hover:opacity-100"
+                                    aria-hidden="true"
+                                >
+                                    <div
+                                        class="absolute inset-0"
+                                        style="background: radial-gradient(circle at 30% 30%, hsl(25 90% 48% / 0.15), transparent 60%);"
+                                    ></div>
+                                </div>
+                            </div>
+
+                            <div class="mt-4 space-y-2">
+                                <p
+                                    class="text-xs font-semibold uppercase tracking-[0.25em] text-primary"
+                                >
+                                    {pillar.eyebrow}
+                                </p>
+                                <h3
+                                    class="font-serif text-xl font-semibold leading-tight lg:text-2xl"
+                                >
+                                    {pillar.title}
+                                </h3>
+                                <p
+                                    class="text-sm leading-relaxed text-muted-foreground"
+                                >
+                                    {pillar.body}
+                                </p>
+                                <span
+                                    class="inline-flex items-center gap-1 pt-1 text-sm font-medium text-primary transition-transform group-hover:translate-x-0.5"
+                                >
+                                    Browse all causes
+                                    <ArrowRight
+                                        class="h-3.5 w-3.5"
+                                        aria-hidden="true"
+                                    />
+                                </span>
+                            </div>
+                        </a>
+                    </li>
+                {/each}
+            </ul>
+        </div>
+    </section>
+
+    <!-- ═══ 2. BREADCRUMB — between pillars and editorial copy ═══ -->
+    <section class="border-y border-border/40 bg-background">
+        <div class="container py-3 text-xs text-muted-foreground">
+            <a href="/" class="hover:text-primary">Home</a>
+            <span class="mx-2" aria-hidden="true">/</span>
+            <span class="text-foreground/70">Campaigns</span>
+        </div>
+    </section>
+
+    <!-- ═══ 3. EDITORIAL COPY — what the campaigns page is ═══ -->
+    <section class="bg-background">
+        <div class="container py-12 lg:py-20">
             <div class="mx-auto max-w-3xl space-y-5 text-center">
-                <h1 class="font-serif text-4xl font-semibold lg:text-5xl">
-                    Campaigns
-                </h1>
-                <p class="text-base text-muted-foreground lg:text-lg">
-                    Support causes that sustain the temple — pooja, annadanam,
-                    renovation, education.
-                </p>
-                <div class="pt-1">
-                    <TrustBadgeRow />
-                </div>
-                <div
-                    class="flex flex-wrap items-center justify-center gap-3 pt-2"
+                <p
+                    class="text-xs font-semibold uppercase tracking-[0.25em] text-primary"
                 >
-                    <Button href="/donate" size="lg">
+                    How the giving works
+                </p>
+                <h1
+                    class="font-serif text-3xl font-semibold leading-tight lg:text-4xl"
+                >
+                    A campaign is a specific call to action
+                </h1>
+                <div
+                    class="space-y-4 text-base leading-relaxed text-muted-foreground lg:text-lg"
+                >
+                    <p>
+                        Every campaign at {appName} names a specific need —
+                        a season of temple maintenance, a day of annadanam,
+                        a festival of lamps, an initiative to expand the
+                        kitchen. Each one has a clear goal, a clear timeline,
+                        and a clear use for every rupee given.
+                    </p>
+                    <p>
+                        Your offering goes to the campaign you choose, not to
+                        a general fund. The trust treats each campaign as its
+                        own ledger, with progress visible on every page. When
+                        a campaign closes, the trust publishes how the
+                        offerings were spent — so the giving stays accountable
+                        and the rhythm continues.
+                    </p>
+                </div>
+
+                <div class="pt-3">
+                    <Button href="/donate" size="lg" variant="outline">
                         Donate to any cause
+                        <ArrowRight
+                            class="ml-2 h-4 w-4"
+                            aria-hidden="true"
+                        />
                     </Button>
-                    <Button href="/gallery" size="lg" variant="outline">
-                        View gallery
-                    </Button>
+                </div>
+
+                <div class="pt-2">
+                    <TrustBadgeRow />
                 </div>
             </div>
         </div>
     </section>
 
-    {#if hasContent}
-        <!-- FEATURED STRIP -->
-        {#if featuredCampaigns.length > 0}
-            <section class="container space-y-6 py-12 lg:py-16">
-                <h2 class="font-serif text-3xl font-semibold lg:text-4xl">
-                    Featured causes
-                </h2>
-                <div
-                    class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3"
+    <!-- ═══ 4. FILTER + SORT TOOLBAR ═══ -->
+    <section id="campaigns-grid" class="container py-8 lg:py-10">
+        <div
+            class="flex flex-col items-stretch gap-4 lg:flex-row lg:items-center lg:justify-between"
+        >
+            <div class="flex flex-wrap items-center gap-2">
+                <span
+                    class="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground"
                 >
-                    {#each featuredCampaigns as campaign (campaign.id)}
-                        <CampaignCard
-                            {campaign}
-                            href={`/campaigns/${campaign.slug}`}
-                        />
-                    {/each}
-                </div>
-            </section>
-        {/if}
-
-        <!-- ALL CAMPAIGNS -->
-        {#if otherCampaigns.length > 0}
-            <section class="container space-y-6 py-12 lg:py-16">
-                <h2 class="font-serif text-3xl font-semibold lg:text-4xl">
-                    All campaigns
-                    <span
-                        class="ml-2 text-base font-normal text-muted-foreground"
-                    >
-                        {pagination.total}
-                    </span>
-                </h2>
-                <div
-                    class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3"
-                >
-                    {#each otherCampaigns as campaign (campaign.id)}
-                        <CampaignCard
-                            {campaign}
-                            href={`/campaigns/${campaign.slug}`}
-                        />
-                    {/each}
-                </div>
-            </section>
-        {/if}
-
-        <!-- PAGINATION -->
-        {#if pagination.has_more || pagination.page > 1}
-            <nav
-                class="container flex items-center justify-between pb-12"
-                aria-label="Pagination"
-            >
-                <Button
-                    variant="outline"
-                    size="sm"
-                    disabled={pagination.page <= 1}
-                    onclick={() => goToPage(pagination.page - 1)}
-                >
-                    ← Previous
-                </Button>
-                <span class="text-sm text-muted-foreground">
-                    Page {pagination.page}
+                    <Filter class="h-3.5 w-3.5" aria-hidden="true" />
+                    Filter
                 </span>
-                <Button
-                    variant="outline"
-                    size="sm"
-                    disabled={!pagination.has_more}
-                    onclick={() => goToPage(pagination.page + 1)}
+                <button
+                    type="button"
+                    class="rounded-full border px-3 py-1 text-xs font-medium transition-colors {activeCategory ===
+                    null
+                        ? 'border-primary bg-primary text-primary-foreground'
+                        : 'border-border bg-background text-foreground/80 hover:border-primary/40'}"
+                    aria-pressed={activeCategory === null}
+                    onclick={() => setCategory(null)}
                 >
-                    Next →
-                </Button>
-            </nav>
-        {/if}
-    {:else}
-        <section class="container py-16 lg:py-20">
-            <div
-                class="mx-auto max-w-xl rounded-md border border-dashed border-border bg-muted/30 p-8 text-center"
-            >
-                <p class="text-sm text-muted-foreground">
-                    No campaigns yet. The site is being prepared.
-                </p>
+                    All
+                </button>
+                {#each categories as category (category)}
+                    <button
+                        type="button"
+                        class="rounded-full border px-3 py-1 text-xs font-medium transition-colors {activeCategory ===
+                        category
+                            ? 'border-primary bg-primary text-primary-foreground'
+                            : 'border-border bg-background text-foreground/80 hover:border-primary/40'}"
+                        aria-pressed={activeCategory === category}
+                        onclick={() => setCategory(category)}
+                    >
+                        {category
+                            .replace(/_/g, ' ')
+                            .replace(/\b\w/g, (c) => c.toUpperCase())}
+                    </button>
+                {/each}
+                {#if hasActiveFilter}
+                    <button
+                        type="button"
+                        class="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium text-muted-foreground transition-colors hover:text-primary"
+                        onclick={clearFilters}
+                    >
+                        <X class="h-3 w-3" aria-hidden="true" />
+                        Clear
+                    </button>
+                {/if}
             </div>
-        </section>
+
+            <label class="inline-flex items-center gap-2 text-xs">
+                <span
+                    class="font-semibold uppercase tracking-[0.2em] text-muted-foreground"
+                >
+                    Sort
+                </span>
+                <span class="relative">
+                    <select
+                        value={currentSort}
+                        onchange={(e) =>
+                            setSort(
+                                (e.currentTarget as HTMLSelectElement)
+                                    .value as SortKey,
+                            )}
+                        class="h-8 appearance-none rounded-sm border border-border bg-background pl-3 pr-8 text-xs font-medium text-foreground/80 focus:border-primary/40 focus:outline-none"
+                    >
+                        {#each SORT_OPTIONS as opt (opt.key)}
+                            <option value={opt.key}>{opt.label}</option>
+                        {/each}
+                    </select>
+                    <ChevronDown
+                        class="pointer-events-none absolute right-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground"
+                        aria-hidden="true"
+                    />
+                </span>
+            </label>
+        </div>
+
+        <div class="mt-4 flex items-baseline justify-between text-xs text-muted-foreground">
+            <span>
+                {#if hasContent}
+                    Showing <span class="text-foreground/80">{visibleStart}–{visibleEnd}</span>
+                    of <span class="text-foreground/80">{totalCampaigns || pagination.total}</span> campaigns
+                {:else}
+                    <span class="text-foreground/80">0</span> campaigns
+                {/if}
+                {#if hasActiveFilter}
+                    <span class="ml-1">
+                        in <span class="text-foreground/80">{activeCategory
+                                ?.replace(/_/g, ' ')
+                                .replace(/\b\w/g, (c) => c.toUpperCase())}</span>
+                    </span>
+                {/if}
+            </span>
+        </div>
+    </section>
+
+    <!-- ═══ 5. GRID ═══ -->
+    <section class="container pb-12 lg:pb-16">
+        {#if hasContent}
+            <div
+                class="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3"
+            >
+                {#each campaigns as campaign (campaign.id)}
+                    <CampaignCard {campaign} href={`/campaigns/${campaign.slug}`} />
+                {/each}
+            </div>
+        {:else}
+            <div
+                class="mx-auto flex max-w-xl flex-col items-center gap-3 rounded-md border border-dashed border-border bg-ivory/60 p-12 text-center"
+            >
+                <Inbox
+                    class="h-8 w-8 text-primary/60"
+                    aria-hidden="true"
+                />
+                <p class="text-sm font-medium text-foreground/80">
+                    No campaigns match this filter
+                </p>
+                <p class="text-xs text-muted-foreground">
+                    Try a different category or clear the active filter to
+                    see everything.
+                </p>
+                <button
+                    type="button"
+                    onclick={clearFilters}
+                    class="mt-1 inline-flex h-8 items-center justify-center rounded-sm border border-border bg-background px-4 text-xs font-semibold uppercase tracking-[0.18em] text-foreground/80 transition-colors hover:border-primary/40"
+                >
+                    Clear filters
+                </button>
+            </div>
+        {/if}
+    </section>
+
+    <!-- ═══ 6. PAGINATION ═══ -->
+    {#if pagination.has_more || pagination.page > 1}
+        <nav
+            class="container flex items-center justify-between pb-12"
+            aria-label="Pagination"
+        >
+            <Button
+                variant="outline"
+                size="sm"
+                disabled={pagination.page <= 1}
+                onclick={() =>
+                    pushQuery({
+                        category: activeCategory,
+                        sort: currentSort,
+                        page: String(pagination.page - 1),
+                    })}
+            >
+                ← Previous
+            </Button>
+            <span class="text-sm text-muted-foreground">
+                Page {pagination.page}
+            </span>
+            <Button
+                variant="outline"
+                size="sm"
+                disabled={!pagination.has_more}
+                onclick={() =>
+                    pushQuery({
+                        category: activeCategory,
+                        sort: currentSort,
+                        page: String(pagination.page + 1),
+                    })}
+            >
+                Next →
+            </Button>
+        </nav>
     {/if}
 
     <BottomCtaBand

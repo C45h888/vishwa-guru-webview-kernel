@@ -1,12 +1,13 @@
 <script lang="ts">
     import { router } from '@inertiajs/svelte';
     import PublicLayout from '$shared/components/PublicLayout.svelte';
+    import MandalaDecoration from '$shared/components/MandalaDecoration.svelte';
     import { Card, CardContent, CardHeader, CardTitle } from '$shared/ui/card';
     import { Button } from '$shared/ui/button';
     import { Badge } from '$shared/ui/badge';
     import { Alert } from '$shared/ui/alert';
     import Money from '$shared/components/Money.svelte';
-    import { CheckCircle2, XCircle, Clock, AlertCircle } from 'lucide-svelte';
+    import { CheckCircle2, XCircle, Clock, AlertCircle, Mail } from 'lucide-svelte';
     import type {
         PaymentStatusProps,
         AppPageProps,
@@ -27,9 +28,6 @@
     const MAX_POLL_ATTEMPTS = 30;
     const POLL_INTERVAL_MS = 2000;
 
-    // ─── State abstraction ─────────────────────────────────────────────
-    // Explicit poll states mirror the backend PaymentStateMachine transitions
-    // so the UI never has to inspect raw status strings to decide rendering.
     type PollState =
         | 'captured'
         | 'pending'
@@ -41,8 +39,6 @@
 
     function derivePollState(): PollState {
         const s = latestStatus.status;
-        // Successful captures and refunds both end polling — refund is a
-        // post-capture state, so the donor sees the receipt link either way.
         if (
             s === 'captured' ||
             s === 'settled' ||
@@ -75,7 +71,6 @@
         return 'pending';
     }
 
-    // ─── Derived display flags ──────────────────────────────────────────
     const isCaptured = $derived(pollState === 'captured');
     const isFailed = $derived(pollState === 'failed');
     const isPending = $derived(pollState === 'pending');
@@ -83,7 +78,6 @@
     const isNotFound = $derived(pollState === 'not_found');
     const isOpenable = $derived(isPending && Boolean(latestStatus.public_key_id));
 
-    // ─── Polling lifecycle ─────────────────────────────────────────────
     function teardownPoll(): void {
         if (pollHandle !== null) {
             clearInterval(pollHandle);
@@ -125,7 +119,6 @@
             const prev = latestStatus.status;
             latestStatus = next;
 
-            // Stop polling on terminal transitions.
             if (
                 next.status === 'captured' ||
                 next.status === 'settled' ||
@@ -133,15 +126,14 @@
             ) {
                 teardownPoll();
                 if (prev !== next.status) {
-                    // No-op; state-derived UI handles the change.
+                    /* no-op */
                 }
             }
         } catch {
-            /* swallow transient errors; poll again */
+            /* swallow */
         }
     }
 
-    // ─── Effect: start polling on mount if needed ─────────────────────
     $effect(() => {
         if (pollState === 'pending' && pollHandle === null) {
             pollHandle = setInterval(pollOnce, POLL_INTERVAL_MS);
@@ -149,7 +141,6 @@
         return () => teardownPoll();
     });
 
-    // ─── Razorpay checkout flow ────────────────────────────────────────
     type RazorpayOptions = {
         key: string;
         order_id: string;
@@ -220,15 +211,11 @@
             name: appName,
             description: 'Donation',
             handler: () => {
-                // Server-side webhook will mark the payment captured;
-                // poll /donate/success?gateway_order_id=… for status.
                 pollAttempts = 0;
                 pollHandle = setInterval(pollOnce, POLL_INTERVAL_MS);
             },
             modal: {
                 ondismiss: () => {
-                    // Razorpay modal closed without completing payment.
-                    // Route the donor to the cancel page for a clean state.
                     openingCheckout = false;
                     router.visit('/donate/cancel');
                 },
@@ -249,152 +236,191 @@
 </svelte:head>
 
 <PublicLayout>
-    <div class="mx-auto max-w-2xl space-y-6">
-        <header class="space-y-2">
-            <div class="flex items-center gap-2">
-                {#if isCaptured}
-                    <CheckCircle2
-                        class="h-6 w-6 text-primary"
-                        aria-hidden="true"
-                    />
-                {:else if isFailed}
-                    <XCircle
-                        class="h-6 w-6 text-destructive"
-                        aria-hidden="true"
-                    />
-                {:else if isTimedOut}
-                    <AlertCircle
-                        class="h-6 w-6 text-muted-foreground"
-                        aria-hidden="true"
-                    />
-                {:else if isNotFound}
-                    <AlertCircle
-                        class="h-6 w-6 text-muted-foreground"
-                        aria-hidden="true"
-                    />
-                {:else}
-                    <Clock
-                        class="h-6 w-6 animate-pulse text-muted-foreground"
-                        aria-hidden="true"
-                    />
-                {/if}
-
-                <h1 class="font-serif text-3xl font-semibold lg:text-4xl">
-                    {#if isCaptured}
-                        Thank you
-                    {:else if isFailed}
-                        Payment failed
-                    {:else if isTimedOut}
-                        Status check timed out
-                    {:else if isNotFound}
-                        Order not found
-                    {:else}
-                        Donation status
-                    {/if}
-                </h1>
-            </div>
-            <p class="text-sm text-muted-foreground">
-                Order
-                <span class="font-mono text-xs">
-                    {latestStatus.gateway_order_id || '(no order id)'}
-                </span>
-            </p>
-        </header>
-
-        <!-- ─── Status card ──────────────────────────────────────────── -->
-        <Card>
-            <CardHeader>
-                <CardTitle>Status</CardTitle>
-            </CardHeader>
-            <CardContent class="space-y-3 text-sm">
-                <div class="flex items-baseline justify-between">
-                    <span class="text-muted-foreground">Status</span>
-                    <Badge
-                        variant={isCaptured
-                            ? 'default'
-                            : isFailed
-                              ? 'destructive'
-                              : 'secondary'}
-                    >
-                        {latestStatus.status ?? 'unknown'}
-                    </Badge>
-                </div>
-                {#if latestStatus.amount_minor !== null}
-                    <div class="flex items-baseline justify-between">
-                        <span class="text-muted-foreground">Amount</span>
-                        <Money
-                            amountMinor={latestStatus.amount_minor}
-                            currencyCode={latestStatus.currency_code ?? 'INR'}
-                        />
-                    </div>
-                {/if}
-                {#if latestStatus.captured_at}
-                    <div class="flex items-baseline justify-between">
-                        <span class="text-muted-foreground">Captured at</span>
-                        <span>{latestStatus.captured_at}</span>
-                    </div>
-                {/if}
-                {#if isTimedOut}
-                    <Alert>
-                        We couldn't confirm your donation status in time. Your
-                        payment may still be processing — refresh to check, or
-                        contact us if the issue persists.
-                    </Alert>
-                {/if}
-                {#if isFailed && latestStatus.last_failure_reason}
-                    <Alert variant="destructive">
-                        {latestStatus.last_failure_reason}
-                    </Alert>
-                {/if}
-            </CardContent>
-        </Card>
-
-        <!-- ─── Actions ─────────────────────────────────────────────── -->
-        <div class="flex flex-wrap items-center justify-between gap-3">
-            <a
-                href="/"
-                class="text-sm hover:underline"
-            >
-                ← Back to home
-            </a>
-
-            {#if isCaptured && latestStatus.gateway_order_id}
-                <Button href={`/receipts/${latestStatus.gateway_order_id}`}>
-                    View receipt
-                </Button>
-            {:else if isOpenable}
-                <Button
-                    type="button"
-                    disabled={openingCheckout}
-                    onclick={openCheckout}
-                >
-                    {openingCheckout ? 'Opening…' : 'Open Razorpay checkout'}
-                </Button>
-            {:else if isFailed}
-                <Button href="/donate" variant="outline">
-                    Try again
-                </Button>
-            {:else if isTimedOut || isNotFound}
-                <Button
-                    type="button"
-                    variant="outline"
-                    onclick={() => {
-                        pollAttempts = 0;
-                        pollHandle = setInterval(
-                            pollOnce,
-                            POLL_INTERVAL_MS,
-                        );
-                    }}
-                >
-                    Refresh status
-                </Button>
-            {/if}
+    <section class="relative overflow-hidden bg-background">
+        <div
+            class="pointer-events-none absolute -right-20 top-0 opacity-[0.10]"
+            aria-hidden="true"
+        >
+            <MandalaDecoration size={320} tint="gold" />
         </div>
 
-        <p class="text-xs text-muted-foreground">
-            Razorpay public key id (test mode): <span class="font-mono"
-                >{latestStatus.public_key_id || '—'}</span
-            >
-        </p>
-    </div>
+        <div class="container relative py-12 lg:py-20">
+            <div class="mx-auto max-w-2xl">
+                <header class="mb-8 space-y-3">
+                    <div class="flex items-center gap-2">
+                        {#if isCaptured}
+                            <div
+                                class="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary"
+                            >
+                                <CheckCircle2 class="h-5 w-5" aria-hidden="true" />
+                            </div>
+                        {:else if isFailed}
+                            <div
+                                class="flex h-10 w-10 items-center justify-center rounded-full bg-destructive/10 text-destructive"
+                            >
+                                <XCircle class="h-5 w-5" aria-hidden="true" />
+                            </div>
+                        {:else if isTimedOut || isNotFound}
+                            <div
+                                class="flex h-10 w-10 items-center justify-center rounded-full bg-muted text-muted-foreground"
+                            >
+                                <AlertCircle class="h-5 w-5" aria-hidden="true" />
+                            </div>
+                        {:else}
+                            <div
+                                class="flex h-10 w-10 items-center justify-center rounded-full bg-muted text-muted-foreground"
+                            >
+                                <Clock
+                                    class="h-5 w-5 animate-pulse"
+                                    aria-hidden="true"
+                                />
+                            </div>
+                        {/if}
+                        <h1
+                            class="font-serif text-3xl font-semibold lg:text-4xl"
+                        >
+                            {#if isCaptured}
+                                Thank you
+                            {:else if isFailed}
+                                Payment failed
+                            {:else if isTimedOut}
+                                Status check timed out
+                            {:else if isNotFound}
+                                Order not found
+                            {:else}
+                                Donation status
+                            {/if}
+                        </h1>
+                    </div>
+                    <p class="text-sm text-muted-foreground">
+                        Order
+                        <span class="font-mono text-xs">
+                            {latestStatus.gateway_order_id || '(no order id)'}
+                        </span>
+                    </p>
+                </header>
+
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Status</CardTitle>
+                    </CardHeader>
+                    <CardContent class="space-y-3 text-sm">
+                        <div class="flex items-baseline justify-between">
+                            <span class="text-muted-foreground">Status</span>
+                            <Badge
+                                variant={isCaptured
+                                    ? 'default'
+                                    : isFailed
+                                      ? 'destructive'
+                                      : 'secondary'}
+                            >
+                                {latestStatus.status ?? 'unknown'}
+                            </Badge>
+                        </div>
+                        {#if latestStatus.amount_minor !== null}
+                            <div class="flex items-baseline justify-between">
+                                <span class="text-muted-foreground">Amount</span>
+                                <Money
+                                    amountMinor={latestStatus.amount_minor}
+                                    currencyCode={latestStatus.currency_code ??
+                                        'INR'}
+                                />
+                            </div>
+                        {/if}
+                        {#if latestStatus.captured_at}
+                            <div class="flex items-baseline justify-between">
+                                <span class="text-muted-foreground"
+                                    >Captured at</span
+                                >
+                                <span>{latestStatus.captured_at}</span>
+                            </div>
+                        {/if}
+                        {#if isTimedOut}
+                            <Alert>
+                                We couldn't confirm your donation status in
+                                time. Your payment may still be processing —
+                                refresh to check, or contact us if the issue
+                                persists.
+                            </Alert>
+                        {/if}
+                        {#if isFailed && latestStatus.last_failure_reason}
+                            <Alert variant="destructive">
+                                {latestStatus.last_failure_reason}
+                            </Alert>
+                        {/if}
+                    </CardContent>
+                </Card>
+
+                {#if isCaptured}
+                    <div
+                        class="mt-6 flex items-start gap-3 rounded-md border border-primary/20 bg-ivory p-4"
+                    >
+                        <Mail
+                            class="mt-0.5 h-5 w-5 shrink-0 text-primary"
+                            aria-hidden="true"
+                        />
+                        <div class="space-y-1">
+                            <p class="text-sm font-medium">
+                                Your receipt is on its way
+                            </p>
+                            <p
+                                class="text-xs leading-relaxed text-muted-foreground"
+                            >
+                                An official receipt will be emailed to you
+                                shortly. Keep it for your records — the
+                                temple's gratitude is already in the offering.
+                            </p>
+                        </div>
+                    </div>
+                {/if}
+
+                <div
+                    class="mt-8 flex flex-wrap items-center justify-between gap-3"
+                >
+                    <a
+                        href="/"
+                        class="text-sm text-muted-foreground hover:text-primary"
+                    >
+                        ← Back to home
+                    </a>
+
+                    {#if isOpenable}
+                        <Button
+                            type="button"
+                            disabled={openingCheckout}
+                            onclick={openCheckout}
+                        >
+                            {openingCheckout
+                                ? 'Opening…'
+                                : 'Open Razorpay checkout'}
+                        </Button>
+                    {:else if isFailed}
+                        <Button href="/donate" variant="outline">
+                            Try again
+                        </Button>
+                    {:else if isTimedOut || isNotFound}
+                        <Button
+                            type="button"
+                            variant="outline"
+                            onclick={() => {
+                                pollAttempts = 0;
+                                pollHandle = setInterval(
+                                    pollOnce,
+                                    POLL_INTERVAL_MS,
+                                );
+                            }}
+                        >
+                            Refresh status
+                        </Button>
+                    {/if}
+                </div>
+
+                <p class="mt-6 text-xs text-muted-foreground">
+                    Razorpay public key id (test mode): <span class="font-mono"
+                        >{latestStatus.public_key_id || '—'}</span
+                    >
+                </p>
+            </div>
+        </div>
+    </section>
 </PublicLayout>

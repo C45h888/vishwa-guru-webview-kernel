@@ -2,6 +2,7 @@
     import PublicLayout from '$shared/components/PublicLayout.svelte';
     import TrustBadgeRow from '$shared/components/TrustBadgeRow.svelte';
     import BottomCtaBand from '$shared/components/BottomCtaBand.svelte';
+    import MandalaDecoration from '$shared/components/MandalaDecoration.svelte';
     import { Card, CardContent } from '$shared/ui/card';
     import {
         Mail,
@@ -44,61 +45,82 @@
 </svelte:head>
 
 <PublicLayout>
-    <section class="container py-14 lg:py-20">
-        <div class="mx-auto max-w-3xl space-y-5 text-center">
-            <h1 class="font-serif text-4xl font-semibold lg:text-5xl">
-                Contact
-            </h1>
-            <p class="text-base text-muted-foreground lg:text-lg">
-                Reach the temple office for seva bookings, donation
-                enquiries, and general questions.
-            </p>
-            <div class="pt-1">
-                <TrustBadgeRow />
+    <section class="relative overflow-hidden bg-background">
+        <div
+            class="pointer-events-none absolute -right-20 top-0 opacity-[0.10]"
+            aria-hidden="true"
+        >
+            <MandalaDecoration size={320} tint="gold" />
+        </div>
+        <div class="container relative py-16 lg:py-24">
+            <div class="mx-auto max-w-3xl space-y-5 text-center">
+                <p
+                    class="text-xs font-semibold uppercase tracking-[0.25em] text-primary"
+                >
+                    Get in touch
+                </p>
+                <h1 class="font-serif text-4xl font-semibold lg:text-5xl">
+                    Contact
+                </h1>
+                <p class="text-base text-muted-foreground lg:text-lg">
+                    Reach the temple office for seva bookings, donation
+                    enquiries, and general questions.
+                </p>
+                <div class="pt-2">
+                    <TrustBadgeRow />
+                </div>
             </div>
         </div>
     </section>
 
-    <section class="container pb-16 lg:pb-20">
+    <section class="container pb-16 lg:pb-24">
         {#if contactPoints.length === 0}
             <div
-                class="mx-auto max-w-xl rounded-md border border-dashed border-border bg-muted/30 p-8 text-center"
+                class="mx-auto max-w-xl rounded-md border border-dashed border-border bg-ivory/60 p-8 text-center"
             >
                 <p class="text-sm text-muted-foreground">
                     Contact information will be published soon. For urgent
                     matters, please email
                     <a
-                        href="mailto:admin@temple-trust.example"
+                        href="mailto:office@temple-trust.example"
                         class="font-medium text-primary hover:underline"
                     >
-                        admin@temple-trust.example
+                        office@temple-trust.example
                     </a>.
                 </p>
             </div>
         {:else}
-            <div class="grid grid-cols-1 gap-10 lg:grid-cols-3">
-                <aside class="space-y-4 lg:col-span-1">
-                    <h2 class="font-serif text-xl font-semibold">
-                        Office hours
-                    </h2>
-                    <div class="space-y-1 text-sm text-muted-foreground">
-                        <p>Morning: 9:00 AM – 1:00 PM</p>
-                        <p>Evening: 4:00 PM – 8:00 PM</p>
+            <div class="grid grid-cols-1 gap-10 lg:grid-cols-12 lg:gap-16">
+                <aside class="space-y-5 lg:col-span-4">
+                    <div class="space-y-3">
+                        <p
+                            class="text-xs font-semibold uppercase tracking-[0.2em] text-primary"
+                        >
+                            Visit
+                        </p>
+                        <h2 class="font-serif text-2xl font-semibold">
+                            Office hours
+                        </h2>
+                        <div class="space-y-1 text-sm text-muted-foreground">
+                            <p>Morning: 9:00 AM – 1:00 PM</p>
+                            <p>Evening: 4:00 PM – 8:00 PM</p>
+                        </div>
                     </div>
 
                     <div
-                        class="aspect-video overflow-hidden rounded-md border border-border bg-muted/40"
+                        class="aspect-[4/3] overflow-hidden rounded-md border border-border/40 bg-ivory"
                         aria-label="Map placeholder"
                     >
                         <div
-                            class="flex h-full items-center justify-center text-xs text-muted-foreground"
+                            class="flex h-full flex-col items-center justify-center gap-1 text-xs text-muted-foreground"
                         >
-                            Map will appear here
+                            <MapPin class="h-5 w-5 text-primary/60" aria-hidden="true" />
+                            <span>Map will appear here</span>
                         </div>
                     </div>
                 </aside>
 
-                <div class="space-y-8 lg:col-span-2">
+                <div class="space-y-10 lg:col-span-8">
                     {#each grouped as [type, points] (type)}
                         <div class="space-y-3">
                             <h2

@@ -4,7 +4,6 @@
     import MandalaDecoration from '$shared/components/MandalaDecoration.svelte';
     import TrustBadgeRow from '$shared/components/TrustBadgeRow.svelte';
     import BottomCtaBand from '$shared/components/BottomCtaBand.svelte';
-    import { Separator } from '$shared/ui/separator';
     import type { CmsPageProps } from './types';
 
     let { page, heroBanners, html, appName }: CmsPageProps = $props();
@@ -20,13 +19,13 @@
 <PublicLayout>
     <section class="relative overflow-hidden bg-background">
         <div
-            class="pointer-events-none absolute right-0 top-0 opacity-15"
+            class="pointer-events-none absolute -right-20 top-0 opacity-[0.10]"
             aria-hidden="true"
         >
-            <MandalaDecoration size={180} tint="gold" />
+            <MandalaDecoration size={320} tint="gold" />
         </div>
 
-        <div class="container relative py-14 lg:py-20">
+        <div class="container relative py-16 lg:py-24">
             <div class="mx-auto max-w-3xl space-y-5 text-center">
                 <h1 class="font-serif text-4xl font-semibold lg:text-5xl">
                     {page.title}
@@ -36,7 +35,7 @@
                         {page.meta_description}
                     </p>
                 {/if}
-                <div class="pt-1">
+                <div class="pt-2">
                     <TrustBadgeRow />
                 </div>
             </div>
@@ -54,7 +53,7 @@
             >
                 {#each heroBanners as banner (banner.id)}
                     {#if banner.image}
-                        <div class="overflow-hidden rounded-md border border-border/60">
+                        <div class="overflow-hidden rounded-md border border-border/40">
                             <PublicMediaImage
                                 media={banner.image}
                                 alt={banner.title ?? ''}
@@ -67,16 +66,14 @@
         </section>
     {/if}
 
-    <Separator class="my-0" />
-
     {#if html && html.trim() !== ''}
-        <section class="container py-12 lg:py-16">
-            <div class="prose prose-stone mx-auto max-w-3xl">
+        <section class="container py-12 lg:py-20">
+            <div class="prose prose-stone mx-auto max-w-3xl prose-a:text-primary">
                 {@html html}
             </div>
         </section>
     {:else}
-        <section class="container py-12 lg:py-16">
+        <section class="container py-12 lg:py-20">
             <div class="mx-auto max-w-3xl text-center">
                 <p class="text-sm text-muted-foreground">
                     This page will be published soon.

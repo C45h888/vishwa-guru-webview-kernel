@@ -111,7 +111,7 @@
                             </div>
                             <div
                                 class="pointer-events-none absolute inset-0 opacity-30"
-                                style="background: radial-gradient(circle at 30% 20%, hsl(42 70% 48% / 0.08), transparent 50%), radial-gradient(circle at 70% 80%, hsl(42 70% 48% / 0.06), transparent 50%);"
+                                style="background: radial-gradient(circle at 30% 20%, hsl(25 90% 48% / 0.08), transparent 50%), radial-gradient(circle at 70% 80%, hsl(25 85% 38% / 0.06), transparent 50%);"
                                 aria-hidden="true"
                             ></div>
                         </div>

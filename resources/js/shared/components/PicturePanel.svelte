@@ -29,11 +29,11 @@
 <section class="py-16 lg:py-20">
     <div class="container">
         <div
-            class="grid grid-cols-1 items-center gap-10 lg:gap-16 {reverse
+            class="grid grid-cols-1 items-center gap-10 lg:grid-cols-12 lg:gap-16 {reverse
                 ? 'lg:grid-flow-col-dense'
                 : ''}"
         >
-            <div class={reverse ? 'lg:col-start-2' : ''}>
+            <div class={reverse ? 'lg:col-span-6 lg:col-start-7' : 'lg:col-span-6'}>
                 {#if image}
                     <div
                         class="overflow-hidden rounded-md border border-border/40"
@@ -49,9 +49,9 @@
                 {/if}
             </div>
             <div
-                class="space-y-4 lg:max-w-xl {reverse
-                    ? 'lg:col-start-1 lg:row-start-1'
-                    : ''}"
+                class="space-y-4 {reverse
+                    ? 'lg:col-span-5 lg:col-start-1 lg:row-start-1'
+                    : 'lg:col-span-5 lg:col-start-8'} lg:max-w-xl"
             >
                 <p
                     class="text-xs font-semibold uppercase tracking-[0.2em] text-primary"

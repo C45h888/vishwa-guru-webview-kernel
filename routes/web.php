@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', [HomeController::class, 'index'])->name('home');
 
 Route::get('/media/{id}', CmsMediaShowController::class)
-    ->where('id', '[A-Za-z0-9]+')
+    ->where('id', '[A-Za-z0-9_]+')
     ->name('cms.public-media.show');
 
 Route::get('/contact', [ContactController::class, '__invoke'])

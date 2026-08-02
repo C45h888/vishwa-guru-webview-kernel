@@ -1,13 +1,14 @@
 <script lang="ts">
     import PublicLayout from '$shared/components/PublicLayout.svelte';
     import HeroSlideshow from '$shared/components/HeroSlideshow.svelte';
+    import PillarTriad from '$shared/components/PillarTriad.svelte';
     import QuoteSection from '$shared/components/QuoteSection.svelte';
     import PicturePanel from '$shared/components/PicturePanel.svelte';
     import TrustBadgeRow from '$shared/components/TrustBadgeRow.svelte';
     import TrustPanel from '$shared/components/TrustPanel.svelte';
-    import EventsRow from '$shared/components/EventsRow.svelte';
+    import EventsList from '$shared/components/EventsList.svelte';
     import DonateCtaBand from '$shared/components/DonateCtaBand.svelte';
-    import MandalaDecoration from '$shared/components/MandalaDecoration.svelte';
+    import GalleryPreview from '$shared/components/GalleryPreview.svelte';
     import CampaignCard from '$shared/components/CampaignCard.svelte';
     import GalleryCard from '$shared/components/GalleryCard.svelte';
     import PlaceholderCard from '$shared/components/PlaceholderCard.svelte';
@@ -41,6 +42,14 @@
             && content.story.cta_label !== ''
             && content.story.cta_url !== '',
     );
+
+    const pillarFirst = $derived(content.story.image);
+    const pillarSecond = $derived(
+        featuredEvents[0]?.banner_image ?? null,
+    );
+    const pillarThird = $derived(
+        featuredGalleries[0]?.cover_image ?? null,
+    );
 </script>
 
 <svelte:head>
@@ -54,19 +63,26 @@
     <!-- ═══ 1. HERO SLIDESHOW ═══ -->
     <HeroSlideshow {page} {heroBanners} />
 
-    <!-- ═══ 2. TRUST STORY ═══ -->
-    <section class="container py-20 lg:py-28">
+    <!-- ═══ 2. PILLAR TRIAD — 3 image cards, no labels ═══ -->
+    <PillarTriad
+        firstImage={pillarFirst}
+        secondImage={pillarSecond}
+        thirdImage={pillarThird}
+    />
+
+    <!-- ═══ 3. TRUST STORY ═══ -->
+    <section class="container py-24 lg:py-32">
         <div
             class="grid grid-cols-1 items-center gap-10 lg:grid-cols-12 lg:gap-16"
         >
             <div class="space-y-5 lg:col-span-7">
                 <p
-                    class="text-xs font-semibold uppercase tracking-[0.2em] text-primary"
+                    class="text-xs font-semibold uppercase tracking-[0.25em] text-primary"
                 >
                     {content.story.eyebrow}
                 </p>
                 <h2
-                    class="font-serif text-3xl font-semibold leading-tight lg:text-4xl"
+                    class="text-3xl font-semibold leading-tight tracking-tight lg:text-5xl"
                 >
                     {content.story.title}
                 </h2>
@@ -86,16 +102,10 @@
                 {/if}
             </div>
             <div class="relative lg:col-span-5">
-                <div
-                    class="pointer-events-none absolute -right-12 -top-12 opacity-15"
-                    aria-hidden="true"
-                >
-                    <MandalaDecoration size={260} tint="gold" />
-                </div>
                 <div class="relative">
                     {#if content.story.image}
                         <div
-                            class="overflow-hidden rounded-md border border-border/40"
+                            class="overflow-hidden rounded-md border border-border"
                         >
                             <PublicMediaImage
                                 media={content.story.image}
@@ -106,7 +116,7 @@
                         </div>
                     {:else}
                         <div
-                            class="aspect-square overflow-hidden rounded-md border border-border/40 bg-gradient-to-br from-primary/15 via-ivory to-primary/10"
+                            class="aspect-square overflow-hidden rounded-md border border-border bg-ivory"
                         >
                             <div
                                 class="flex h-full w-full items-center justify-center"
@@ -117,11 +127,6 @@
                                     {content.story.eyebrow}
                                 </div>
                             </div>
-                            <div
-                                class="pointer-events-none absolute inset-0 opacity-30"
-                                style="background: radial-gradient(circle at 30% 20%, hsl(42 70% 48% / 0.08), transparent 50%), radial-gradient(circle at 70% 80%, hsl(42 70% 48% / 0.06), transparent 50%);"
-                                aria-hidden="true"
-                            ></div>
                         </div>
                     {/if}
                 </div>
@@ -129,38 +134,38 @@
         </div>
     </section>
 
-    <!-- ═══ 3. MISSION QUOTE ═══ -->
-    <QuoteSection
-        eyebrow={content.mission_quote.eyebrow}
-        quote={content.mission_quote.quote}
-        attribution={content.mission_quote.attribution}
-    />
-
     <!-- ═══ 4. PROGRAMS — 3 alternating beats ═══ -->
-    <div class="bg-ivory">
+    <div class="bg-muted">
         {#each content.programs as program, index (program.key)}
             <PicturePanel
                 eyebrow={program.eyebrow}
                 title={program.title}
                 body={program.body}
                 image={program.image}
-                altText={program.alt_text}
+                altText={program.alt_text ?? undefined}
                 reverse={index % 2 === 1}
                 variant={index % 2 === 1 ? 'warm' : 'gold'}
             />
         {/each}
     </div>
 
-    <!-- ═══ 5. CAMPAIGNS CTA + GRID ═══ -->
-    <section class="bg-muted/30 py-20 lg:py-28">
+    <!-- ═══ 5. MISSION QUOTE ═══ -->
+    <QuoteSection
+        eyebrow={content.mission_quote.eyebrow}
+        quote={content.mission_quote.quote}
+        attribution={content.mission_quote.attribution}
+    />
+
+    <!-- ═══ 6. CAMPAIGNS CTA + GRID ═══ -->
+    <section class="py-24 lg:py-32">
         <div class="container space-y-10">
             <div class="mx-auto max-w-2xl space-y-4 text-center">
                 <p
-                    class="text-xs font-semibold uppercase tracking-[0.2em] text-primary"
+                    class="text-xs font-semibold uppercase tracking-[0.25em] text-primary"
                 >
                     Campaigns
                 </p>
-                <h2 class="font-serif text-3xl font-semibold lg:text-4xl">
+                <h2 class="text-3xl font-semibold tracking-tight lg:text-5xl">
                     What we're doing today
                 </h2>
                 <p class="text-base text-muted-foreground">
@@ -203,19 +208,19 @@
         </div>
     </section>
 
-    <!-- ═══ 6. EVENTS — top 3 upcoming ═══ -->
-    <EventsRow events={featuredEvents} />
+    <!-- ═══ 7. EVENTS — date-sorted list ═══ -->
+    <EventsList events={featuredEvents} limit={5} />
 
-    <!-- ═══ 7. GALLERY — top 3 ═══ -->
-    <section class="container py-16 lg:py-20">
+    <!-- ═══ 8. GALLERY — 3 featured ═══ -->
+    <section class="container py-24 lg:py-32">
         <div class="mb-8 flex items-end justify-between gap-4">
             <div class="space-y-2">
                 <p
-                    class="text-xs font-semibold uppercase tracking-[0.2em] text-primary"
+                    class="text-xs font-semibold uppercase tracking-[0.25em] text-primary"
                 >
                     Gallery
                 </p>
-                <h2 class="font-serif text-3xl font-semibold lg:text-4xl">
+                <h2 class="text-3xl font-semibold tracking-tight lg:text-5xl">
                     Recent darshan
                 </h2>
             </div>
@@ -244,23 +249,26 @@
         </div>
     </section>
 
-    <!-- ═══ 8. TRUST / AUTHORITY PANEL ═══ -->
+    <!-- ═══ 9. GALLERY PREVIEW — 4 featured, larger showcase ═══ -->
+    <GalleryPreview galleries={featuredGalleries} limit={4} />
+
+    <!-- ═══ 10. TRUST / AUTHORITY PANEL ═══ -->
     <TrustPanel content={content.trust_panel} />
 
-    <!-- ═══ 9. DONATE CTA BAND ═══ -->
+    <!-- ═══ 11. DONATE CTA BAND — composed saffron treatment ═══ -->
     <DonateCtaBand content={content.donate_cta} />
 
-    <!-- ═══ 10. TRUST STRIP — small signals ═══ -->
-    <section class="border-y border-border/40 bg-ivory py-8">
+    <!-- ═══ 12. TRUST STRIP — small signals ═══ -->
+    <section class="border-y border-border bg-muted py-8">
         <div class="container">
             <TrustBadgeRow />
         </div>
     </section>
 
-    <!-- ═══ 11. CMS BODY (only when admin publishes long-form content) ═══ -->
+    <!-- ═══ 13. CMS BODY (only when admin publishes long-form content) ═══ -->
     {#if html && html.trim() !== ''}
         <section class="container py-12 lg:py-16">
-            <div class="prose prose-stone mx-auto max-w-3xl">
+            <div class="prose prose-stone mx-auto max-w-3xl prose-a:text-primary">
                 {@html html}
             </div>
         </section>

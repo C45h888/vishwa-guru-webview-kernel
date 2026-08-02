@@ -1,5 +1,6 @@
 <script lang="ts">
     import type { Snippet } from 'svelte';
+    import { page } from '@inertiajs/svelte';
     import SiteHeader from './SiteHeader.svelte';
     import SiteFooter from './SiteFooter.svelte';
 
@@ -10,12 +11,15 @@
     }
 
     let { children, appName = '', appUrl = '' }: Props = $props();
+
+    const resolvedAppName = $derived(appName || $page.props.appName || '');
+    const resolvedAppUrl = $derived(appUrl || $page.props.appUrl || '');
 </script>
 
-<div class="flex min-h-screen flex-col bg-background text-foreground">
-    <SiteHeader />
+<div class="flex min-h-screen flex-col bg-white text-foreground">
+    <SiteHeader appName={resolvedAppName} />
     <main class="flex-1">
         {@render children()}
     </main>
-    <SiteFooter {appName} {appUrl} />
+    <SiteFooter appName={resolvedAppName} appUrl={resolvedAppUrl} />
 </div>

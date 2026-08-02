@@ -65,7 +65,7 @@ return new class extends Migration
             'story' => [
                 'eyebrow' => 'Our Story',
                 'title' => 'A trust sustained by seva',
-                'body' => 'Temple Trust is a registered charitable trust dedicated to the preservation of South Indian temple traditions. For over two decades, we have maintained the daily rhythms of pooja, served the community through Annadanam, and cared for the temple structure that houses our sacred practices. Our work is sustained entirely by the generosity of devotees who believe in seva as both a personal practice and a collective responsibility.',
+                'body' => 'Sri Vishwaguru Sri Sri Sriram Shishyavrundham Mahasamsthanam is a registered charitable trust dedicated to the preservation of South Indian temple traditions. For over two decades, we have maintained the daily rhythms of pooja, served the community through Annadanam, and cared for the temple structure that houses our sacred practices. Our work is sustained entirely by the generosity of devotees who believe in seva as both a personal practice and a collective responsibility.',
                 'cta_label' => 'Read more about the trust',
                 'cta_url' => '/about',
                 'image_file_id' => null,
