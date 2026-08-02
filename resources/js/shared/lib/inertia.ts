@@ -2,6 +2,12 @@ export interface AuthUser {
     id: string;
     name: string;
     email: string;
+    /**
+     * Phase 4: Admin Kernel — role tag. Single canonical value in Pass 1:
+     * `'admin'`. Future role expansion is a model + middleware change,
+     * not a UI change; this type accepts any string to keep the door open.
+     */
+    role: string;
 }
 
 export interface SharedPageProps {

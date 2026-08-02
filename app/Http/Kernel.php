@@ -60,11 +60,22 @@ class Kernel extends HttpKernel
     protected $middlewareAliases = [
         'auth' => Authenticate::class,
         'throttle' => ThrottleRequests::class,
+        // Phase 4: Admin Kernel — guest guard for /login. Mirrors Laravel
+        // canonical RedirectIfAuthenticated; if a logged-in admin hits
+        // /login they're sent straight to /admin instead of seeing the
+        // form again.
+        // @see /Users/kamii/Vishwaguru-webview-kernel/vishwa-guru-webview-kernel/app/Http/Middleware/RedirectIfAuthenticated.php
+        'guest' => \App\Http\Middleware\RedirectIfAuthenticated::class,
         // NOTE: The `idempotency` alias here is the MIDDLEWARE alias — distinct
         // from `idempotency_key`, which is the per-request DB column /
         // DonationIntent payload key (App\Payments\Infrastructure\Repositories
         // \IdempotencyKeyRepository). The two are unrelated concepts.
         'idempotency' => \App\Http\Middleware\IdempotencyMiddleware::class,
         'webhook-dedupe' => \App\Http\Middleware\WebhookDedupeMiddleware::class,
+        // Phase 4: Admin Kernel — role gate for /admin/* routes.
+        // Distinct from `auth` (which only checks "logged in"); this
+        // middleware additionally checks `User::isAdmin()`.
+        // @see /Users/kamii/Vishwaguru-webview-kernel/vishwa-guru-webview-kernel/app/Http/Middleware/EnsureUserIsAdmin.php
+        'admin' => \App\Http\Middleware\EnsureUserIsAdmin::class,
     ];
 }

@@ -25,22 +25,23 @@
     21 => 'Illuminate\\View\\ViewServiceProvider',
     22 => 'Barryvdh\\DomPDF\\ServiceProvider',
     23 => 'Inertia\\ServiceProvider',
-    24 => 'Laravel\\Tinker\\TinkerServiceProvider',
-    25 => 'Carbon\\Laravel\\ServiceProvider',
-    26 => 'NunoMaduro\\Collision\\Adapters\\Laravel\\CollisionServiceProvider',
-    27 => 'Termwind\\Laravel\\TermwindServiceProvider',
-    28 => 'App\\Providers\\AppServiceProvider',
-    29 => 'App\\Providers\\RouteServiceProvider',
-    30 => 'App\\Shared\\Providers\\SharedServiceProvider',
-    31 => 'App\\Persistence\\Providers\\PersistenceServiceProvider',
-    32 => 'App\\Runtime\\Providers\\RuntimeServiceProvider',
-    33 => 'App\\Redis\\Providers\\RedisServiceProvider',
-    34 => 'App\\Queue\\Providers\\QueueServiceProvider',
-    35 => 'App\\Payments\\Providers\\PaymentsServiceProvider',
-    36 => 'App\\Cms\\Providers\\CmsServiceProvider',
-    37 => 'App\\Campaigns\\Providers\\CampaignsServiceProvider',
-    38 => 'App\\Gallery\\Providers\\GalleryServiceProvider',
-    39 => 'App\\Events\\Providers\\EventsServiceProvider',
+    24 => 'Laravel\\Breeze\\BreezeServiceProvider',
+    25 => 'Laravel\\Tinker\\TinkerServiceProvider',
+    26 => 'Carbon\\Laravel\\ServiceProvider',
+    27 => 'NunoMaduro\\Collision\\Adapters\\Laravel\\CollisionServiceProvider',
+    28 => 'Termwind\\Laravel\\TermwindServiceProvider',
+    29 => 'App\\Providers\\AppServiceProvider',
+    30 => 'App\\Providers\\RouteServiceProvider',
+    31 => 'App\\Shared\\Providers\\SharedServiceProvider',
+    32 => 'App\\Persistence\\Providers\\PersistenceServiceProvider',
+    33 => 'App\\Runtime\\Providers\\RuntimeServiceProvider',
+    34 => 'App\\Redis\\Providers\\RedisServiceProvider',
+    35 => 'App\\Queue\\Providers\\QueueServiceProvider',
+    36 => 'App\\Payments\\Providers\\PaymentsServiceProvider',
+    37 => 'App\\Cms\\Providers\\CmsServiceProvider',
+    38 => 'App\\Campaigns\\Providers\\CampaignsServiceProvider',
+    39 => 'App\\Gallery\\Providers\\GalleryServiceProvider',
+    40 => 'App\\Events\\Providers\\EventsServiceProvider',
   ),
   'eager' => 
   array (
@@ -213,6 +214,7 @@
     'validator' => 'Illuminate\\Validation\\ValidationServiceProvider',
     'validation.presence' => 'Illuminate\\Validation\\ValidationServiceProvider',
     'Illuminate\\Contracts\\Validation\\UncompromisedVerifier' => 'Illuminate\\Validation\\ValidationServiceProvider',
+    'Laravel\\Breeze\\Console\\InstallCommand' => 'Laravel\\Breeze\\BreezeServiceProvider',
     'command.tinker' => 'Laravel\\Tinker\\TinkerServiceProvider',
   ),
   'when' => 
@@ -251,6 +253,9 @@
     array (
     ),
     'Illuminate\\Validation\\ValidationServiceProvider' => 
+    array (
+    ),
+    'Laravel\\Breeze\\BreezeServiceProvider' => 
     array (
     ),
     'Laravel\\Tinker\\TinkerServiceProvider' => 

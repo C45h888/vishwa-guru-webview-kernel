@@ -3,7 +3,7 @@
     "private": true,
     "type": "module",
     "scripts": {
-        "prebuild": "php artisan inertia:dump-types",
+        "prebuild": "echo 'prebuild skipped: inertia:dump-types is Laravel 11 only'",
         "build": "vite build",
         "build:prod": "vite build --mode production",
         "check": "svelte-check --tsconfig ./tsconfig.json"

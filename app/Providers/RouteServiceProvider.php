@@ -20,6 +20,22 @@ class RouteServiceProvider extends ServiceProvider
             Route::middleware('web')
                 ->group(base_path('routes/web.php'));
 
+            // Phase 4: Admin auth surface (login + logout only).
+            // Mounted under the web group so it shares session/CSRF
+            // with the public site, but its routes are guarded by
+            // `guest` (login) and `auth` (logout) middleware inside
+            // the file itself.
+            Route::middleware('web')
+                ->group(base_path('routes/auth.php'));
+
+            // Phase 4: Admin kernel surface (/admin/*).
+            // Triple-middleware pipeline is applied inside the file:
+            //   web    — session, CSRF, cookies
+            //   auth   — must be logged in
+            //   admin  — must satisfy User::isAdmin()
+            Route::middleware('web')
+                ->group(base_path('routes/admin.php'));
+
             // Public campaigns routes — Sub-project 1 reserves the URL
             // namespace (campaigns.index, campaigns.show). Sub-project 3
             // wires real controllers behind these paths.
