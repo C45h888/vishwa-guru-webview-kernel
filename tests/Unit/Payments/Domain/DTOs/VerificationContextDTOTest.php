@@ -30,8 +30,8 @@ class VerificationContextDTOTest extends TestCase
     {
         return new VerificationContextDTO(
             payload: $payload ?? $this->makePayload(),
-            donationId: new Identifier('01HXYZ1DONATION00000000000000'),
-            paymentId: new Identifier('01HXYZ1PAYMENT000000000000000'),
+            donationId: new Identifier('01HFAZ3NDEKTSV4RRFFQ69G5FV'),
+            paymentId: new Identifier('01HFAZ3NDEKTSV4RRFFQ69G5FA'),
             expectedAmountMinor: 5000,
             expectedCurrency: Currency::INR,
             expectedIdempotencyKey: 'idem_test_1',
@@ -81,8 +81,8 @@ class VerificationContextDTOTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         new VerificationContextDTO(
             payload: $this->makePayload(),
-            donationId: new Identifier('01HXYZ1DONATION00000000000000'),
-            paymentId: new Identifier('01HXYZ1PAYMENT000000000000000'),
+            donationId: new Identifier('01HFAZ3NDEKTSV4RRFFQ69G5FV'),
+            paymentId: new Identifier('01HFAZ3NDEKTSV4RRFFQ69G5FA'),
             expectedAmountMinor: 0,
             expectedCurrency: Currency::INR,
             expectedIdempotencyKey: 'idem',
@@ -94,8 +94,8 @@ class VerificationContextDTOTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         new VerificationContextDTO(
             payload: $this->makePayload(),
-            donationId: new Identifier('01HXYZ1DONATION00000000000000'),
-            paymentId: new Identifier('01HXYZ1PAYMENT000000000000000'),
+            donationId: new Identifier('01HFAZ3NDEKTSV4RRFFQ69G5FV'),
+            paymentId: new Identifier('01HFAZ3NDEKTSV4RRFFQ69G5FA'),
             expectedAmountMinor: 1000,
             expectedCurrency: Currency::INR,
             expectedIdempotencyKey: '',

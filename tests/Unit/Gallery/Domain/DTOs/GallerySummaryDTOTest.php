@@ -14,7 +14,7 @@ final class GallerySummaryDTOTest extends TestCase
     public function testConstructionWithValidArgs(): void
     {
         $dto = new GallerySummaryDTO(
-            id: 'gallery_01HXYZ',
+            id: 'gallery_01ARZ3NDEKTSV4RRFFQ69G5FAV',
             slug: 'temple-festival-2025',
             title: 'Temple Festival 2025',
             shortDescription: 'Photos from this year\'s celebration.',
@@ -24,7 +24,7 @@ final class GallerySummaryDTOTest extends TestCase
             publishedAt: new DateTimeImmutable('2025-12-01T00:00:00+00:00'),
             state: 'published',
         );
-        $this->assertSame('gallery_01HXYZ', $dto->id);
+        $this->assertSame('gallery_01ARZ3NDEKTSV4RRFFQ69G5FAV', $dto->id);
         $this->assertSame(24, $dto->imageCount);
         $this->assertTrue($dto->isFeatured);
         $this->assertSame('published', $dto->state);

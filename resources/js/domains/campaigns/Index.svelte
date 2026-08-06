@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { router } from '@inertiajs/svelte';
+    import { router, page } from '@inertiajs/svelte';
     import PublicLayout from '$shared/components/PublicLayout.svelte';
     import MandalaDecoration from '$shared/components/MandalaDecoration.svelte';
     import CampaignCard from '$shared/components/CampaignCard.svelte';
@@ -11,6 +11,7 @@
         ChevronDown,
         Filter,
         Inbox,
+        Pencil,
         X,
     } from 'lucide-svelte';
     import type {
@@ -203,10 +204,22 @@
 
     <!-- ═══ 2. BREADCRUMB — between pillars and editorial copy ═══ -->
     <section class="border-y border-border/40 bg-background">
-        <div class="container py-3 text-xs text-muted-foreground">
-            <a href="/" class="hover:text-primary">Home</a>
-            <span class="mx-2" aria-hidden="true">/</span>
-            <span class="text-foreground/70">Campaigns</span>
+        <div class="container flex items-center justify-between py-3 text-xs text-muted-foreground">
+            <div>
+                <a href="/" class="hover:text-primary">Home</a>
+                <span class="mx-2" aria-hidden="true">/</span>
+                <span class="text-foreground/70">Campaigns</span>
+            </div>
+            {#if $page.props.authUser?.role === 'admin'}
+                <a
+                    href="/admin/campaigns/new"
+                    class="inline-flex items-center gap-1.5 rounded-md border border-border bg-background px-2.5 py-1 text-xs font-medium hover:border-primary hover:bg-primary hover:text-primary-foreground"
+                    title="New campaign"
+                >
+                    <Pencil class="h-3 w-3" aria-hidden="true" />
+                    <span>New campaign</span>
+                </a>
+            {/if}
         </div>
     </section>
 
@@ -365,7 +378,11 @@
                 class="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3"
             >
                 {#each campaigns as campaign (campaign.id)}
-                    <CampaignCard {campaign} href={`/campaigns/${campaign.slug}`} />
+                    <CampaignCard
+                        {campaign}
+                        href={`/campaigns/${campaign.slug}`}
+                        adminEditHref={`/admin/campaigns/${campaign.id}/edit`}
+                    />
                 {/each}
             </div>
         {:else}

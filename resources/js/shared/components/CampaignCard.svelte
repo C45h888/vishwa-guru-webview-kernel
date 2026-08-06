@@ -1,6 +1,7 @@
 <script lang="ts">
     import Money from './Money.svelte';
     import { currencySymbol } from '$shared/lib/currency';
+    import AdminEditOverlay from './AdminEditOverlay.svelte';
     import { ArrowRight, Heart, Users } from 'lucide-svelte';
     import {
         Card,
@@ -28,6 +29,14 @@
         href?: string | null;
         compact?: boolean;
         class?: string;
+        /**
+         * Phase 4: Admin Kernel — when set, the card surfaces a
+         * floating pencil overlay in the top-right corner that links
+         * to the admin edit page for this campaign. The pencil is
+         * only rendered for authenticated admin users (the overlay
+         * component is a no-op for everyone else).
+         */
+        adminEditHref?: string | null;
     }
 
     let {
@@ -35,6 +44,7 @@
         href = null,
         compact = false,
         class: className = '',
+        adminEditHref = null,
     }: Props = $props();
 
     const titleId = $derived(`campaign-card-${campaign.id}-title`);
@@ -101,7 +111,10 @@
     });
 </script>
 
-<Card class={`group h-full overflow-hidden transition-all hover:border-primary/40 hover:shadow-md ${className}`}>
+<Card class={`group relative h-full overflow-hidden transition-all hover:border-primary/40 hover:shadow-md ${className}`}>
+    {#if adminEditHref}
+        <AdminEditOverlay href={adminEditHref} srLabel={`Edit campaign: ${campaign.title}`} />
+    {/if}
     <a
         {href}
         aria-labelledby={titleId}

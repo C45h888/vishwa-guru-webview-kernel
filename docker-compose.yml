@@ -102,6 +102,12 @@ services:
     working_dir: /app
     volumes:
       - .:/app
+    # Public DNS resolvers — override the host DNS because the corporate
+    # DNS server returns REFUSED for *.aws.neon.tech domains. Cloudflare
+    # (1.1.1.1) and Google (8.8.8.8) both resolve Neon pooler endpoints.
+    dns:
+      - 1.1.1.1
+      - 8.8.8.8
     ports:
       - "8000:8000"
     environment:
@@ -168,6 +174,11 @@ services:
     working_dir: /app
     volumes:
       - .:/app
+    # Same DNS override as the app — Neon pooler resolution must work
+    # in both containers.
+    dns:
+      - 1.1.1.1
+      - 8.8.8.8
     environment:
       DATABASE_URL: ${DATABASE_URL:-}
       # Doctrine: in NEON mode the worker MUST use the `neon` connection

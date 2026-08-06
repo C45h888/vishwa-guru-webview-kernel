@@ -44,8 +44,9 @@
                     </span>
                 </div>
                 <p class="max-w-xs text-sm leading-relaxed text-muted-foreground">
-                    A temple sustained by daily practice, Annadanam, and the
-                    generosity of those who call this seva their own.
+                    A trust sustained by the daily care of those in our
+                    charge, the generosity of those who call this seva
+                    their own, and the trustees who carry both forward.
                 </p>
             </div>
 
@@ -80,15 +81,14 @@
                 >
                     <p>
                         {appName}<br />
-                        Velliangiri Foothills<br />
-                        Coimbatore, Tamil Nadu 641114
+                        Mysore, Karnataka
                     </p>
                     <p>
                         <a
-                            href="tel:+918300083111"
+                            href="tel:+919844132318"
                             class="transition-colors hover:text-primary"
                         >
-                            +91 83000 83111
+                            +91 98441 32318
                         </a>
                     </p>
                     <p>
@@ -111,7 +111,6 @@
                     </h3>
                     <ul class="space-y-2 text-sm text-foreground/80">
                         <li>Registered charitable trust</li>
-                        <li>80G tax-eligible donations</li>
                         <li>Secure payments via Razorpay</li>
                     </ul>
                 </div>
@@ -153,7 +152,7 @@
             class="mt-12 flex flex-col gap-2 border-t border-border/60 pt-6 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between"
         >
             <span>© {year} {appName}</span>
-            <span>Secure payments via Razorpay · 80G tax-eligible</span>
+            <span>Secure payments via Razorpay</span>
         </div>
     </div>
 </footer>

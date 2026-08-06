@@ -11,7 +11,7 @@ use App\Runtime\Failure\Handlers\BootFailureHandler;
 use App\Runtime\Failure\StateMachines\FailureTransitionResult;
 use App\Runtime\Failure\ValueObjects\FailureRecord;
 use App\Shared\Enums\EnvironmentType;
-use App\Shared\Support\Identifier;
+use App\Shared\ValueObjects\Identifier;
 use DateTimeImmutable;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;

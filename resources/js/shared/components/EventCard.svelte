@@ -8,15 +8,23 @@
     } from '$shared/ui/card';
     import type { EventSummaryProps } from '$shared/lib/inertia';
     import PublicMediaImage from './PublicMediaImage.svelte';
+    import AdminEditOverlay from './AdminEditOverlay.svelte';
 
     let {
         event,
         href = null,
         class: className = '',
+        adminEditHref = null,
     }: {
         event: EventSummaryProps;
         href?: string | null;
         class?: string;
+        /**
+         * Phase 4: Admin Kernel — when set, the card surfaces a
+         * floating pencil overlay in the top-right corner that links
+         * to the admin edit page for this event.
+         */
+        adminEditHref?: string | null;
     } = $props();
 
     function formatDate(iso: string | null, tz: string): string {
@@ -33,7 +41,10 @@
     }
 </script>
 
-<Card class={`h-full ${className}`}>
+<Card class={`group relative h-full overflow-hidden ${className}`}>
+    {#if adminEditHref}
+        <AdminEditOverlay href={adminEditHref} srLabel={`Edit event: ${event.title}`} />
+    {/if}
     {#if event.banner_image}
         <PublicMediaImage media={event.banner_image} alt={event.title} class="aspect-[16/9] w-full object-cover" />
     {/if}

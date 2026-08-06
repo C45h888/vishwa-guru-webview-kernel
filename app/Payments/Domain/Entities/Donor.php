@@ -104,7 +104,12 @@ final class Donor implements EntityContract
      */
     public static function fromRow(array $row): self
     {
-        $required = ['id', 'name', 'preferred_currency', 'is_anonymized', 'created_at', 'updated_at'];
+        // The DB schema column is `full_name`; the entity uses the
+        // shorter `name` key in toArray(). Accept either so both
+        // round-trips through the repository (which maps full_name↔name)
+        // and direct fromRow() callers with the entity-shaped key work.
+        $nameKey = array_key_exists('name', $row) ? 'name' : 'full_name';
+        $required = ['id', $nameKey, 'preferred_currency', 'is_anonymized', 'created_at', 'updated_at'];
         foreach ($required as $key) {
             if (! array_key_exists($key, $row)) {
                 throw new InvalidArgumentException("Donor row missing required key: {$key}");
@@ -113,7 +118,7 @@ final class Donor implements EntityContract
 
         return new self(
             id: EntityId::fromString($row['id']),
-            name: (string) $row['name'],
+            name: (string) $row[$nameKey],
             email: $row['email'] ?? null,
             phone: $row['phone'] ?? null,
             panNumber: $row['pan_number'] ?? null,

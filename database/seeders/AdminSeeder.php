@@ -15,33 +15,44 @@ use Illuminate\Support\Str;
  *   - The trust has ONE admin. No multi-admin management UI is built
  *     in Pass 1; this seeder is the canonical entry point.
  *   - Credentials come from env: ADMIN_EMAIL, ADMIN_PASSWORD,
- *     ADMIN_NAME. Defaults exist for local dev only and are flagged
- *     loudly so production cannot accidentally inherit them.
- *   - Seeder is idempotent: re-running updates the password and
- *     role on the existing row rather than duplicating. This is the
- *     behaviour the `db:seed` workflow expects.
+ *     ADMIN_NAME. The defaults below are NON-CREDENTIAL placeholders
+ *     so the seeder just works in local dev. Real production envs MUST
+ *     override ADMIN_PASSWORD — see .env.testing for the test-env values
+ *     and .env.local / .env for production.
+ *   - Seeder is idempotent: re-running updates the password + role +
+ *     name on the existing row rather than failing on UNIQUE (email).
+ *     This is the behaviour `db:seed` expects.
  *   - The user is forced to role='admin' regardless of env input —
- *     Pass 1 has no other role to fall back to.
- *   - Persistence goes through PersistenceAdapterContract, never
- *     DB::. Doctrine: repository boundary (matches ProductionSeeder).
+ *     Pass 1 has no other role.
+ *   - Persistence goes through PersistenceAdapterContract, never DB::.
+ *     Doctrine: repository boundary (matches ProductionSeeder).
  */
 final class AdminSeeder extends Seeder
 {
+    /**
+     * Dev-only placeholder credentials. NEVER use these in production —
+     * .env / .env.local must override ADMIN_PASSWORD before running
+     * `db:seed` against a production database.
+     */
+    private const DEFAULT_ADMIN_EMAIL = 'admin@vishwaguru.local';
+    private const DEFAULT_ADMIN_PASSWORD = 'PLACEHOLDER_OVERRIDE_IN_ENV';
+    private const DEFAULT_ADMIN_NAME = 'Temple Trust Admin';
+
     public function run(): void
     {
         $adapter = $this->container->make(PersistenceAdapterContract::class);
 
-        $adminEmail = (string) env('ADMIN_EMAIL', 'admin@vishwaguru.local');
-        $adminPassword = (string) env('ADMIN_PASSWORD', 'changeme-admin-2026');
-        $adminName = (string) env('ADMIN_NAME', 'Temple Trust Admin');
+        $adminEmail = (string) env('ADMIN_EMAIL', self::DEFAULT_ADMIN_EMAIL);
+        $adminPassword = (string) env('ADMIN_PASSWORD', self::DEFAULT_ADMIN_PASSWORD);
+        $adminName = (string) env('ADMIN_NAME', self::DEFAULT_ADMIN_NAME);
 
-        if ($adminPassword === 'changeme-admin-2026') {
-            // Surface a loud warning in any environment so this default is
-            // never silently shipped. Tests run with APP_ENV=testing, so
-            // this branch lights up locally; production should override.
-            $this->command->warn(
-                '[AdminSeeder] Using default ADMIN_PASSWORD. Override ADMIN_PASSWORD in .env for non-local environments.'
+        // Loud warning when the dev placeholder leaks into non-local env.
+        if ($adminPassword === self::DEFAULT_ADMIN_PASSWORD
+            && ! app()->environment(['local', 'testing'])) {
+            $this->command->error(
+                '[AdminSeeder] ABORT: ADMIN_PASSWORD not set and the dev placeholder would land. Set ADMIN_PASSWORD in .env before running db:seed in production.'
             );
+            return;
         }
 
         $now = (new \DateTimeImmutable())->format(DATE_ATOM);
@@ -75,6 +86,9 @@ final class AdminSeeder extends Seeder
 
         if ($r->isFailure()) {
             $this->command->error('[AdminSeeder] upsert failed: '.$r->error());
+            return;
         }
+
+        $this->command->info('[AdminSeeder] OK — seeded '.$adminEmail);
     }
 }

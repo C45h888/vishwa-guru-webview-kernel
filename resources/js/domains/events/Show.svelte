@@ -5,8 +5,11 @@
     import PublicMediaImage from '$shared/components/PublicMediaImage.svelte';
     import MandalaDecoration from '$shared/components/MandalaDecoration.svelte';
     import TrustBadgeRow from '$shared/components/TrustBadgeRow.svelte';
+    import AdminEditOverlay from '$shared/components/AdminEditOverlay.svelte';
+
     import GradientPanel from '$shared/components/GradientPanel.svelte';
     import { CalendarDays, MapPin, Clock } from 'lucide-svelte';
+    import { page } from '@inertiajs/svelte';
     import type {
         EventSummaryProps,
         AppPageProps,
@@ -30,6 +33,8 @@
     const related = $derived(event.related ?? []);
     const heroImage = $derived(event.banner_image ?? null);
     const hasImage = $derived(heroImage !== null);
+    const isAdmin = $derived($page.props.authUser?.role === "admin");
+    const adminEditHref = $derived(`/admin/events/${event.id}/edit`);
 
     function formatDate(iso: string | null, tz: string): string {
         if (!iso) return '';
@@ -107,6 +112,9 @@
                     </div>
 
                     <div class="relative lg:col-span-5">
+                        {#if isAdmin}
+                            <AdminEditOverlay href={adminEditHref} srLabel={`Edit event: ${event.title}`} />
+                        {/if}
                         {#if hasImage}
                             <div
                                 class="overflow-hidden rounded-md border border-border/40"
@@ -267,6 +275,7 @@
                                 <EventCard
                                     event={rel}
                                     href={`/events/${rel.slug}`}
+                                    adminEditHref={isAdmin ? `/admin/events/${rel.id}/edit` : null}
                                 />
                             {/each}
                         </div>

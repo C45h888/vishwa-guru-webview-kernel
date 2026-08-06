@@ -60,7 +60,7 @@ final class FailureKindTest extends TestCase
 
         foreach (FailureKind::cases() as $kind) {
             $record = new \App\Runtime\Failure\ValueObjects\FailureRecord(
-                id: \App\Shared\Support\Identifier::generate(),
+                id: \App\Shared\ValueObjects\Identifier::generate(),
                 kind: $kind,
                 origin: self::class,
                 message: 'test',
@@ -98,7 +98,7 @@ final class FailureKindTest extends TestCase
 
         foreach (FailureKind::cases() as $kind) {
             $record = new \App\Runtime\Failure\ValueObjects\FailureRecord(
-                id: \App\Shared\Support\Identifier::generate(),
+                id: \App\Shared\ValueObjects\Identifier::generate(),
                 kind: $kind,
                 origin: self::class,
                 message: 'test',

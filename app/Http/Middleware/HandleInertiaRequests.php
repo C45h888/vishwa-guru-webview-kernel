@@ -49,12 +49,24 @@ final class HandleInertiaRequests extends Middleware
         return array_merge(parent::share($request), [
             'appName' => (string) config('app.name'),
             'appUrl' => (string) config('app.url'),
+            // Phase 4: Admin Kernel — explicit CSRF token for Inertia forms.
+            // Inertia's client normally reads this from the <meta name="csrf-token">
+            // tag, but surfacing it via the shared-prop lets form components
+            // include it explicitly when they need to (Login form, etc.)
+            // without depending on a DOM scrape.
+            'csrf_token' => csrf_token(),
             'authUser' => $user === null ? null : [
                 'id' => $user->getKey(),
                 'name' => (string) $user->name,
                 'email' => (string) $user->email,
                 'role' => (string) $user->role,
             ],
+            // Razorpay environment flag (live|test). The webview uses
+            // this to gate "Test mode" copy in the donate flow. Drives
+            // off env so a single flip switches the public surface.
+            'razorpayMode' => env('RAZORPAY_MODE', 'live') === 'test'
+                ? 'test'
+                : 'live',
         ]);
     }
 }

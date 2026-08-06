@@ -135,15 +135,14 @@ class ReceiptsEndToEndTest extends TestCase
         $donationId = EntityId::generate('donation');
         $campaignId = EntityId::generate('campaign');
 
-        $payment = Payment::create(
+        $payment = Payment::initialize(
             donationId: $donationId,
-            gatewayTransactionId: 'txn_e2e',
+            providerCode: \App\Payments\Domain\Enums\PaymentProvider::RAZORPAY,
             amountMinor: 5_000_00,
             currency: Currency::INR,
-            status: TransactionStatus::CAPTURED,
-            gatewayCode: 'razorpay',
+            idempotencyKey: 'txn_e2e',
             metadata: [],
-        );
+        )->withChanges(['status' => TransactionStatus::CAPTURED->value]);
 
         $donation = Donation::create(
             donorId: EntityId::generate('donor'),

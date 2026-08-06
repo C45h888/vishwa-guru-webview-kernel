@@ -84,9 +84,12 @@ final class InertiaPageResolutionTest extends TestCase
             }
         }
 
-        // Walk every controller class in app/Http/Controllers/Public/
-        // (most Inertia::render() calls live here).
-        foreach (glob(base_path('app/Http/Controllers/Public/**/*.php')) ?: [] as $ctrl) {
+        // Walk every controller class in app/Http/Controllers/
+        // (most Inertia::render() calls live in Public/, but the
+        // admin/auth kernels have their own Inertia surfaces too —
+        // Auth/Login.svelte from AuthenticatedSessionController and
+        // admin/Dashboard.svelte from DashboardController).
+        foreach (glob(base_path('app/Http/Controllers/**/*.php')) ?: [] as $ctrl) {
             $source = (string) file_get_contents($ctrl);
             if (preg_match_all("/Inertia::render\\(\\s*['\"]([^'\"]+)['\"]/", $source, $m)) {
                 $names = array_merge($names, $m[1]);

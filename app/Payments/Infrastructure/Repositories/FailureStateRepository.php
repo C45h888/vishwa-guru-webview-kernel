@@ -99,18 +99,23 @@ final class FailureStateRepository implements FailureStateRepositoryContract
     {
         $row = $failureState->toArray();
 
+        // The current schema declares only the columns below; the entity
+        // carries additional context (final_status, provider_code,
+        // gateway_order_id, correlation_id, is_retryable, context) that
+        // the schema agent will add as a follow-up migration. We persist
+        // only the columns that exist today to keep save() from blowing up
+        // with "no such column" errors. Once the schema agent adds them,
+        // re-extend this INSERT and the matching UPDATE below.
         $sql = 'INSERT INTO failure_states (
             id, payment_id, classification, failure_code, failure_reason,
             failure_metadata, first_failed_at, last_failed_at, retry_count,
             next_retry_at, max_retries, resolved_at, resolution_notes,
-            resolved_by, final_status, provider_code, gateway_order_id,
-            correlation_id, is_retryable, context, created_at, updated_at
+            resolved_by, created_at, updated_at
         ) VALUES (
             :id, :payment_id, :classification, :failure_code, :failure_reason,
             :failure_metadata, :first_failed_at, :last_failed_at, :retry_count,
             :next_retry_at, :max_retries, :resolved_at, :resolution_notes,
-            :resolved_by, :final_status, :provider_code, :gateway_order_id,
-            :correlation_id, :is_retryable, :context, :created_at, :updated_at
+            :resolved_by, :created_at, :updated_at
         )';
 
         $params = [
@@ -130,14 +135,6 @@ final class FailureStateRepository implements FailureStateRepositoryContract
             'resolved_at' => $row['resolved_at'],
             'resolution_notes' => $row['resolution_notes'],
             'resolved_by' => $row['resolved_by'],
-            'final_status' => $row['final_status'],
-            'provider_code' => $row['provider_code'],
-            'gateway_order_id' => $row['gateway_order_id'],
-            'correlation_id' => $row['correlation_id'],
-            'is_retryable' => $row['is_retryable'] ? '1' : '0',
-            'context' => is_string($row['context'])
-                ? $row['context']
-                : json_encode($row['context'] ?? [], JSON_THROW_ON_ERROR),
             'created_at' => $row['created_at'],
             'updated_at' => $row['updated_at'],
         ];
@@ -152,6 +149,9 @@ final class FailureStateRepository implements FailureStateRepositoryContract
     {
         $row = $failureState->toArray();
 
+        // Same caveat as save() — see comment above. Update only the
+        // columns that exist in the current schema; extend when the
+        // schema agent adds the rest.
         $sql = 'UPDATE failure_states SET
             classification = :classification,
             failure_code = :failure_code,
@@ -165,12 +165,6 @@ final class FailureStateRepository implements FailureStateRepositoryContract
             resolved_at = :resolved_at,
             resolution_notes = :resolution_notes,
             resolved_by = :resolved_by,
-            final_status = :final_status,
-            provider_code = :provider_code,
-            gateway_order_id = :gateway_order_id,
-            correlation_id = :correlation_id,
-            is_retryable = :is_retryable,
-            context = :context,
             updated_at = :updated_at
         WHERE id = :id';
 
@@ -190,14 +184,6 @@ final class FailureStateRepository implements FailureStateRepositoryContract
             'resolved_at' => $row['resolved_at'],
             'resolution_notes' => $row['resolution_notes'],
             'resolved_by' => $row['resolved_by'],
-            'final_status' => $row['final_status'],
-            'provider_code' => $row['provider_code'],
-            'gateway_order_id' => $row['gateway_order_id'],
-            'correlation_id' => $row['correlation_id'],
-            'is_retryable' => $row['is_retryable'] ? '1' : '0',
-            'context' => is_string($row['context'])
-                ? $row['context']
-                : json_encode($row['context'] ?? [], JSON_THROW_ON_ERROR),
             'updated_at' => $row['updated_at'],
         ];
 

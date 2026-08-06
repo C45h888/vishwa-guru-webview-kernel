@@ -1,7 +1,7 @@
 <script lang="ts">
     import { Shield } from 'lucide-svelte';
 
-    const signals = ['80G Tax Benefit', 'Razorpay Secure', 'Registered Trust'];
+    const signals = ['Razorpay Secure', 'Registered Trust'];
 </script>
 
 <div class="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-sm text-muted-foreground">

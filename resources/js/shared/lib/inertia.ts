@@ -14,6 +14,12 @@ export interface SharedPageProps {
     appName: string;
     appUrl: string;
     authUser: AuthUser | null;
+    /**
+     * Razorpay environment: 'live' in production, 'test' in sandbox.
+     * Surfaced so the webview can gate "Test mode" copy in the donate
+     * flow without env access on the client.
+     */
+    razorpayMode: 'live' | 'test';
 }
 
 export interface PublicMediaProps {
@@ -195,10 +201,13 @@ export interface PaymentResultProps {
  * actually transitions through. Mirrors App\Payments\Domain\Enums\TransactionStatus.
  * `null` is the missing-state shape from PaymentStatusResource::missing().
  *
- * Cases not in the union (disputed, cancelled, expired) would only
- * appear on already-terminal states that the success page should not
- * be polling for; if they ever show up, the TS compiler will surface
- * the gap here.
+ * The union deliberately includes the "terminal failure" cases
+ * (`disputed`, `cancelled`, `expired`) that the success page handles
+ * defensively in Success.svelte::derivePollState — even though the
+ * poll is not expected to observe them, the type is widened so the
+ * defensive `s === 'disputed' || ...` arms compile cleanly. If the
+ * enum is later extended, the TS compiler will keep the union in
+ * sync at the matching-site.
  */
 export type PaymentStatusCase =
     | 'initialized'
@@ -210,6 +219,9 @@ export type PaymentStatusCase =
     | 'failed'
     | 'refunded'
     | 'partially_refunded'
+    | 'disputed'
+    | 'cancelled'
+    | 'expired'
     | null;
 
 /**
@@ -363,12 +375,55 @@ export interface AboutValueProps {
     image_file_id: string | null;
     alt_text: string | null;
     image: PublicMediaProps | null;
+    pillars: AboutPillarProps[];
+}
+
+export interface AboutPillarProps {
+    name: string;
+    description: string;
+    icon_key: string;
+}
+
+export interface AboutStoryProps {
+    eyebrow: string;
+    title: string;
+    body: string;
+    image_file_id: string | null;
+    alt_text: string | null;
+    image: PublicMediaProps | null;
+}
+
+export interface AboutStatProps {
+    number: string;
+    label: string;
+    description: string | null;
+}
+
+export interface AboutProgramProps {
+    eyebrow: string;
+    title: string;
+    body: string;
+    icon_key: string;
+}
+
+export interface AboutVisitProps {
+    eyebrow: string;
+    title: string;
+    body: string;
+    address: string;
+    timings: string;
+    phone: string;
+    dress_code: string;
+    map_url: string | null;
 }
 
 export interface AboutTimelineEntryProps {
     year: number;
     title: string;
     description: string;
+    image_file_id: string | null;
+    image_alt_text: string | null;
+    image: PublicMediaProps | null;
 }
 
 export interface AboutTrusteeProps {
@@ -388,9 +443,13 @@ export interface AboutDonateCtaProps {
 }
 
 export interface AboutPageContentProps {
-    version: 1;
+    version: 2;
     values: AboutValueProps;
+    story: AboutStoryProps;
+    stats: AboutStatProps[];
+    programs: AboutProgramProps[];
     timeline: AboutTimelineEntryProps[];
     trustees: AboutTrusteeProps[];
+    visit: AboutVisitProps;
     donate_cta: AboutDonateCtaProps;
 }

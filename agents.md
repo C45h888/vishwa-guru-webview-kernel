@@ -438,6 +438,23 @@ Both surfaces are gated behind a single canonical admin role (`'admin'`). One ad
   - NOT BUILT (and intentionally absent): register, forgot-password, reset-password, email-verification, confirm-password. Single canonical admin authenticates via env-driven credentials only.
   - Throttle: 5 failed attempts per email+IP per minute (Breeze canonical).
 
+## Pass 2 — Campaigns admin
+
+Lands in this pass. The two canonical admin capabilities on campaigns:
+
+  1. Create a new campaign (slug, title, description, cover image, target amount, dates, state).
+  2. Edit an existing campaign (same field set; slug uniqueness excludes the row being edited).
+
+Doctrine:
+
+  - No state machine. State is validated against `[draft, active, completed]` at the FormRequest boundary. No transitions are gated.
+  - Cover image upload is real: the admin form POSTs a file to `/admin/media/upload` which writes to `file_assets` on the `public` disk and returns the `file_asset_id`. Files dedupe by SHA-256.
+  - `created_by` / `updated_by` are stamped from the current admin user inside `CampaignAuthoringService`. Controllers never pass these.
+  - Slug uniqueness is enforced at the storage layer (partial unique index `campaigns_slug_live_idx`) and surfaced to the controller as `DuplicateCampaignSlugException`.
+  - Public campaigns surface (`state IN ('active','completed')`). Admin list surfaces ALL states including drafts.
+
+Public-site edit affordance: when `authUser.role === 'admin'`, the public Campaigns list + show pages render a floating pencil overlay on each card linking to the admin edit page. The overlay is a no-op for non-admin visitors — zero DOM impact. New-campaign pencil sits in the breadcrumb strip.
+
 ## Authorization model
 
   - Single role: `'admin'`. CHECK constraint on the table rejects any other value. Multi-role expansion is a follow-on migration, not a code redesign.
@@ -479,3 +496,38 @@ Every contribution made by an AI coding agent should leave the repository in a c
 The objective is not simply to generate code.
 
 The objective is to build a secure, reliable, and maintainable operational platform that faithfully supports the long-term needs of the temple trust while preserving the architectural integrity established by this repository.
+
+
+## Pass 3 — Events admin
+
+Lands in this pass. The two canonical admin capabilities on events:
+
+  1. Create a new event (slug, title, banner image, starts_at, ends_at, venue, state).
+  2. End an upcoming event — state `'published'` → `'completed'`, `completed_at` set to now. The event immediately moves to the past-events surface (`listPast`).
+
+Doctrine:
+
+  - No state machine. State is validated against `[draft, published, completed]` at the FormRequest boundary. Admin can transition any state to any other state via the regular edit path (including published → draft for unpublishing).
+  - Banner image upload is real: the admin form POSTs a file to `/admin/media/upload` which writes to `file_assets` on the `public` disk with `owner_type='event_cover'` and returns the `file_asset_id`. Files dedupe by SHA-256.
+  - `created_by` / `updated_by` are stamped from the current admin user inside `EventAuthoringService`. Controllers never pass these in.
+  - Slug uniqueness is enforced at the storage layer (partial unique index `events_slug_live_idx`) and surfaced to the controller as `DuplicateEventSlugException`.
+  - **End event** is a dedicated POST `/admin/events/{event}/end` endpoint (not a state-transition on the edit form) because it's the user-facing button that admins click to retire an event. Idempotent: an already-completed event's `completed_at` is preserved.
+  - Public events surface (`state IN ('published','completed')`). Admin list surfaces ALL states including drafts.
+
+Public-site edit affordance: when `authUser.role === 'admin'`, the public Events list cards + show pages render a floating pencil overlay linking to the admin edit page. The end-event button surfaces in the admin edit page with a confirmation modal — admin must explicitly confirm the state transition before the POST fires.
+
+
+
+## Pass 4 — Public-side events pencil + banner UI
+
+The Phase 4 admin kernel surfaces a floating pencil affordance on the public events surface so the canonical admin can edit from anywhere without bouncing back to /admin. Doctrine:
+
+  - Pencil overlays render only when `$page.props.authUser?.role === 'admin'`. Non-admin visitors see zero DOM impact.
+  - Pencil overlays are wired on:
+    1. The public event detail page hero image block (`/events/{slug}`)
+    2. The public event detail page related-event cards grid
+    3. The public events listing page breadcrumb strip ("New event" link)
+  - Each pencil links to `/admin/events/{id}/edit` (or `/admin/events/new` for the create affordance).
+  - The admin events form already supports a banner image upload via the shared `/admin/media/upload` endpoint. The public show page hydrates `event.banner_image` (resolved URL + alt) from `event.banner_file_id` via `PublicMediaPresentationService::enrich` in the controller. The DTO surface (`event.banner_image`) is consumed by `resources/js/domains/events/Show.svelte` via `<PublicMediaImage media={heroImage!} />`.
+  - Intentionally NOT in this pass: pencil on `EventsList` (custom date-block row layout, used on the home page), pencil on `EventsRow` (component is unused in the current codebase), pencil on `events/Journal.svelte` / `events/Article.svelte` (these are static past-article content).
+

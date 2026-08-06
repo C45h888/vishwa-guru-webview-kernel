@@ -385,4 +385,224 @@ final class EloquentEventRepository implements EventRepositoryContract
 
         return is_array($decoded) ? $decoded : [];
     }
+
+    /**
+     * Phase 4: Admin Kernel — authoring methods.
+     *
+     * Doctrine (mirrors the campaign authoring surface):
+     *   - Methods operate on the FULL row (no state filter) so the
+     *     admin can see/edit drafts. Auth is enforced at the controller
+     *     / middleware layer, NOT here.
+     *   - SQL is composed via PersistenceAdapterContract — same path
+     *     the read methods use.
+     *   - id, created_at, updated_at, deleted_at are managed by the
+     *     repository; callers should NOT set them.
+     */
+
+    public function findByIdIncludingDrafts(string $id): ?EventDetailDTO
+    {
+        $row = $this->fetchOne(
+            'SELECT '.self::COLUMNS.'
+             FROM   events
+             WHERE  id = :id
+               AND  deleted_at IS NULL
+             LIMIT  1',
+            ['id' => $id],
+        );
+
+        return $row === null ? null : $this->detailFromRow($row);
+    }
+
+    public function listAllIncludingDrafts(int $perPage, int $offset): array
+    {
+        $sql = 'SELECT '.self::COLUMNS.',
+                       COUNT(*) OVER () AS total_count
+                FROM   events
+                WHERE  deleted_at IS NULL
+                ORDER BY starts_at DESC, id ASC
+                LIMIT  :per_page OFFSET :offset';
+
+        $result = $this->adapter->query($sql, [
+            'per_page' => $perPage,
+            'offset'   => $offset,
+        ]);
+        if ($result->isFailure()) {
+            throw new \RuntimeException(
+                'EloquentEventRepository::listAllIncludingDrafts failed: '.($result->error() ?? 'unknown')
+            );
+        }
+
+        $rows = $result->value();
+        $total = isset($rows[0]) ? (int) ($rows[0]['total_count'] ?? 0) : 0;
+        $items = array_map(
+            fn (array $row): EventSummaryDTO => $this->summaryFromRow($row, new DateTimeImmutable()),
+            $rows,
+        );
+
+        return ['items' => $items, 'total' => $total];
+    }
+
+    public function create(array $data): EventDetailDTO
+    {
+        $now = (new \DateTimeImmutable())->format(DATE_ATOM);
+        $defaults = [
+            'id'            => (string) \Illuminate\Support\Str::ulid(),
+            'state'         => 'draft',
+            'is_featured'   => false,
+            'display_order' => 0,
+            'metadata'      => '{}',
+            'created_at'    => $now,
+            'updated_at'    => $now,
+        ];
+        $row = array_merge($defaults, $data);
+        if (is_array($row['metadata'] ?? null)) {
+            $row['metadata'] = json_encode($row['metadata'], JSON_THROW_ON_ERROR);
+        }
+
+        $sql = 'INSERT INTO events (
+                    id, slug, title, description, short_description,
+                    banner_file_id, starts_at, ends_at, timezone,
+                    venue, venue_address, state,
+                    published_at, completed_at, is_featured, display_order,
+                    metadata, created_by, updated_by, created_at, updated_at
+                ) VALUES (
+                    :id, :slug, :title, :description, :short_description,
+                    :banner_file_id, :starts_at, :ends_at, :timezone,
+                    :venue, :venue_address, :state,
+                    :published_at, :completed_at, :is_featured, :display_order,
+                    :metadata, :created_by, :updated_by, :created_at, :updated_at
+                ) RETURNING id';
+
+        $params = [
+            'id'                  => $row['id'],
+            'slug'                => (string) $row['slug'],
+            'title'               => (string) $row['title'],
+            'description'         => $row['description'] ?? null,
+            'short_description'   => $row['short_description'] ?? null,
+            'banner_file_id'      => $row['banner_file_id'] ?? null,
+            'starts_at'           => (string) $row['starts_at'],
+            'ends_at'             => $row['ends_at'] ?? null,
+            'timezone'            => (string) ($row['timezone'] ?? 'Asia/Kolkata'),
+            'venue'               => $row['venue'] ?? null,
+            'venue_address'       => $row['venue_address'] ?? null,
+            'state'               => (string) $row['state'],
+            'published_at'        => $row['published_at'] ?? null,
+            'completed_at'        => $row['completed_at'] ?? null,
+            'is_featured'         => self::toBool($row['is_featured'] ?? false) ? 1 : 0,
+            'display_order'       => (int) ($row['display_order'] ?? 0),
+            'metadata'            => $row['metadata'],
+            'created_by'          => $row['created_by'] ?? null,
+            'updated_by'          => $row['updated_by'] ?? null,
+            'created_at'          => $row['created_at'],
+            'updated_at'          => $row['updated_at'],
+        ];
+
+        $result = $this->adapter->execute($sql, $params);
+        if ($result->isFailure()) {
+            throw new \RuntimeException(
+                'EloquentEventRepository::create failed: '.($result->error() ?? 'unknown')
+            );
+        }
+
+        $created = $this->findByIdIncludingDrafts((string) $row['id']);
+        if ($created === null) {
+            throw new \RuntimeException(
+                'EloquentEventRepository::create post-insert read returned null for id '.$row['id']
+            );
+        }
+
+        return $created;
+    }
+
+    public function update(string $id, array $data): ?EventDetailDTO
+    {
+        if (! $this->findByIdIncludingDrafts($id)) {
+            return null;
+        }
+
+        $allowed = [
+            'slug', 'title', 'description', 'short_description',
+            'banner_file_id', 'starts_at', 'ends_at', 'timezone',
+            'venue', 'venue_address', 'state',
+            'published_at', 'completed_at', 'is_featured', 'display_order',
+            'metadata', 'updated_by',
+        ];
+        $diff = array_intersect_key($data, array_flip($allowed));
+        if ($diff === []) {
+            return $this->findByIdIncludingDrafts($id);
+        }
+
+        $diff['updated_at'] = (new \DateTimeImmutable())->format(DATE_ATOM);
+        if (isset($diff['metadata']) && is_array($diff['metadata'])) {
+            $diff['metadata'] = json_encode($diff['metadata'], JSON_THROW_ON_ERROR);
+        }
+        if (array_key_exists('is_featured', $diff)) {
+            $diff['is_featured'] = self::toBool($diff['is_featured']) ? 1 : 0;
+        }
+
+        $assignments = [];
+        $params = ['id' => $id];
+        foreach ($diff as $col => $val) {
+            $assignments[] = "$col = :$col";
+            $params[$col] = $val;
+        }
+        $sql = 'UPDATE events SET '.implode(', ', $assignments).' WHERE id = :id AND deleted_at IS NULL';
+
+        $result = $this->adapter->execute($sql, $params);
+        if ($result->isFailure()) {
+            throw new \RuntimeException(
+                'EloquentEventRepository::update failed: '.($result->error() ?? 'unknown')
+            );
+        }
+
+        return $this->findByIdIncludingDrafts($id);
+    }
+
+    public function end(string $id): ?EventDetailDTO
+    {
+        $existing = $this->findByIdIncludingDrafts($id);
+        if ($existing === null) {
+            return null;
+        }
+
+        // Idempotent: don't overwrite completed_at if already set.
+        if ($existing->state === 'completed') {
+            return $existing;
+        }
+
+        $now = (new \DateTimeImmutable())->format(DATE_ATOM);
+        $sql = "UPDATE events
+                SET    state = 'completed',
+                       completed_at = :completed_at,
+                       updated_at = :updated_at
+                WHERE  id = :id AND deleted_at IS NULL";
+
+        $result = $this->adapter->execute($sql, [
+            'completed_at' => $now,
+            'updated_at'   => $now,
+            'id'           => $id,
+        ]);
+        if ($result->isFailure()) {
+            throw new \RuntimeException(
+                'EloquentEventRepository::end failed: '.($result->error() ?? 'unknown')
+            );
+        }
+
+        return $this->findByIdIncludingDrafts($id);
+    }
+
+    private static function toBool(mixed $value): bool
+    {
+        if (is_bool($value)) {
+            return $value;
+        }
+        if (is_int($value)) {
+            return $value !== 0;
+        }
+        if (is_string($value)) {
+            return in_array(strtolower($value), ['1', 'true', 't', 'yes'], true);
+        }
+
+        return false;
+    }
 }

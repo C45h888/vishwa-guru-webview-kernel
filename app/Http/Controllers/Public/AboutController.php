@@ -78,6 +78,22 @@ final class AboutController
             );
         }
 
+        if (is_array($aboutContent) && isset($aboutContent['story']) && is_array($aboutContent['story'])) {
+            $aboutContent['story'] = $media->enrich(
+                $aboutContent['story'],
+                'image_file_id',
+                'image',
+            );
+        }
+
+        if (is_array($aboutContent) && isset($aboutContent['timeline']) && is_array($aboutContent['timeline'])) {
+            $aboutContent['timeline'] = $media->enrichMany(
+                $aboutContent['timeline'],
+                'image_file_id',
+                'image',
+            );
+        }
+
         return [
             'page' => $rendered->page->toArray(),
             'aboutContent' => $aboutContent,

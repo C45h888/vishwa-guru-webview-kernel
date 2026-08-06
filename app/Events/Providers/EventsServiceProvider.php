@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace App\Events\Providers;
 
+use App\Events\Contracts\EventAuthoringContract;
 use App\Events\Contracts\EventsQueryContract;
 use App\Events\Domain\Repositories\EventRepositoryContract;
 use App\Events\EventsModule;
 use App\Events\Infrastructure\Repositories\EloquentEventRepository;
+use App\Events\Services\EventAuthoringService;
+use App\Events\Services\EventBannerUploadService;
 use App\Events\Services\EventsQueryService;
 use App\Persistence\Contracts\RepositoryRegistryContract;
 use Illuminate\Support\ServiceProvider;
@@ -48,6 +51,18 @@ final class EventsServiceProvider extends ServiceProvider
             EventsQueryContract::class,
             EventsQueryService::class,
         );
+
+        // ════════════════════════════════════════════════════════════════
+        // AXIS H — Phase 4: Admin Kernel authoring surface
+        //   - EventAuthoringContract → EventAuthoringService
+        //   - EventBannerUploadService (depends on FileAssetRepositoryContract,
+        //     which is resolved from the Payments kernel)
+        // ════════════════════════════════════════════════════════════════
+        $app->bind(
+            EventAuthoringContract::class,
+            EventAuthoringService::class,
+        );
+        $app->singleton(EventBannerUploadService::class);
     }
 
     public function boot(): void
@@ -71,6 +86,10 @@ final class EventsServiceProvider extends ServiceProvider
             // Service + public contract
             EventsQueryService::class,
             EventsQueryContract::class,
+            // Phase 4: Admin Kernel authoring surface
+            EventAuthoringContract::class,
+            EventAuthoringService::class,
+            EventBannerUploadService::class,
             // Module declaration (consumed by Shared's discovery)
             EventsModule::class,
             // Repository registry contract (we depend on it in boot())

@@ -26,7 +26,7 @@ final class AuditEventRepositoryTest extends InfrastructureTestCase
         $eventId = $this->repo->append(
             eventType: 'donation.initiated',
             entityType: 'donation',
-            entityId: 'donation_01HXYZ123456789',
+            entityId: 'donation_01ARZ3NDEKTSV4RRFFQ69G5FAV',
             actor: 'user_01ABC',
             correlationId: 'req_abc123',
             previousState: null,
@@ -38,14 +38,14 @@ final class AuditEventRepositoryTest extends InfrastructureTestCase
         $this->assertNotEmpty($eventId);
         $this->assertStringStartsWith('aud_', $eventId);
 
-        $events = $this->repo->findByEntity('donation', 'donation_01HXYZ123456789');
+        $events = $this->repo->findByEntity('donation', 'donation_01ARZ3NDEKTSV4RRFFQ69G5FAV');
         $this->assertCount(1, $events);
 
         $event = $events[0];
         $this->assertSame($eventId, $event['id']);
         $this->assertSame('donation.initiated', $event['action']);
         $this->assertSame('donation', $event['entity_type']);
-        $this->assertSame('donation_01HXYZ123456789', $event['entity_id']);
+        $this->assertSame('donation_01ARZ3NDEKTSV4RRFFQ69G5FAV', $event['entity_id']);
         $this->assertSame('user_01ABC', $event['actor_type']);
         $this->assertSame('req_abc123', $event['request_id']);
         // metadata should be decoded
@@ -58,13 +58,13 @@ final class AuditEventRepositoryTest extends InfrastructureTestCase
         $this->repo->append(
             eventType: 'payment.authorized',
             entityType: 'payment',
-            entityId: 'payment_01HXYZ',
+            entityId: 'payment_01ARZ3NDEKTSV4RRFFQ69G5FAV',
             correlationId: 'req_pay_001',
         );
         $this->repo->append(
             eventType: 'payment.captured',
             entityType: 'payment',
-            entityId: 'payment_01HXYZ',
+            entityId: 'payment_01ARZ3NDEKTSV4RRFFQ69G5FAV',
             correlationId: 'req_pay_001',
         );
 
@@ -129,11 +129,11 @@ final class AuditEventRepositoryTest extends InfrastructureTestCase
         $eventId = $this->repo->append(
             eventType: 'payment.failed',
             entityType: 'payment',
-            entityId: 'payment_01HNULL',
+            entityId: 'payment_01ARZ3NDEKTSV4RRFFQ69G5FAW',
             actor: null,
         );
 
-        $events = $this->repo->findByEntity('payment', 'payment_01HNULL');
+        $events = $this->repo->findByEntity('payment', 'payment_01ARZ3NDEKTSV4RRFFQ69G5FAW');
         $this->assertSame('system', $events[0]['actor_type']);
     }
 }

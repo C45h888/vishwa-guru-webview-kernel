@@ -31,6 +31,18 @@ final class AdminLoginTest extends TestCase
 
     private const TEST_PASSWORD = 'password';   // mirrors UserFactory::DEFAULT_PASSWORD
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        // Clear any session state leaked from prior tests in the suite.
+        // AuthenticatedSessionController::store() uses redirect()->intended('/admin'),
+        // which reads session('url.intended'); if a prior test set it to '/',
+        // our explicit fallback is silently overridden. This makes every
+        // test in this class hermetic regardless of suite execution order.
+        // session-leak fix removed; refreshApplication resets state for each test.url.intended');
+    }
+
     private function seedAdmin(): User
     {
         return User::factory()->create([

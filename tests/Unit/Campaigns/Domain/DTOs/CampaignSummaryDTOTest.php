@@ -14,7 +14,7 @@ final class CampaignSummaryDTOTest extends TestCase
     private function valid(): CampaignSummaryDTO
     {
         return new CampaignSummaryDTO(
-            id: 'campaign_01HXYZ',
+            id: 'campaign_01ARZ3NDEKTSV4RRFFQ69G5FAV',
             slug: 'annual-fund-2026',
             title: 'Annual Fund 2026',
             shortDescription: 'Help us reach this year\'s goal.',
@@ -32,7 +32,7 @@ final class CampaignSummaryDTOTest extends TestCase
     public function testConstructionWithValidArgs(): void
     {
         $dto = $this->valid();
-        $this->assertSame('campaign_01HXYZ', $dto->id);
+        $this->assertSame('campaign_01ARZ3NDEKTSV4RRFFQ69G5FAV', $dto->id);
         $this->assertSame('annual-fund-2026', $dto->slug);
         $this->assertSame('Annual Fund 2026', $dto->title);
         $this->assertSame('INR', $dto->currencyCode);
@@ -129,7 +129,7 @@ final class CampaignSummaryDTOTest extends TestCase
             ],
             array_keys($arr),
         );
-        $this->assertSame('campaign_01HXYZ', $arr['id']);
+        $this->assertSame('campaign_01ARZ3NDEKTSV4RRFFQ69G5FAV', $arr['id']);
         $this->assertSame('INR', $arr['currency_code']);
         $this->assertSame(5_000_000, $arr['target_amount_minor']);
         $this->assertTrue($arr['is_featured']);

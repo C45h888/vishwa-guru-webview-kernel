@@ -6,7 +6,7 @@
         "prebuild": "echo 'prebuild skipped: inertia:dump-types is Laravel 11 only'",
         "build": "vite build",
         "build:prod": "vite build --mode production",
-        "check": "svelte-check --tsconfig ./tsconfig.json"
+        "check": "svelte-check --tsconfig ./tsconfig.json --config ./vite.config.ts"
     },
     "devDependencies": {
         "@inertiajs/svelte": "^2.1.0",

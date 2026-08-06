@@ -253,4 +253,189 @@ final class EloquentCampaignRepository implements CampaignRepositoryContract
 
         return is_array($decoded) ? $decoded : [];
     }
+
+    /**
+     * Phase 4: Admin Kernel — authoring methods.
+     *
+     * Doctrine:
+     *   - Methods operate on the FULL row (no state filter) so the
+     *     admin can see/edit drafts. Auth is enforced at the controller
+     *     / middleware layer, NOT here.
+     *   - SQL is composed via PersistenceAdapterContract — same path
+     *     the read methods use.
+     *   - id, created_at, updated_at, deleted_at are managed by the
+     *     repository; callers should NOT set them.
+     */
+
+    public function findByIdIncludingDrafts(string $id): ?CampaignDetailDTO
+    {
+        $row = $this->fetchOne(
+            'SELECT '.self::COLUMNS.'
+             FROM   campaigns
+             WHERE  id = :id
+               AND  deleted_at IS NULL
+             LIMIT  1',
+            ['id' => $id],
+        );
+
+        return $row === null ? null : $this->detailFromRow($row);
+    }
+
+    public function listAllIncludingDrafts(int $perPage, int $offset): array
+    {
+        $sql = 'SELECT '.self::COLUMNS.',
+                       COUNT(*) OVER () AS total_count
+                FROM   campaigns
+                WHERE  deleted_at IS NULL
+                ORDER BY updated_at DESC, id ASC
+                LIMIT  :per_page OFFSET :offset';
+
+        $result = $this->adapter->query($sql, [
+            'per_page' => $perPage,
+            'offset'   => $offset,
+        ]);
+        if ($result->isFailure()) {
+            throw new RuntimeException(
+                'EloquentCampaignRepository::listAllIncludingDrafts failed: '.($result->error() ?? 'unknown')
+            );
+        }
+
+        $rows = $result->value();
+        $total = isset($rows[0]) ? (int) ($rows[0]['total_count'] ?? 0) : 0;
+        $items = array_map(
+            fn (array $row): \App\Campaigns\Domain\DTOs\CampaignSummaryDTO => $this->summaryFromRow($row),
+            $rows,
+        );
+
+        return ['items' => $items, 'total' => $total];
+    }
+
+    public function create(array $data): CampaignDetailDTO
+    {
+        $now = (new \DateTimeImmutable())->format(DATE_ATOM);
+        $defaults = [
+            'id'                 => (string) \Illuminate\Support\Str::ulid(),
+            'state'              => 'draft',
+            'is_featured'        => false,
+            'display_order'      => 0,
+            'metadata'           => '{}',
+            'created_at'         => $now,
+            'updated_at'         => $now,
+        ];
+        $row = array_merge($defaults, $data);
+        if (is_array($row['metadata'] ?? null)) {
+            $row['metadata'] = json_encode($row['metadata'], JSON_THROW_ON_ERROR);
+        }
+
+        $sql = 'INSERT INTO campaigns (
+                    id, slug, title, description, short_description,
+                    category, currency_code, target_amount_minor,
+                    state, starts_at, ends_at, display_order,
+                    is_featured, cover_image_file_id, metadata,
+                    created_by, updated_by, created_at, updated_at
+                ) VALUES (
+                    :id, :slug, :title, :description, :short_description,
+                    :category, :currency_code, :target_amount_minor,
+                    :state, :starts_at, :ends_at, :display_order,
+                    :is_featured, :cover_image_file_id, :metadata,
+                    :created_by, :updated_by, :created_at, :updated_at
+                ) RETURNING id';
+
+        $params = [
+            'id'                   => $row['id'],
+            'slug'                 => (string) $row['slug'],
+            'title'                => (string) $row['title'],
+            'description'          => $row['description'] ?? null,
+            'short_description'    => $row['short_description'] ?? null,
+            'category'             => (string) $row['category'],
+            'currency_code'        => (string) $row['currency_code'],
+            'target_amount_minor'  => $row['target_amount_minor'] ?? null,
+            'state'                => (string) $row['state'],
+            'starts_at'            => $row['starts_at'] ?? null,
+            'ends_at'              => $row['ends_at'] ?? null,
+            'display_order'        => (int) ($row['display_order'] ?? 0),
+            'is_featured'          => self::toBool($row['is_featured'] ?? false) ? 1 : 0,
+            'cover_image_file_id'  => $row['cover_image_file_id'] ?? null,
+            'metadata'             => $row['metadata'],
+            'created_by'           => $row['created_by'] ?? null,
+            'updated_by'           => $row['updated_by'] ?? null,
+            'created_at'           => $row['created_at'],
+            'updated_at'           => $row['updated_at'],
+        ];
+
+        $result = $this->adapter->execute($sql, $params);
+        if ($result->isFailure()) {
+            throw new RuntimeException(
+                'EloquentCampaignRepository::create failed: '.($result->error() ?? 'unknown')
+            );
+        }
+
+        $created = $this->findByIdIncludingDrafts((string) $row['id']);
+        if ($created === null) {
+            throw new RuntimeException(
+                'EloquentCampaignRepository::create post-insert read returned null for id '.$row['id']
+            );
+        }
+
+        return $created;
+    }
+
+    public function update(string $id, array $data): ?CampaignDetailDTO
+    {
+        if (! $this->findByIdIncludingDrafts($id)) {
+            return null;
+        }
+
+        $allowed = [
+            'slug', 'title', 'description', 'short_description',
+            'category', 'currency_code', 'target_amount_minor',
+            'state', 'starts_at', 'ends_at', 'display_order',
+            'is_featured', 'cover_image_file_id', 'metadata',
+            'updated_by',
+        ];
+        $diff = array_intersect_key($data, array_flip($allowed));
+        if ($diff === []) {
+            return $this->findByIdIncludingDrafts($id);
+        }
+
+        $diff['updated_at'] = (new \DateTimeImmutable())->format(DATE_ATOM);
+        if (isset($diff['metadata']) && is_array($diff['metadata'])) {
+            $diff['metadata'] = json_encode($diff['metadata'], JSON_THROW_ON_ERROR);
+        }
+        if (array_key_exists('is_featured', $diff)) {
+            $diff['is_featured'] = self::toBool($diff['is_featured']) ? 1 : 0;
+        }
+
+        $assignments = [];
+        $params = ['id' => $id];
+        foreach ($diff as $col => $val) {
+            $assignments[] = "$col = :$col";
+            $params[$col] = $val;
+        }
+        $sql = 'UPDATE campaigns SET '.implode(', ', $assignments).' WHERE id = :id AND deleted_at IS NULL';
+
+        $result = $this->adapter->execute($sql, $params);
+        if ($result->isFailure()) {
+            throw new RuntimeException(
+                'EloquentCampaignRepository::update failed: '.($result->error() ?? 'unknown')
+            );
+        }
+
+        return $this->findByIdIncludingDrafts($id);
+    }
+
+    private static function toBool(mixed $value): bool
+    {
+        if (is_bool($value)) {
+            return $value;
+        }
+        if (is_int($value)) {
+            return $value !== 0;
+        }
+        if (is_string($value)) {
+            return in_array(strtolower($value), ['1', 'true', 't', 'yes'], true);
+        }
+
+        return false;
+    }
 }

@@ -198,7 +198,7 @@ final class Receipt implements EntityContract
             'id', 'donation_id', 'payment_id', 'campaign_id',
             'receipt_number', 'campaign_title_snapshot', 'donor_name',
             'amount_minor', 'currency_code', 'content_hash',
-            'state', 'generated_at', 'delivery_status',
+            'state', 'generated_at',
             'created_at', 'updated_at',
         ];
         foreach ($required as $key) {
@@ -206,6 +206,21 @@ final class Receipt implements EntityContract
                 throw new InvalidArgumentException("Receipt row missing required key: {$key}");
             }
         }
+
+        // The DB schema column is `certificate_80g_number`; the entity
+        // uses the older `tax_80g_certificate_number` key. Accept either
+        // so direct callers (entity-shaped rows) and repository round-trips
+        // (DB-shaped rows with the new column name) both work.
+        $certKey = array_key_exists('tax_80g_certificate_number', $row)
+            ? 'tax_80g_certificate_number'
+            : 'certificate_80g_number';
+
+        // The DB schema currently has no `delivery_status` column; the
+        // entity tracks it as a separate concept from `state`. When the
+        // row doesn't carry it (current schema), fall back to PENDING so
+        // round-trips through the repository still hydrate. The MCP
+        // schema agent is responsible for adding the column.
+        $deliveryStatus = (string) ($row['delivery_status'] ?? self::DELIVERY_PENDING);
 
         return new self(
             id: EntityId::fromString($row['id']),
@@ -225,14 +240,14 @@ final class Receipt implements EntityContract
             amountInWords: isset($row['amount_in_words']) ? (string) $row['amount_in_words'] : null,
             isTaxDeductible: (bool) ($row['is_tax_deductible'] ?? true),
             tax80gEligible: (bool) ($row['tax_80g_eligible'] ?? false),
-            tax80gCertificateNumber: isset($row['tax_80g_certificate_number'])
-                ? (string) $row['tax_80g_certificate_number']
+            tax80gCertificateNumber: isset($row[$certKey])
+                ? (string) $row[$certKey]
                 : null,
             contentHash: (string) $row['content_hash'],
             state: (string) $row['state'],
             generatedAt: self::parseDate($row['generated_at']) ?? new DateTimeImmutable(),
             deliveredAt: self::parseDate($row['delivered_at'] ?? null),
-            deliveryStatus: (string) ($row['delivery_status'] ?? self::DELIVERY_PENDING),
+            deliveryStatus: $deliveryStatus,
             deliveryChannel: isset($row['delivery_channel']) ? (string) $row['delivery_channel'] : null,
             deliveryMetadata: self::decodeJson($row['delivery_metadata'] ?? '{}'),
             receiptFileId: isset($row['receipt_file_id']) && $row['receipt_file_id'] !== null

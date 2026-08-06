@@ -8,6 +8,7 @@ use App\Payments\Domain\Entities\Donation;
 use App\Payments\Domain\Entities\Payment;
 use App\Payments\Domain\Entities\Receipt;
 use App\Payments\Domain\Enums\Currency;
+use App\Payments\Domain\Enums\PaymentProvider;
 use App\Payments\Domain\Enums\TransactionStatus;
 use App\Payments\Infrastructure\Receipts\ReceiptFormatter;
 use App\Persistence\ValueObjects\EntityId;
@@ -174,15 +175,14 @@ class ReceiptFormatterTest extends TestCase
 
     private function makePayment(): Payment
     {
-        return Payment::create(
+        return Payment::initialize(
             donationId: EntityId::generate('donation'),
-            gatewayTransactionId: 'txn_123',
+            providerCode: PaymentProvider::RAZORPAY,
             amountMinor: 1_23_456_00,
             currency: Currency::INR,
-            status: TransactionStatus::CAPTURED,
-            gatewayCode: 'razorpay',
+            idempotencyKey: 'txn_123',
             metadata: [],
-        );
+        )->withChanges(['status' => TransactionStatus::CAPTURED->value]);
     }
 
     private function makeDonation(): Donation

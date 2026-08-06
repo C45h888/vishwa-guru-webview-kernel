@@ -13,7 +13,7 @@ use App\Runtime\Failure\Handlers\ProbeFailureHandler;
 use App\Runtime\Failure\StateMachines\FailureStateMachine;
 use App\Runtime\Failure\ValueObjects\FailureRecord;
 use App\Shared\Support\Clock;
-use App\Shared\Support\Identifier;
+use App\Shared\ValueObjects\Identifier;
 use DateTimeImmutable;
 use DateTimeZone;
 use PHPUnit\Framework\Attributes\Test;

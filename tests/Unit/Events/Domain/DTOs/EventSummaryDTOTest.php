@@ -13,7 +13,7 @@ final class EventSummaryDTOTest extends TestCase
     public function testConstructionWithValidArgs(): void
     {
         $dto = new EventSummaryDTO(
-            id: 'event_01HXYZ',
+            id: 'event_01ARZ3NDEKTSV4RRFFQ69G5FAV',
             slug: 'annual-puja-2026',
             title: 'Annual Puja 2026',
             shortDescription: 'Join us for the annual puja.',
@@ -27,7 +27,7 @@ final class EventSummaryDTOTest extends TestCase
             isUpcoming: true,
             bannerFileId: 'file_asset_01HBanner',
         );
-        $this->assertSame('event_01HXYZ', $dto->id);
+        $this->assertSame('event_01ARZ3NDEKTSV4RRFFQ69G5FAV', $dto->id);
         $this->assertSame('Asia/Kolkata', $dto->timezone);
         $this->assertTrue($dto->isFeatured);
         $this->assertTrue($dto->isUpcoming);

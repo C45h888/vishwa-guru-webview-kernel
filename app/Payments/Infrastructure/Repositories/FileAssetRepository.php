@@ -60,7 +60,7 @@ final class FileAssetRepository implements FileAssetRepositoryContract
             'is_archived'       => (int) ($row['is_archived'] ?? 0),
             'archived_at'       => $row['archived_at'] ?? null,
             'metadata'          => is_array($row['metadata'] ?? null)
-                ? json_encode($row['metadata'])
+                ? json_encode($row['metadata'], JSON_THROW_ON_ERROR)
                 : ($row['metadata'] ?? '{}'),
             'uploaded_at'       => $row['uploaded_at'],
             'created_at'        => $row['created_at'],

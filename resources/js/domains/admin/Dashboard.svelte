@@ -3,28 +3,54 @@
      * Dashboard — post-login landing for the canonical admin.
      *
      * Doctrine (AGENTS.md §"Phase 4: Admin Kernel"):
-     *   - Confirms the auth loop works end-to-end: user lands here
-     *     after /login, sees their name + role, and has two CTAs
-     *     into the future authoring surfaces (Pass 2/3).
-     *   - Stats are placeholders in Pass 1. Pass 2 will populate
-     *     `campaigns_count`; Pass 3 will populate `events_count` +
-     *     `upcoming_events`. The Svelte component doesn't need to
-     *     change shape — it already handles `null` gracefully.
+     *   - Confirms the auth loop works end-to-end.
+     *   - Pass 2 surfaces real campaign count + featured campaigns.
+     *   - Pass 3 will populate events_count + upcoming_events.
      */
     import AdminLayout from '$shared/components/AdminLayout.svelte';
+    import { Button } from '$shared/ui/button';
+    import { PlusCircle, CalendarDays } from 'lucide-svelte';
     import type { PageComponentProps } from '$shared/lib/inertia';
 
     type Stats = {
         campaigns_count: number | null;
         events_count: number | null;
-        upcoming_events: Array<{ id: string; title: string }>;
+        upcoming_events: Array<{
+            id: string;
+            slug: string;
+            title: string;
+            starts_at: string;
+            timezone: string;
+            venue: string | null;
+        }>;
+    };
+
+    type CampaignSummary = {
+        id: string;
+        slug: string;
+        title: string;
+        state: string;
+        cover_image_file_id: string | null;
     };
 
     type Props = PageComponentProps<{
         stats: Stats;
+        featured_campaigns: CampaignSummary[];
     }>;
 
-    let { appName, stats }: Props = $props();
+    let { appName, stats, featured_campaigns }: Props = $props();
+
+    function formatDate(iso: string, tz: string): string {
+        try {
+            return new Intl.DateTimeFormat('en-IN', {
+                dateStyle: 'medium',
+                timeStyle: 'short',
+                timeZone: tz || 'Asia/Kolkata',
+            }).format(new Date(iso));
+        } catch {
+            return iso;
+        }
+    }
 </script>
 
 <AdminLayout {appName}>
@@ -49,7 +75,7 @@
                     {stats.campaigns_count ?? '—'}
                 </p>
                 <p class="mt-1 text-xs text-muted-foreground">
-                    Live count arrives in Pass 2.
+                    Including drafts and completed campaigns.
                 </p>
             </div>
 
@@ -63,20 +89,87 @@
                     {stats.events_count ?? '—'}
                 </p>
                 <p class="mt-1 text-xs text-muted-foreground">
-                    Live count + upcoming list arrive in Pass 3.
+                    Including drafts and completed events.
                 </p>
             </div>
         </div>
 
-        <div
-            class="rounded-lg border border-dashed border-border bg-card/50 p-5 text-sm text-muted-foreground"
-        >
-            <p>
-                This is the Pass 1 dashboard — proves the admin auth loop
-                works end-to-end (login → middleware → role check →
-                landing). The Campaigns and Events authoring surfaces are
-                wired in subsequent passes.
-            </p>
+        {#if stats.upcoming_events.length > 0}
+            <div class="rounded-lg border border-border bg-card p-5">
+                <div class="mb-4 flex items-center justify-between">
+                    <p class="text-sm font-semibold">Upcoming events</p>
+                    <a
+                        href="/admin/events"
+                        class="text-xs text-muted-foreground hover:text-foreground"
+                    >
+                        View all →
+                    </a>
+                </div>
+                <div class="space-y-2">
+                    {#each stats.upcoming_events as e (e.id)}
+                        <a
+                            href="/admin/events/{e.id}/edit"
+                            class="flex items-center justify-between rounded-md border border-border bg-background p-3 hover:bg-muted/50"
+                        >
+                            <div class="flex items-center gap-3 min-w-0">
+                                <CalendarDays
+                                    class="h-4 w-4 shrink-0 text-primary"
+                                    aria-hidden="true"
+                                />
+                                <div class="min-w-0">
+                                    <p class="truncate font-medium">{e.title}</p>
+                                    {#if e.venue}
+                                        <p class="text-xs text-muted-foreground">
+                                            {e.venue}
+                                        </p>
+                                    {/if}
+                                </div>
+                            </div>
+                            <span class="shrink-0 text-xs text-muted-foreground">
+                                {formatDate(e.starts_at, e.timezone)}
+                            </span>
+                        </a>
+                    {/each}
+                </div>
+            </div>
+        {/if}
+
+        {#if featured_campaigns.length > 0}
+            <div class="rounded-lg border border-border bg-card p-5">
+                <div class="mb-4 flex items-center justify-between">
+                    <p class="text-sm font-semibold">Featured campaigns</p>
+                    <a
+                        href="/admin/campaigns"
+                        class="text-xs text-muted-foreground hover:text-foreground"
+                    >
+                        View all →
+                    </a>
+                </div>
+                <div class="space-y-2">
+                    {#each featured_campaigns as c (c.id)}
+                        <a
+                            href="/admin/campaigns/{c.id}/edit"
+                            class="flex items-center justify-between rounded-md border border-border bg-background p-3 hover:bg-muted/50"
+                        >
+                            <span class="font-medium">{c.title}</span>
+                            <span class="text-xs text-muted-foreground">
+                                {c.state} · /{c.slug}
+                            </span>
+                        </a>
+                    {/each}
+                </div>
+            </div>
+        {/if}
+
+        <div class="flex items-center gap-3">
+            <Button href="/admin/campaigns/new">
+                <PlusCircle class="h-4 w-4" />
+                <span>New campaign</span>
+            </Button>
+            <Button href="/admin/events/new" variant="outline">
+                <CalendarDays class="h-4 w-4" />
+                <span>New event</span>
+            </Button>
         </div>
     </div>
 </AdminLayout>

@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { router } from '@inertiajs/svelte';
+    import { router, page } from '@inertiajs/svelte';
     import PublicLayout from '$shared/components/PublicLayout.svelte';
     import MandalaDecoration from '$shared/components/MandalaDecoration.svelte';
     import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '$shared/ui/card';
@@ -12,6 +12,11 @@
         CampaignSummaryProps,
         AppPageProps,
     } from '$shared/lib/inertia';
+
+    // Razorpay environment: shared via HandleInertiaRequests. When 'test',
+    // the donate flow surfaces a "Test mode" badge so anyone in the
+    // sandbox knows not to use real card details. Production strips it.
+    const isTestMode = $derived($page.props.razorpayMode === 'test');
 
     let {
         campaigns,
@@ -177,8 +182,9 @@
                     <p
                         class="max-w-md text-base leading-relaxed text-muted-foreground lg:text-lg"
                     >
-                        Your contribution goes directly to the chosen campaign
-                        via Razorpay.
+                        Your contribution supports the current capital
+                        project — acquiring the land on which the Gaushala
+                        and the Shiva temple will stand.
                     </p>
                     <div
                         class="flex items-center gap-2 pt-2 text-xs text-muted-foreground"
@@ -187,7 +193,10 @@
                             class="h-4 w-4 text-primary/70"
                             aria-hidden="true"
                         />
-                        <span>Secure payment · Test mode · 80G eligible</span>
+                        <span>
+                            Secure payment via Razorpay{#if isTestMode}
+                                · <span class="font-semibold text-primary">Test mode</span>{/if}
+                        </span>
                     </div>
                 </header>
 
@@ -237,8 +246,8 @@
                                 <CardHeader>
                                     <CardTitle>Amount</CardTitle>
                                     <CardDescription>
-                                        Charged in {defaultCurrency} via
-                                        Razorpay test mode.
+                                        Charged in {defaultCurrency} via Razorpay{#if isTestMode}
+                                            (sandbox){/if}.
                                     </CardDescription>
                                 </CardHeader>
                                 <CardContent class="space-y-3">
@@ -334,7 +343,8 @@
                                 class="flex items-center justify-between gap-3"
                             >
                                 <p class="text-xs text-muted-foreground">
-                                    Powered by Razorpay · Test mode
+                                    Powered by Razorpay{#if isTestMode}
+                                        · <span class="font-semibold">Test mode</span>{/if}
                                 </p>
                                 <Button type="submit" disabled={submitting}>
                                     <Heart

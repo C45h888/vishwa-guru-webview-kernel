@@ -5,9 +5,12 @@ declare(strict_types=1);
 namespace App\Campaigns\Providers;
 
 use App\Campaigns\CampaignsModule;
+use App\Campaigns\Contracts\CampaignAuthoringContract;
 use App\Campaigns\Contracts\CampaignsQueryContract;
 use App\Campaigns\Domain\Repositories\CampaignRepositoryContract;
 use App\Campaigns\Infrastructure\Repositories\EloquentCampaignRepository;
+use App\Campaigns\Services\CampaignAuthoringService;
+use App\Campaigns\Services\CampaignCoverUploadService;
 use App\Campaigns\Services\CampaignsQueryService;
 use App\Persistence\Contracts\RepositoryRegistryContract;
 use Illuminate\Support\ServiceProvider;
@@ -54,6 +57,19 @@ final class CampaignsServiceProvider extends ServiceProvider
             CampaignsQueryContract::class,
             CampaignsQueryService::class,
         );
+
+        // ════════════════════════════════════════════════════════════════
+        // AXIS H — Phase 4: Admin Kernel authoring surface
+        //   - CampaignAuthoringContract → CampaignAuthoringService
+        //   - CampaignCoverUploadService (depends on FileAssetRepositoryContract,
+        //     PersistenceAdapterContract — both resolved from the Payments +
+        //     Persistence kernels respectively)
+        // ════════════════════════════════════════════════════════════════
+        $app->bind(
+            CampaignAuthoringContract::class,
+            CampaignAuthoringService::class,
+        );
+        $app->singleton(CampaignCoverUploadService::class);
     }
 
     public function boot(): void
@@ -81,6 +97,10 @@ final class CampaignsServiceProvider extends ServiceProvider
             // Service + public contract
             CampaignsQueryService::class,
             CampaignsQueryContract::class,
+            // Phase 4: Admin Kernel authoring surface
+            CampaignAuthoringContract::class,
+            CampaignAuthoringService::class,
+            CampaignCoverUploadService::class,
             // Module declaration (consumed by Shared's discovery)
             CampaignsModule::class,
             // Repository registry contract (we depend on it in boot())

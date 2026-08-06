@@ -122,14 +122,9 @@
                 class="mx-auto max-w-xl rounded-md border border-dashed border-border bg-ivory/60 p-8 text-center"
             >
                 <p class="text-sm text-muted-foreground">
-                    Contact information will be published soon. For urgent
-                    matters, please email
-                    <a
-                        href="mailto:office@temple-trust.example"
-                        class="font-medium text-primary hover:underline"
-                    >
-                        office@temple-trust.example
-                    </a>.
+                    Contact details will be published by the temple
+                    office. For urgent matters, please write to the
+                    temple office and a response will be arranged.
                 </p>
             </div>
         {:else}
@@ -145,8 +140,7 @@
                             Office hours
                         </h2>
                         <div class="space-y-1 text-sm text-muted-foreground">
-                            <p>Morning: 9:00 AM – 1:00 PM</p>
-                            <p>Evening: 4:00 PM – 8:00 PM</p>
+                            <p>Office hours published by the temple office</p>
                         </div>
                     </div>
 

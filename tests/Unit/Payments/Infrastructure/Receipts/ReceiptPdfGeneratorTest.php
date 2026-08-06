@@ -137,15 +137,14 @@ class ReceiptPdfGeneratorTest extends TestCase
 
     private function makePayment(): Payment
     {
-        return Payment::create(
+        return Payment::initialize(
             donationId: \App\Persistence\ValueObjects\EntityId::generate('donation'),
-            gatewayTransactionId: 'txn_test',
+            providerCode: \App\Payments\Domain\Enums\PaymentProvider::RAZORPAY,
             amountMinor: 5_000_00,
             currency: Currency::INR,
-            status: TransactionStatus::CAPTURED,
-            gatewayCode: 'razorpay',
+            idempotencyKey: 'txn_test',
             metadata: [],
-        );
+        )->withChanges(['status' => TransactionStatus::CAPTURED->value]);
     }
 
     private function makeDonation(): Donation

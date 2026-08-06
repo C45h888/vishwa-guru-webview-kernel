@@ -14,7 +14,7 @@ use App\Runtime\Failure\StateMachines\FailureStateMachine;
 use App\Runtime\Failure\StateMachines\FailureTransitionResult;
 use App\Runtime\Failure\ValueObjects\FailureRecord;
 use App\Shared\Support\Clock;
-use App\Shared\Support\Identifier;
+use App\Shared\ValueObjects\Identifier;
 use App\Shared\Support\SystemClock;
 use DateTimeImmutable;
 use Illuminate\Support\Facades\Log;

@@ -98,7 +98,7 @@ class PaymentTest extends TestCase
     public function testFromRowRequiresStatusKey(): void
     {
         $this->expectException(\InvalidArgumentException::class);
-        Payment::fromRow(['id' => 'payment_01HXYZFAKE000000000000000']);
+        Payment::fromRow(['id' => 'payment_01ARZ3NDEKTSV4RRFFQ69G5FAV']);
     }
 
     public function testTerminalStatusCannotBeChanged(): void

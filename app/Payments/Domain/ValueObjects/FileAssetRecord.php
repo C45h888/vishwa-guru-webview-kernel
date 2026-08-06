@@ -35,6 +35,11 @@ final readonly class FileAssetRecord
         'certificate_80g',
         'avatar',
         'donation_proof',
+        // Phase 4: Admin Kernel - author-uploaded media surfaces.
+        // - campaign_cover: admin-authored cover image for a campaign
+        // - event_cover:    admin-authored banner for an event (Pass 3)
+        'campaign_cover',
+        'event_cover',
     ];
 
     /**

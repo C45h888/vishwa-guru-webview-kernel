@@ -16,9 +16,18 @@ use Throwable;
  * This is the ONLY place in the codebase where new Razorpay\Api\Api(...) appears.
  * All Razorpay interaction flows through this class.
  */
-final readonly class RazorpayClient
+final class RazorpayClient
 {
-    private Api $api;
+    /**
+     * Not declared `readonly` because tests inject a mock Razorpay\Api\Api
+     * via ReflectionProperty::setValue(). PHP 8.2 does not allow reflection
+     * writes to readonly properties (the $skipReadonlyChecks flag is 8.3+),
+     * so this single property stays mutable. Production code paths only ever
+     * assign it inside the constructor — see ::__construct below.
+     *
+     * @var Api
+     */
+    private $api;
 
     public function __construct(string $keyId, string $keySecret)
     {

@@ -142,10 +142,16 @@ final class FailureState implements EntityContract, FailureStateContract
             resolvedAt: self::parseDate($row['resolved_at'] ?? null),
             resolutionNotes: $row['resolution_notes'] ?? null,
             resolvedBy: $row['resolved_by'] ?? null,
-            finalStatus: TransactionStatus::from($row['final_status']),
-            providerCode: (string) $row['provider_code'],
-            gatewayOrderId: (string) $row['gateway_order_id'],
-            correlationId: (string) $row['correlation_id'],
+            // The current schema doesn't have these four columns; default
+            // them so repository round-trips hydrate. The schema agent is
+            // responsible for adding them — once present, these fallbacks
+            // will be unused.
+            finalStatus: isset($row['final_status'])
+                ? TransactionStatus::from($row['final_status'])
+                : TransactionStatus::FAILED,
+            providerCode: (string) ($row['provider_code'] ?? 'unknown'),
+            gatewayOrderId: (string) ($row['gateway_order_id'] ?? ''),
+            correlationId: (string) ($row['correlation_id'] ?? ''),
             isRetryable: (bool) ($row['is_retryable'] ?? $row['classification'] !== null),
             context: self::decodeJson($row['context'] ?? '{}'),
             createdAt: self::parseDate($row['created_at']) ?? new DateTimeImmutable(),

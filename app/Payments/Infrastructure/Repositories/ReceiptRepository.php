@@ -78,23 +78,29 @@ final class ReceiptRepository implements ReceiptRepositoryContract
     {
         $row = $receipt->toArray();
 
+        // The current schema declares `certificate_80g_number` (not
+        // `tax_80g_certificate_number`) and has no `delivery_status`
+        // column. The schema agent will reconcile this in a follow-up
+        // migration; until then, persist to the columns that actually
+        // exist and leave delivery_status out of the INSERT. The entity
+        // still tracks it for in-memory state-machine logic.
         $sql = 'INSERT INTO receipts (
             id, receipt_number, donation_id, payment_id, campaign_id,
             campaign_title_snapshot, donor_name, donor_email, donor_pan,
             donor_address, amount_minor, currency_code, amount_in_words,
-            is_tax_deductible, tax_80g_eligible, tax_80g_certificate_number,
+            is_tax_deductible, tax_80g_eligible, certificate_80g_number,
             receipt_file_id, certificate_80g_file_id,
             content_hash, state, generated_at,
-            delivered_at, delivery_status, delivery_channel,
+            delivered_at, delivery_channel,
             delivery_metadata, metadata, created_at, updated_at, deleted_at
         ) VALUES (
             :id, :receipt_number, :donation_id, :payment_id, :campaign_id,
             :campaign_title_snapshot, :donor_name, :donor_email, :donor_pan,
             :donor_address, :amount_minor, :currency_code, :amount_in_words,
-            :is_tax_deductible, :tax_80g_eligible, :tax_80g_certificate_number,
+            :is_tax_deductible, :tax_80g_eligible, :certificate_80g_number,
             :receipt_file_id, :certificate_80g_file_id,
             :content_hash, :state, :generated_at,
-            :delivered_at, :delivery_status, :delivery_channel,
+            :delivered_at, :delivery_channel,
             :delivery_metadata, :metadata, :created_at, :updated_at, :deleted_at
         )';
 
@@ -116,14 +122,13 @@ final class ReceiptRepository implements ReceiptRepositoryContract
             'amount_in_words' => $row['amount_in_words'],
             'is_tax_deductible' => $row['is_tax_deductible'],
             'tax_80g_eligible' => $row['tax_80g_eligible'],
-            'tax_80g_certificate_number' => $row['tax_80g_certificate_number'],
+            'certificate_80g_number' => $row['tax_80g_certificate_number'],
             'receipt_file_id' => $row['receipt_file_id'],
             'certificate_80g_file_id' => $row['certificate_80g_file_id'],
             'content_hash' => $row['content_hash'],
             'state' => $row['state'],
             'generated_at' => $row['generated_at'],
             'delivered_at' => $row['delivered_at'],
-            'delivery_status' => $row['delivery_status'],
             'delivery_channel' => $row['delivery_channel'],
             'delivery_metadata' => is_string($row['delivery_metadata'])
                 ? $row['delivery_metadata']
@@ -148,9 +153,12 @@ final class ReceiptRepository implements ReceiptRepositoryContract
         // Financial fields are immutable post-issue.
         $row = $receipt->toArray();
 
+        // delivery_status is tracked in-memory on the entity but the
+        // current schema has no column for it; update only the columns
+        // that exist. When the schema agent adds delivery_status, extend
+        // this SET clause.
         $sql = 'UPDATE receipts SET
             delivered_at = :delivered_at,
-            delivery_status = :delivery_status,
             delivery_channel = :delivery_channel,
             delivery_metadata = :delivery_metadata,
             updated_at = :updated_at
@@ -159,7 +167,6 @@ final class ReceiptRepository implements ReceiptRepositoryContract
         $params = [
             'id' => $row['id'],
             'delivered_at' => $row['delivered_at'],
-            'delivery_status' => $row['delivery_status'],
             'delivery_channel' => $row['delivery_channel'],
             'delivery_metadata' => is_string($row['delivery_metadata'])
                 ? $row['delivery_metadata']

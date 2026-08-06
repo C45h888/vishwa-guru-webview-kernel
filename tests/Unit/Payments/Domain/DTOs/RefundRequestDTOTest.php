@@ -16,7 +16,7 @@ class RefundRequestDTOTest extends TestCase
     private function makeRequest(int $amount = 5000): RefundRequestDTO
     {
         return new RefundRequestDTO(
-            transactionId: new Identifier('01HXYZ1PAYMENT000000000000000'),
+            transactionId: new Identifier('01HFAZ3NDEKTSV4RRFFQ69G5FA'),
             amountMinor: $amount,
             currency: Currency::INR,
             reason: 'Customer request',
@@ -49,7 +49,7 @@ class RefundRequestDTOTest extends TestCase
     public function testNoReasonAndNoKey(): void
     {
         $r = new RefundRequestDTO(
-            transactionId: new Identifier('01HXYZ1PAYMENT000000000000000'),
+            transactionId: new Identifier('01HFAZ3NDEKTSV4RRFFQ69G5FA'),
             amountMinor: 100,
             currency: Currency::INR,
         );

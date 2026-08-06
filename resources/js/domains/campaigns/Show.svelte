@@ -1,4 +1,5 @@
 <script lang="ts">
+    import { page } from '@inertiajs/svelte';
     import Money from '$shared/components/Money.svelte';
     import CampaignProgress from '$shared/components/CampaignProgress.svelte';
     import CampaignCard from '$shared/components/CampaignCard.svelte';
@@ -6,6 +7,7 @@
     import PublicMediaImage from '$shared/components/PublicMediaImage.svelte';
     import MandalaDecoration from '$shared/components/MandalaDecoration.svelte';
     import TrustBadgeRow from '$shared/components/TrustBadgeRow.svelte';
+    import AdminEditOverlay from '$shared/components/AdminEditOverlay.svelte';
     import {
         campaignFallbackFor,
         OFFERING_FLOW,
@@ -250,6 +252,12 @@
                     </div>
 
                     <div class="relative lg:col-span-5">
+                        {#if $page.props.authUser?.role === 'admin'}
+                            <AdminEditOverlay
+                                href={`/admin/campaigns/${campaign.id}/edit`}
+                                srLabel={`Edit campaign: ${campaign.title}`}
+                            />
+                        {/if}
                         {#if hasImage}
                             <div
                                 class="overflow-hidden rounded-md border border-border/40"

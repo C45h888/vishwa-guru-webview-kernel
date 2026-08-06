@@ -4,7 +4,20 @@
     import { CalendarDays } from 'lucide-svelte';
     import type { EventSummaryProps } from '$shared/lib/inertia';
 
-    let { events }: { events: EventSummaryProps[] } = $props();
+    /**
+     * Phase 4: Admin Kernel — accept an optional adminEditHrefFn that
+     * produces the per-event edit URL when the current user is the
+     * canonical admin. The parent (cms/Home.svelte) gates the function
+     * itself; EventsRow is just a pass-through so EventCard can render
+     * its AdminEditOverlay.
+     */
+    let {
+        events,
+        adminEditHrefFn = null,
+    }: {
+        events: EventSummaryProps[];
+        adminEditHrefFn?: ((event: EventSummaryProps) => string | null) | null;
+    } = $props();
 
     const hasEvents = $derived(events.length > 0);
 </script>
@@ -32,7 +45,11 @@
     <div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
         {#if hasEvents}
             {#each events.slice(0, 3) as event (event.id)}
-                <EventCard {event} href={`/events/${event.slug}`} />
+                <EventCard
+                    {event}
+                    href={`/events/${event.slug}`}
+                    adminEditHref={adminEditHrefFn?.(event) ?? null}
+                />
             {/each}
         {:else}
             {#each [1, 2, 3] as slot (slot)}

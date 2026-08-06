@@ -8,6 +8,12 @@ import { mount, type Component } from 'svelte';
  * Must match `config('inertia.js_pages_root')` in config/inertia.php
  * (with the leading `./` stripped). The two are kept in lockstep by
  * InertiaPagesRootConsistencyTest in tests/Feature/Bootstrap/.
+ *
+ * Vite's `import.meta.glob` requires a literal string at build time
+ * (it cannot resolve template-literal interpolations). So the glob
+ * path uses the literal `./domains/**` while the runtime `resolvePage`
+ * uses the constant. The constant stays the source of truth for
+ * runtime; the literal must stay in sync with the constant.
  */
 const PAGES_ROOT = './domains';
 

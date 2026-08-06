@@ -10,24 +10,39 @@ use InvalidArgumentException;
 /**
  * The single values/info section of `static_pages.about_page_content`.
  *
- * Carries an eyebrow, title, body, optional image reference, and optional
- * alt-text. The image_file_id is parsed as an EntityId so downstream
- * consumers receive a typed value; the existence check against
- * cms_media_assets is delegated to AboutPageContent::fromArray().
+ * Carries an eyebrow, title, body, optional image reference, and
+ * optional alt-text. V2 also carries a `pillars` list — three (or more)
+ * short commitment statements rendered as cards under the values
+ * block. The pillars are typed as a single string VO (`AboutPillar`)
+ * so the Svelte layer has a known shape without having to parse the
+ * free-form body.
  *
- * V1 supports a single value section (the user said "generic values and
- * information for now"). A future grammar version bump may replace this
- * with a list-of-N values wrapper.
+ * The image_file_id is parsed as an EntityId so downstream consumers
+ * receive a typed value; the existence check against cms_media_assets
+ * is delegated to AboutPageContent::fromArray().
+ *
+ * NOTE: $pillars is declared as a regular (non-promoted) typed
+ * property and assigned explicitly in the constructor body. This
+ * sidesteps a PHP 8.2+ quirk where `readonly` class + promoted
+ * property + default value reports "must not be accessed before
+ * initialization" when the value is referenced in the constructor
+ * body, even though the default would technically be applied.
  */
-final readonly class AboutValue
+final class AboutValue
 {
+    /** @var list<AboutPillar> */
+    private mixed $pillars = [];
+
     public function __construct(
         private string $eyebrow,
         private string $title,
         private string $body,
         private ?EntityId $imageFileId,
         private ?string $altText,
+        array $pillars = [],
     ) {
+        $this->pillars = $pillars;
+
         if (trim($eyebrow) === '') {
             throw new InvalidArgumentException('AboutValue eyebrow cannot be empty');
         }
@@ -39,6 +54,13 @@ final readonly class AboutValue
         }
         if ($altText !== null && trim($altText) === '') {
             throw new InvalidArgumentException('AboutValue altText must be null or non-empty');
+        }
+        foreach ($this->pillars as $pillar) {
+            if (! $pillar instanceof AboutPillar) {
+                throw new InvalidArgumentException(
+                    'AboutValue pillars entries must be AboutPillar instances'
+                );
+            }
         }
     }
 
@@ -68,6 +90,14 @@ final readonly class AboutValue
     }
 
     /**
+     * @return list<AboutPillar>
+     */
+    public function pillars(): array
+    {
+        return $this->pillars;
+    }
+
+    /**
      * @return array<string, mixed>
      */
     public function toArray(): array
@@ -78,6 +108,10 @@ final readonly class AboutValue
             'body' => $this->body,
             'image_file_id' => $this->imageFileId?->value(),
             'alt_text' => $this->altText,
+            'pillars' => array_map(
+                static fn (AboutPillar $p): array => $p->toArray(),
+                $this->pillars,
+            ),
         ];
     }
 
@@ -91,12 +125,26 @@ final readonly class AboutValue
             $imageFileId = EntityId::fromString((string) $row['image_file_id']);
         }
 
+        $rawPillars = $row['pillars'] ?? [];
+        $pillars = [];
+        if (is_array($rawPillars)) {
+            foreach ($rawPillars as $i => $raw) {
+                if (! is_array($raw)) {
+                    throw new InvalidArgumentException(
+                        "AboutValue.pillars entry at index {$i} must be an array"
+                    );
+                }
+                $pillars[] = AboutPillar::fromArray($raw);
+            }
+        }
+
         return new self(
             eyebrow: (string) ($row['eyebrow'] ?? ''),
             title: (string) ($row['title'] ?? ''),
             body: (string) ($row['body'] ?? ''),
             imageFileId: $imageFileId,
             altText: isset($row['alt_text']) ? (string) $row['alt_text'] : null,
+            pillars: $pillars,
         );
     }
 }

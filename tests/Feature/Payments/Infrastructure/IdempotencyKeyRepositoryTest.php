@@ -29,9 +29,9 @@ final class IdempotencyKeyRepositoryTest extends InfrastructureTestCase
             key: 'idem_key_001',
             scope: 'donation.create',
             entityType: 'donation',
-            entityId: 'donation_01HXYZ123456789',
+            entityId: 'donation_01ARZ3NDEKTSV4RRFFQ69G5FAV',
             requestHash: hash('sha256', 'request_payload_001'),
-            response: ['donation_id' => 'donation_01HXYZ123456789'],
+            response: ['donation_id' => 'donation_01ARZ3NDEKTSV4RRFFQ69G5FAV'],
             expiresAt: $expires,
         );
 
@@ -40,7 +40,7 @@ final class IdempotencyKeyRepositoryTest extends InfrastructureTestCase
         $this->assertSame('idem_key_001', $found['key']);
         $this->assertSame('donation.create', $found['scope']);
         $this->assertSame('donation', $found['entity_type']);
-        $this->assertSame('donation_01HXYZ123456789', $found['entity_id']);
+        $this->assertSame('donation_01ARZ3NDEKTSV4RRFFQ69G5FAV', $found['entity_id']);
     }
 
     public function testIsActiveTrueForActiveKey(): void
@@ -51,7 +51,7 @@ final class IdempotencyKeyRepositoryTest extends InfrastructureTestCase
             key: 'idem_active_001',
             scope: 'payment.init',
             entityType: 'payment',
-            entityId: 'payment_01HXYZ',
+            entityId: 'payment_01ARZ3NDEKTSV4RRFFQ69G5FAV',
             requestHash: hash('sha256', 'req'),
             response: null,
             expiresAt: $expires,

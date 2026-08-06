@@ -1,4 +1,19 @@
 <script lang="ts">
+    /**
+     * SiteNav — public site navigation.
+     *
+     * Doctrine (AGENTS.md §"Phase 4: Admin Kernel"):
+     *   - The "Admin" link in the desktop + mobile nav routes to
+     *     /login (which is wrapped by the `guest` middleware; signed-in
+     *     admins get bounced straight to /admin).
+     *   - We intentionally keep this link visible at all times — admins
+     *     are temple staff who occasionally browse the public site and
+     *     need a fast path back into the console. The link is visually
+     *     subordinate to the public CTAs (Home, Campaigns, etc.) so it
+     *     does not look like a public-facing login surface.
+     */
+    import { page } from '@inertiajs/svelte';
+
     const links = [
         { href: '/', label: 'Home' },
         { href: '/campaigns', label: 'Campaigns' },
@@ -9,6 +24,8 @@
     ];
 
     let isMobileOpen = $state(false);
+
+    const authUser = $derived($page.props.authUser);
 
     function isActive(href: string): boolean {
         if (typeof window === 'undefined') return false;
@@ -40,6 +57,23 @@
             </a>
         </li>
     {/each}
+    <li>
+        {#if authUser}
+            <a
+                href="/admin"
+                class="border-b-2 border-transparent pb-0.5 text-muted-foreground transition-colors hover:border-primary hover:text-foreground"
+            >
+                Admin
+            </a>
+        {:else}
+            <a
+                href="/login"
+                class="border-b-2 border-transparent pb-0.5 text-muted-foreground transition-colors hover:border-primary hover:text-foreground"
+            >
+                Sign in
+            </a>
+        {/if}
+    </li>
 </ul>
 
 <!-- Mobile trigger (≤ md) -->
@@ -109,6 +143,23 @@
                     {link.label}
                 </a>
             {/each}
+            {#if authUser}
+                <a
+                    href="/admin"
+                    onclick={closeMobile}
+                    class="text-2xl font-semibold text-foreground transition-colors hover:text-primary"
+                >
+                    Admin
+                </a>
+            {:else}
+                <a
+                    href="/login"
+                    onclick={closeMobile}
+                    class="text-2xl font-semibold text-foreground transition-colors hover:text-primary"
+                >
+                    Sign in
+                </a>
+            {/if}
             <a
                 href="/donate"
                 onclick={closeMobile}

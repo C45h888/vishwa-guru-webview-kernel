@@ -9,7 +9,7 @@ use App\Runtime\Failure\Enums\FailureState;
 use App\Runtime\Failure\Handlers\CommandFailureHandler;
 use App\Runtime\Failure\StateMachines\FailureTransitionResult;
 use App\Runtime\Failure\ValueObjects\FailureRecord;
-use App\Shared\Support\Identifier;
+use App\Shared\ValueObjects\Identifier;
 use DateTimeImmutable;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
