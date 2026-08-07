@@ -92,7 +92,7 @@ final class DonationRepository implements DonationRepositoryContract
             donor_message, internal_notes, state, idempotency_key,
             metadata, submitted_at, payment_initiated_at, payment_verified_at,
             receipt_generated_at, completed_at, failed_at, cancelled_at,
-            created_at, updated_at, deleted_at, created_by, updated_by
+            created_at, updated_at, deleted_at
         ) VALUES (
             :id, :campaign_id, :donor_id, :donor_name_snapshot, :donor_email_snapshot,
             :donor_phone_snapshot, :donor_pan_snapshot, :donor_address_snapshot,
@@ -100,7 +100,7 @@ final class DonationRepository implements DonationRepositoryContract
             :donor_message, :internal_notes, :state, :idempotency_key,
             :metadata, :submitted_at, :payment_initiated_at, :payment_verified_at,
             :receipt_generated_at, :completed_at, :failed_at, :cancelled_at,
-            :created_at, :updated_at, :deleted_at, :created_by, :updated_by
+            :created_at, :updated_at, :deleted_at
         )';
 
         $params = [
@@ -145,8 +145,6 @@ final class DonationRepository implements DonationRepositoryContract
             'created_at' => $row['created_at'],
             'updated_at' => $row['updated_at'],
             'deleted_at' => $row['deleted_at'],
-            'created_by' => $row['created_by'] ?? null,
-            'updated_by' => $row['updated_by'] ?? null,
         ];
 
         $exec = $this->adapter->execute($sql, $params);
@@ -183,8 +181,7 @@ final class DonationRepository implements DonationRepositoryContract
             completed_at = :completed_at,
             failed_at = :failed_at,
             cancelled_at = :cancelled_at,
-            updated_at = :updated_at,
-            updated_by = :updated_by
+            updated_at = :updated_at
         WHERE id = :id';
 
         $params = [
@@ -227,7 +224,6 @@ final class DonationRepository implements DonationRepositoryContract
             'failed_at' => $row['failed_at'],
             'cancelled_at' => $row['cancelled_at'],
             'updated_at' => $row['updated_at'],
-            'updated_by' => $row['updated_by'] ?? null,
         ];
 
         $exec = $this->adapter->execute($sql, $params);
