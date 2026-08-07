@@ -440,9 +440,14 @@ return new class extends Migration
             $table->foreign('currency_code')
                 ->references('code')->on('currencies')
                 ->onDelete('restrict');
-            $table->foreign('idempotency_key')
-                ->references('key')->on('idempotency_keys')
-                ->onDelete('set null');
+            // Wave 1 runtime-fix (2026-08-07): the idempotency_key FK was
+            // removed from BOTH donations and payments. The middleware
+            // reserves keys under a scoped+prefixed form (idem:http:{scope}:{key})
+            // in Redis on the hot path, so no matching row ever exists in
+            // idempotency_keys.key for the bare uuid the financial rows store.
+            // The FK was unsatisfiable → every donation INSERT failed with
+            // SQLSTATE 23503 → 422. The column stays as a plain indexed
+            // snapshot; idempotency_keys remains the authoritative dedupe store.
         });
 
         Schema::table('payments', function (Blueprint $table) {
@@ -455,9 +460,14 @@ return new class extends Migration
             $table->foreign('currency_code')
                 ->references('code')->on('currencies')
                 ->onDelete('restrict');
-            $table->foreign('idempotency_key')
-                ->references('key')->on('idempotency_keys')
-                ->onDelete('set null');
+            // Wave 1 runtime-fix (2026-08-07): the idempotency_key FK was
+            // removed from BOTH donations and payments. The middleware
+            // reserves keys under a scoped+prefixed form (idem:http:{scope}:{key})
+            // in Redis on the hot path, so no matching row ever exists in
+            // idempotency_keys.key for the bare uuid the financial rows store.
+            // The FK was unsatisfiable → every donation INSERT failed with
+            // SQLSTATE 23503 → 422. The column stays as a plain indexed
+            // snapshot; idempotency_keys remains the authoritative dedupe store.
         });
 
         Schema::table('failure_states', function (Blueprint $table) {

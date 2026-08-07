@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 namespace App\Campaigns\Services;
 
+use App\Cms\Domain\Enums\PublicMediaState;
+use App\Cms\Domain\Enums\PublicMediaType;
+use App\Cms\Domain\Repositories\CmsMediaAssetRepositoryContract;
+use App\Cms\Domain\ValueObjects\CmsMediaAssetRecord;
 use App\Payments\Domain\Repositories\FileAssetRepositoryContract;
 use App\Payments\Domain\ValueObjects\FileAssetRecord;
 use App\Persistence\Contracts\PersistenceAdapterContract;
@@ -18,13 +22,22 @@ use RuntimeException;
  *
  * Doctrine (AGENTS.md §"Phase 4: Admin Kernel"):
  *   - The service is the canonical path from an UploadedFile to a
- *     file_asset.id (a ULID string). Admin controllers depend on
- *     this service, NEVER on raw Storage::put() or direct INSERTs.
+ *     cms_media_assets.id that the campaigns.cover_image_file_id FK +
+ *     PublicMediaQuery can resolve. Admin controllers depend on this
+ *     service, NEVER on raw Storage::put() or direct INSERTs.
+ *   - The schema models public media in TWO layers:
+ *       1. file_assets      — the physical file (owner_type='campaign_cover',
+ *                             a valid file_owner_type enum value).
+ *       2. cms_media_assets — the published presentation overlay that
+ *                             PublicMediaQuery / /media/{id} read from and
+ *                             that campaigns.cover_image_file_id FK references.
+ *     Both are written here so the returned id is immediately displayable
+ *     and satisfies the campaigns_cover_cms_boundary FK.
  *   - Files are stored on the `public` disk so the existing
- *     PublicMediaPresentationService can resolve them via the
- *     `/media/{id}` route without an additional auth hop.
+ *     PublicMediaPresentationService can resolve them via `/media/{id}`
+ *     without an additional auth hop.
  *   - We dedupe by SHA-256: if the same content was uploaded before,
- *     the existing file_asset row is returned (no second upload,
+ *     the existing cms_media_asset id is returned (no second upload,
  *     no second physical file).
  *   - Validation: max 5MB; allowed MIME types = image/jpeg,
  *     image/png, image/webp. Anything else throws InvalidCoverImageException.
@@ -46,14 +59,15 @@ final class CampaignCoverUploadService
 
     public function __construct(
         private readonly FileAssetRepositoryContract $fileAssets,
+        private readonly CmsMediaAssetRepositoryContract $mediaAssets,
         private readonly PersistenceAdapterContract $persistence,
     ) {
     }
 
     /**
-     * Persist the uploaded file and return the resulting file_asset.id.
+     * Persist the uploaded file + its published overlay.
      *
-     * @return string  ULID of the file_asset row.
+     * @return string  ULID of the cms_media_assets row (displayable via /media/{id}).
      *
      * @throws InvalidCoverImageException
      */
@@ -90,10 +104,18 @@ final class CampaignCoverUploadService
             throw new InvalidCoverImageException('Could not hash the uploaded file contents.');
         }
 
+        $originalFilename = (string) $file->getClientOriginalName();
+
         // Dedupe: if a file_asset with this hash already exists, reuse it.
+        // Return the existing cms_media_asset id (creating the overlay if a
+        // legacy file_asset exists without one).
         $existing = $this->fileAssets->findByHash($hash);
         if ($existing !== null) {
-            return $existing->id;
+            $overlay = $this->mediaAssets->findByFileAssetId($existing->id());
+            if ($overlay !== null) {
+                return $overlay->id();
+            }
+            return $this->createOverlay($existing->id(), $uploadedBy, $originalFilename);
         }
 
         // Persist the physical file. Storage path layout:
@@ -119,12 +141,13 @@ final class CampaignCoverUploadService
             throw new RuntimeException('Failed to write cover image to the public disk.');
         }
 
-        // Create the file_asset row.
+        // Create the file_assets row.
+        $fileAssetId = (string) Str::ulid();
         $record = new FileAssetRecord(
-            id: (string) Str::ulid(),
-            ownerType: 'campaign_cover',
+            id: $fileAssetId,
+            ownerType: 'campaign_cover', // must be a valid file_owner_type enum value
             ownerId: 'pending',   // resolved when the campaign is created/updated
-            originalFilename: (string) $file->getClientOriginalName(),
+            originalFilename: $originalFilename,
             storageDisk: 'public',
             storagePath: $relativePath,
             mimeType: $mime,
@@ -145,6 +168,43 @@ final class CampaignCoverUploadService
 
         $this->fileAssets->save($record);
 
-        return $record->id();
+        return $this->createOverlay($fileAssetId, $uploadedBy, $originalFilename);
+    }
+
+    /**
+     * Create the published cms_media_assets overlay row for the file_asset.
+     * A published asset requires alt_text + published_at (CHECK constraint).
+     * We default alt_text to the original filename; the admin can refine it
+     * later via the CMS editing surface.
+     *
+     * @return string  cms_media_assets.id
+     */
+    private function createOverlay(string $fileAssetId, string $uploadedBy, string $altTextDefault): string
+    {
+        $id = (string) Str::ulid();
+        $now = new \DateTimeImmutable();
+
+        $overlay = CmsMediaAssetRecord::create(
+            id: $id,
+            fileAssetId: $fileAssetId,
+            mediaType: PublicMediaType::CAMPAIGN_COVER,
+            state: PublicMediaState::PUBLISHED,
+            altText: $altTextDefault,
+            caption: null,
+            credit: null,
+            width: null,
+            height: null,
+            focalX: null,
+            focalY: null,
+            variantGroupId: null,
+            publishedAt: $now,
+            archivedAt: null,
+            createdBy: $uploadedBy,
+            updatedBy: $uploadedBy,
+        );
+
+        $this->mediaAssets->save($overlay);
+
+        return $id;
     }
 }

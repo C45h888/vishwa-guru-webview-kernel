@@ -44,11 +44,11 @@ final class RazorpayCheckoutRequest extends FormRequest
             ],
 
             'donor' => ['sometimes', 'array'],
-            'donor.name' => ['sometimes', 'string', 'min:1', 'max:120'],
+            'donor.name' => ['sometimes', 'nullable', 'string', 'min:1', 'max:120'],
             'donor.email' => ['sometimes', 'nullable', 'email:rfc', 'max:255'],
             'donor.phone' => ['sometimes', 'nullable', 'string', 'regex:/^\+?[0-9\s\-()]{7,20}$/'],
             'donor.pan' => ['sometimes', 'nullable', 'string', 'regex:/^[A-Z]{5}[0-9]{4}[A-Z]$/'],
-            'donor.address' => ['sometimes', 'array'],
+            'donor.address' => ['sometimes', 'nullable', 'array'],
             'donor.address.line1' => ['sometimes', 'string', 'max:255'],
             'donor.address.line2' => ['sometimes', 'string', 'max:255'],
             'donor.address.city' => ['sometimes', 'string', 'max:120'],
@@ -56,7 +56,7 @@ final class RazorpayCheckoutRequest extends FormRequest
             'donor.address.pincode' => ['sometimes', 'string', 'max:12'],
             'donor.address.country' => ['sometimes', 'string', 'max:64'],
 
-            'purpose' => ['sometimes', 'string', 'max:120'],
+            'purpose' => ['sometimes', 'nullable', 'string', 'max:120'],
             'donation_message' => ['sometimes', 'nullable', 'string', 'max:500'],
             // Wave 1 m12 fix (2026-08-06): 'internal_notes' was a publicly
             // POSTable field on the donation contract — donors could

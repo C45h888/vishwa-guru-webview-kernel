@@ -31,15 +31,18 @@ use InvalidArgumentException;
 final readonly class FileAssetRecord
 {
     private const VALID_OWNER_TYPES = [
+        // Mirrors the PostgreSQL `file_owner_type` enum (source of truth —
+        // see schema-neon/V1-schema.sql §11). Kept in lockstep so PHP-side
+        // validation (FileAssetRecord::create) never accepts a value the DB
+        // will reject.
+        'donation',
         'receipt',
-        'certificate_80g',
-        'avatar',
-        'donation_proof',
-        // Phase 4: Admin Kernel - author-uploaded media surfaces.
-        // - campaign_cover: admin-authored cover image for a campaign
-        // - event_cover:    admin-authored banner for an event (Pass 3)
+        'gallery_image',
+        'event_banner',
+        'hero_banner',
         'campaign_cover',
-        'event_cover',
+        'static_page_attachment',
+        'donor_document',
     ];
 
     /**

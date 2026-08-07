@@ -4,6 +4,10 @@ declare(strict_types=1);
 
 namespace App\Events\Services;
 
+use App\Cms\Domain\Enums\PublicMediaState;
+use App\Cms\Domain\Enums\PublicMediaType;
+use App\Cms\Domain\Repositories\CmsMediaAssetRepositoryContract;
+use App\Cms\Domain\ValueObjects\CmsMediaAssetRecord;
 use App\Payments\Domain\Repositories\FileAssetRepositoryContract;
 use App\Payments\Domain\ValueObjects\FileAssetRecord;
 use Illuminate\Http\UploadedFile;
@@ -16,13 +20,20 @@ use RuntimeException;
  * admin events authoring surface.
  *
  * Doctrine (mirrors CampaignCoverUploadService):
- *   - Canonical path from an UploadedFile to a file_asset.id (ULID).
+ *   - Canonical path from an UploadedFile to a cms_media_assets.id (ULID)
+ *     that the events.banner_file_id FK + PublicMediaQuery can resolve.
+ *   - The schema models public media in TWO layers:
+ *       1. file_assets      — the physical file (owner_type='event_banner',
+ *                             a valid file_owner_type enum value).
+ *       2. cms_media_assets — the published presentation overlay that
+ *                             PublicMediaQuery / /media/{id} read from.
+ *     Both are written here, atomically, so the returned id is immediately
+ *     displayable and satisfies the events_banner_cms_boundary FK.
  *   - Files are stored on the `public` disk so the existing
  *     PublicMediaPresentationService can resolve them via /media/{id}.
  *   - Dedupe by SHA-256: same content uploaded before returns the
- *     existing file_asset row instead of creating a duplicate.
+ *     existing cms_media_asset id instead of creating a duplicate.
  *   - Validation: 5MB max, jpg/png/webp only.
- *   - owner_type='event_cover' (already in FileAssetRecord::VALID_OWNER_TYPES).
  *
  * @see CampaignCoverUploadService
  */
@@ -38,11 +49,14 @@ final class EventBannerUploadService
 
     public function __construct(
         private readonly FileAssetRepositoryContract $fileAssets,
+        private readonly CmsMediaAssetRepositoryContract $mediaAssets,
     ) {
     }
 
     /**
-     * @return string  ULID of the file_asset row.
+     * Persist the uploaded file + its published overlay.
+     *
+     * @return string  ULID of the cms_media_assets row (displayable via /media/{id}).
      *
      * @throws InvalidEventBannerException
      */
@@ -79,10 +93,19 @@ final class EventBannerUploadService
             throw new InvalidEventBannerException('Could not hash the uploaded file contents.');
         }
 
+        $originalFilename = (string) $file->getClientOriginalName();
+
         // Dedupe: if a file_asset with this hash already exists, reuse it.
+        // Return the existing cms_media_asset id (creating the overlay if a
+        // legacy file_asset exists without one).
         $existing = $this->fileAssets->findByHash($hash);
         if ($existing !== null) {
-            return $existing->id;
+            $overlay = $this->mediaAssets->findByFileAssetId($existing->id());
+            if ($overlay !== null) {
+                return $overlay->id();
+            }
+            $newOverlayId = $this->createOverlay($existing->id(), $uploadedBy, $originalFilename);
+            return $newOverlayId;
         }
 
         // Storage path: event-banners/<year>/<month>/<hash-prefix>/<hash>.<ext>
@@ -107,17 +130,18 @@ final class EventBannerUploadService
             throw new RuntimeException('Failed to write banner image to the public disk.');
         }
 
+        $fileAssetId = (string) Str::ulid();
         $record = new FileAssetRecord(
-            id: (string) Str::ulid(),
-            ownerType: 'event_cover',
+            id: $fileAssetId,
+            ownerType: 'event_banner', // must be a valid file_owner_type enum value
             ownerId: 'pending',
-            originalFilename: (string) $file->getClientOriginalName(),
+            originalFilename: $originalFilename,
             storageDisk: 'public',
             storagePath: $relativePath,
             mimeType: $mime,
             fileSizeBytes: $size,
             fileHashSha256: $hash,
-            purpose: 'event_cover',
+            purpose: 'event_banner',
             isPublic: true,
             isArchived: false,
             archivedAt: null,
@@ -132,6 +156,43 @@ final class EventBannerUploadService
 
         $this->fileAssets->save($record);
 
-        return $record->id();
+        return $this->createOverlay($fileAssetId, $uploadedBy, $originalFilename);
+    }
+
+    /**
+     * Create the published cms_media_assets overlay row for the file_asset.
+     * A published asset requires alt_text + published_at (CHECK constraint).
+     * We default alt_text to the original filename; the admin can refine it
+     * later via the CMS editing surface.
+     *
+     * @return string  cms_media_assets.id
+     */
+    private function createOverlay(string $fileAssetId, string $uploadedBy, string $altTextDefault): string
+    {
+        $id = (string) Str::ulid();
+        $now = new \DateTimeImmutable();
+
+        $overlay = CmsMediaAssetRecord::create(
+            id: $id,
+            fileAssetId: $fileAssetId,
+            mediaType: PublicMediaType::EVENT_BANNER,
+            state: PublicMediaState::PUBLISHED,
+            altText: $altTextDefault,
+            caption: null,
+            credit: null,
+            width: null,
+            height: null,
+            focalX: null,
+            focalY: null,
+            variantGroupId: null,
+            publishedAt: $now,
+            archivedAt: null,
+            createdBy: $uploadedBy,
+            updatedBy: $uploadedBy,
+        );
+
+        $this->mediaAssets->save($overlay);
+
+        return $id;
     }
 }

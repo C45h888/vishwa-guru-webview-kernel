@@ -106,8 +106,7 @@ final class PaymentRepository implements PaymentRepositoryContract
             captured_at, settled_at, failed_at, refunded_at,
             cancelled_at, expired_at, last_failure_code,
             last_failure_reason, idempotency_key,
-            raw_provider_response, created_at, updated_at, deleted_at,
-            created_by, updated_by
+            raw_provider_response, created_at, updated_at, deleted_at
         ) VALUES (
             :id, :donation_id, :provider_code, :amount_minor, :currency_code,
             :status, :amount_captured_minor, :amount_refunded_minor,
@@ -118,8 +117,7 @@ final class PaymentRepository implements PaymentRepositoryContract
             :captured_at, :settled_at, :failed_at, :refunded_at,
             :cancelled_at, :expired_at, :last_failure_code,
             :last_failure_reason, :idempotency_key,
-            :raw_provider_response, :created_at, :updated_at, :deleted_at,
-            :created_by, :updated_by
+            :raw_provider_response, :created_at, :updated_at, :deleted_at
         )';
 
         $params = [
@@ -161,8 +159,6 @@ final class PaymentRepository implements PaymentRepositoryContract
             'created_at' => $row['created_at'],
             'updated_at' => $row['updated_at'],
             'deleted_at' => $row['deleted_at'],
-            'created_by' => $row['created_by'] ?? null,
-            'updated_by' => $row['updated_by'] ?? null,
         ];
 
         $exec = $this->adapter->execute($sql, $params);
@@ -207,8 +203,7 @@ final class PaymentRepository implements PaymentRepositoryContract
             idempotency_key = :idempotency_key,
             raw_provider_response = :raw_provider_response,
             updated_at = :updated_at,
-            deleted_at = :deleted_at,
-            updated_by = :updated_by
+            deleted_at = :deleted_at
         WHERE id = :id';
 
         $params = [
@@ -251,7 +246,6 @@ final class PaymentRepository implements PaymentRepositoryContract
                 : json_encode($row['raw_provider_response'], JSON_THROW_ON_ERROR),
             'updated_at' => $row['updated_at'],
             'deleted_at' => $row['deleted_at'],
-            'updated_by' => $row['updated_by'] ?? null,
         ];
 
         $exec = $this->adapter->execute($sql, $params);

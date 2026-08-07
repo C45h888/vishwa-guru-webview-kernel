@@ -93,6 +93,17 @@
             return;
         }
 
+        // Pass B fix (2026-08-07): the checkout contract requires a 35-char
+        // campaign ULID (`campaign_…`). The <select> is keyed by slug, so
+        // resolve the id from the loaded list and fail closed if the
+        // selected slug isn't present (e.g. a deep-link to a campaign not
+        // in the displayable list) instead of sending the raw slug and
+        // tripping FormRequest size:35 / regex validation.
+        if (!selectedCampaignData?.id) {
+            errorMessage = 'Please select a valid campaign.';
+            return;
+        }
+
         const amountMinor = rupeesToMinor(amountRupees);
         // RazorpayAdapter enforces ₹1..₹1 crore per adapter's
         // minimumAmount()/maximumAmount() — match on the client too.
@@ -120,7 +131,7 @@
         const payload = {
             amount_minor: amountMinor,
             currency: defaultCurrency,
-            campaign_id: selectedCampaignData?.id ?? selectedCampaign,
+            campaign_id: selectedCampaignData?.id ?? '',
             donor: {
                 name: isAnonymous ? null : donorName || null,
                 email: isAnonymous ? null : donorEmail || null,
