@@ -5,16 +5,26 @@ declare(strict_types=1);
 namespace App\Providers;
 
 use App\Runtime\Http\Controllers\HealthController;
+use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Foundation\Support\Providers\RouteServiceProvider as ServiceProvider;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Route;
 
 class RouteServiceProvider extends ServiceProvider
 {
     /**
      * Define your route model bindings, pattern filters, etc.
+     *
+     * Also configures rate limiters consumed by `ThrottleRequests::':NAME'`.
+     * Without an explicit named limiter, the kernel falls through to
+     * `(int) $name` which casts 'api' → 0 and blocks EVERY request
+     * (X-RateLimit-Limit: 0). Wave 1A investigation finding A.
      */
     public function boot(): void
     {
+        $this->configureRateLimiter();
+
         $this->routes(function () {
             // Public site (Phase 3+) — web middleware group.
             Route::middleware('web')
@@ -86,6 +96,10 @@ class RouteServiceProvider extends ServiceProvider
             // all mutating verbs. GETs bypass naturally. Doctrine:
             // HTTP and async are separate concerns; one stuck middleware
             // does not take down donation intake.
+            // NOTE: `api` middleware group has `ThrottleRequests::':api'`
+            // — requires a named limiter registered via configureRateLimiter()
+            // below, otherwise the kernel falls through to (int)'api' = 0
+            // and blocks every request immediately.
             Route::middleware(['api', 'idempotency'])
                 ->prefix('api/v1')
                 ->group(base_path('routes/donation.php'));
@@ -97,6 +111,41 @@ class RouteServiceProvider extends ServiceProvider
             Route::middleware(['api', 'webhook-dedupe'])
                 ->prefix('api/v1/webhooks')
                 ->group(base_path('routes/webhook.php'));
+        });
+    }
+
+    /**
+     * Register the named rate limiters consumed by the `api` middleware group.
+     *
+     * Without an entry here, `ThrottleRequests::':api'` falls through to the
+     * numeric path and casts `api` → `0`, producing X-RateLimit-Limit: 0 on
+     * every request (causing immediate 429s). The 'api' named limiter covers
+     * all /api/v1/* routes that don't apply their own throttle. A separate
+     * 'checkout' limiter is reserved for the donation POST once it grows its
+     * own quota needs; today it inherits 'api'.
+     *
+     * Tuning rationale:
+     * - 120/min per (user|IP) for the default 'api' limiter — generous enough
+     *   for dev/test exploration (the user is iterating against Razorpay's
+     *   test mode keys), strict enough that a runaway curl loop self-throttles.
+     * - Production may want to dial down once the abuse profile is known.
+     */
+    protected function configureRateLimiter(): void
+    {
+        RateLimiter::for('api', function (Request $request) {
+            // Per-user when authenticated, per-IP for the public surface.
+            $key = $request->user()?->getAuthIdentifier() ?? $request->ip();
+
+            return Limit::perMinute(120)->by((string) $key);
+        });
+
+        // Placeholder for a future dedicated checkout limiter. Wired today
+        // so a one-line tuning change is enough to detach the donation flow
+        // from the generic 'api' bucket later.
+        RateLimiter::for('checkout', function (Request $request) {
+            $key = $request->user()?->getAuthIdentifier() ?? $request->ip();
+
+            return Limit::perMinute(120)->by((string) $key);
         });
     }
 }

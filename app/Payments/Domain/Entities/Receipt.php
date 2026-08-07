@@ -103,6 +103,7 @@ final class Receipt implements EntityContract
         private readonly DateTimeImmutable $createdAt,
         private readonly DateTimeImmutable $updatedAt,
         private readonly ?DateTimeImmutable $deletedAt = null,
+        private readonly ?string $accessToken = null,
     ) {
     }
 
@@ -137,6 +138,7 @@ final class Receipt implements EntityContract
         array $deliveryMetadata = [],
         array $metadata = [],
         ?EntityId $id = null,
+        ?string $accessToken = null,
     ): self {
         if (empty($receiptNumber)) {
             throw new InvalidArgumentException('Receipt receiptNumber cannot be empty');
@@ -144,6 +146,11 @@ final class Receipt implements EntityContract
         if (! preg_match('/^TR-\d{4}-[A-Z0-9]{4,32}$/', $receiptNumber)) {
             throw new InvalidArgumentException(
                 "Receipt receiptNumber must match TR-YYYY-{shortId}: got {$receiptNumber}"
+            );
+        }
+        if ($accessToken !== null && ! preg_match('/^[A-Za-z0-9_-]{32,128}$/', $accessToken)) {
+            throw new InvalidArgumentException(
+                "Receipt accessToken must be URL-safe 32+ chars: got length ".strlen($accessToken)
             );
         }
         if (empty($contentHash)) {
@@ -184,7 +191,19 @@ final class Receipt implements EntityContract
             metadata: $metadata,
             createdAt: $now,
             updatedAt: $now,
+            accessToken: $accessToken ?? self::mintAccessToken(),
         );
+    }
+
+    /**
+     * URL-safe random token used as the access credential for public receipt
+     * URLs. 32 bytes → 43 base64url chars (no padding). Stored once on issue;
+     * never rotated. A sequential receipt_number alone is not sufficient to
+     * fetch the receipt — donors get the URL with the token post-payment.
+     */
+    public static function mintAccessToken(): string
+    {
+        return rtrim(strtr(base64_encode(random_bytes(32)), '+/', '-_'), '=');
     }
 
     /**
@@ -260,6 +279,7 @@ final class Receipt implements EntityContract
             createdAt: self::parseDate($row['created_at']) ?? new DateTimeImmutable(),
             updatedAt: self::parseDate($row['updated_at']) ?? new DateTimeImmutable(),
             deletedAt: self::parseDate($row['deleted_at'] ?? null),
+            accessToken: isset($row['access_token']) ? (string) $row['access_token'] : null,
         );
     }
 
@@ -310,6 +330,7 @@ final class Receipt implements EntityContract
             'created_at' => $this->createdAt->format(DATE_ATOM),
             'updated_at' => $this->updatedAt->format(DATE_ATOM),
             'deleted_at' => $this->deletedAt?->format(DATE_ATOM),
+            'access_token' => $this->accessToken,
         ];
     }
 
@@ -339,6 +360,7 @@ final class Receipt implements EntityContract
             'content_hash'             => $this->contentHash,
             'state'                    => $this->state,
             'generated_at'             => $this->generatedAt->format(DATE_ATOM),
+            'access_token'             => $this->accessToken,
         ];
     }
 
@@ -561,6 +583,11 @@ final class Receipt implements EntityContract
     public function deletedAt(): ?DateTimeImmutable
     {
         return $this->deletedAt;
+    }
+
+    public function accessToken(): ?string
+    {
+        return $this->accessToken;
     }
 
     public function isDelivered(): bool

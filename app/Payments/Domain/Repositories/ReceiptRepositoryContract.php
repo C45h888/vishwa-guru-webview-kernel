@@ -32,8 +32,19 @@ interface ReceiptRepositoryContract
 
     /**
      * Find a receipt by its human-readable number (TR-YYYY-{shortId}).
+     *
+     * NOTE: this lookup must NOT be used to authorize public access —
+     * the receipt number is sequentially enumerable. Use
+     * findByAccessToken() for the public URL credential, or restrict
+     * calls of this method to admin/authed surfaces.
      */
     public function findByReceiptNumber(string $receiptNumber): ?Receipt;
+
+    /**
+     * Find a receipt by its URL-safe random access token. This is the
+     * ONLY public-safe lookup. Used by /receipts/{number}?t=<token>.
+     */
+    public function findByAccessToken(string $accessToken): ?Receipt;
 
     /**
      * Find all receipts whose generated_at timestamp falls within the

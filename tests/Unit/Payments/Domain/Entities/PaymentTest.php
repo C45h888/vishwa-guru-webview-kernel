@@ -39,6 +39,25 @@ class PaymentTest extends TestCase
         $this->assertFalse($p->isDeleted());
     }
 
+    public function testInitializeAcceptsProviderOrderId(): void
+    {
+        $p = Payment::initialize(
+            donationId: EntityId::generate('donation'),
+            providerCode: PaymentProvider::RAZORPAY,
+            amountMinor: 10000,
+            currency: Currency::INR,
+            idempotencyKey: 'idem_test_order',
+            providerOrderId: 'order_ABC123',
+        );
+        $this->assertSame('order_ABC123', $p->providerOrderId());
+    }
+
+    public function testInitializeWithoutProviderOrderIdStaysNull(): void
+    {
+        $p = $this->make();
+        $this->assertNull($p->providerOrderId());
+    }
+
     public function testEntityTypeAndIdentifier(): void
     {
         $p = $this->make();

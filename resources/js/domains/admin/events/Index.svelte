@@ -5,6 +5,7 @@
     import AdminLayout from '$shared/components/AdminLayout.svelte';
     import { Button } from '$shared/ui/button';
     import { PlusCircle, ChevronLeft, ChevronRight } from 'lucide-svelte';
+    import { formatDbDate } from '$shared/lib/dates';
     import type { PageComponentProps } from '$shared/lib/inertia';
 
     type EventRow = {
@@ -42,18 +43,6 @@
             case 'completed': return 'bg-muted text-muted-foreground';
             case 'draft':
             default: return 'bg-background text-muted-foreground ring-1 ring-border';
-        }
-    }
-
-    function formatDate(iso: string, tz: string): string {
-        try {
-            return new Intl.DateTimeFormat('en-IN', {
-                dateStyle: 'medium',
-                timeStyle: 'short',
-                timeZone: tz || 'Asia/Kolkata',
-            }).format(new Date(iso));
-        } catch {
-            return iso;
         }
     }
 </script>
@@ -100,7 +89,7 @@
                             </td>
                             <td class="px-4 py-3 text-muted-foreground">{e.venue ?? '—'}</td>
                             <td class="px-4 py-3 text-muted-foreground">
-                                {formatDate(e.starts_at, e.timezone)}
+                                {formatDbDate(e.starts_at, e.starts_at, { dateStyle: 'medium', timeStyle: 'short' })}
                             </td>
                             <td class="px-4 py-3">
                                 <span class="inline-flex rounded-full px-2 py-0.5 text-xs font-medium {stateClass(e.state)}">

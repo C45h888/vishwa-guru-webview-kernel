@@ -11,12 +11,18 @@
 #           Do not deploy this docker-compose to a server.
 #
 # Usage:
-#   docker compose up -d          # start all services (auto-detects mode)
-#   docker compose down           # stop
-#   docker compose down -v        # stop + wipe volumes (fresh state)
+#   docker compose --env-file .env.local up -d   # start (NEON mode: uses .env.local creds)
+#   docker compose --env-file .env.local down     # stop
+#   docker compose --env-file .env.local down -v # stop + wipe volumes (fresh state)
+#
+# ─── ENVIRONMENT FILE ─────────────────────────────────────────────────
+# This stack reads from .env.local — the same credential file the host-side
+# `php artisan serve` uses. This ensures Docker runtime is an accurate
+# reflection of production, not a separate test-parallel universe.
 #
 # ─── DATABASE MODE (AUTO-DETECT) ──────────────────────────────────────
-# The composer reads the host's .env to decide which mode to run in:
+# The app/worker containers read DATABASE_URL from .env.local to decide
+# which database mode to run in:
 #
 #   LOCAL mode  — DATABASE_URL is empty/unset
 #                 → app talks to local `postgres` container
@@ -30,7 +36,7 @@
 #                 → the local `postgres` container still starts (cheap, idle)
 #                 but is NOT used by the app/worker containers
 #
-# Connection details (override via .env):
+# Connection details (override via .env.local):
 #   Postgres:  localhost:5432, db=temple_trust, user=temple_trust
 #   Redis:     localhost:6379, password=dev (AOF on, durable across restarts)
 #   PHP app:   localhost:8000
@@ -90,7 +96,7 @@ services:
       retries: 5
 
   # ── PHP runtime (Phase 2 — Dockerfile builds ext-redis + extensions) ─
-  # DATABASE_MODE is computed from the host .env at compose time. The
+  # DATABASE_MODE is computed from .env.local at compose time. The
   # bootstrap script inlined in `command` then decides whether to run
   # `migrate` and what DB_HOST the app should see.
   app:
@@ -208,12 +214,44 @@ services:
         condition: service_healthy
     command: >
       sh -c "composer install --no-interaction --prefer-dist && exec php artisan queue:work redis
+        --queue=default,receipts,webhooks,notifications
         --tries=$$QUEUE_GENERAL_TRIES
         --backoff=$$QUEUE_GENERAL_BACKOFF
         --max-time=$$QUEUE_WORKER_MAX_TIME
         --sleep=$$QUEUE_WORKER_SLEEP
         --timeout=$$QUEUE_WORKER_TIMEOUT
         --verbose"
+
+  # Scheduler — runs `php artisan schedule:work` so kernel-scheduled
+  # commands (temple:redis:info, queue:prune-failed, etc.) actually
+  # execute. Without this service the scheduler is silent and the
+  # log files it would write are never produced.
+  scheduler:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: temple-trust-scheduler
+    restart: unless-stopped
+    working_dir: /app
+    volumes:
+      - .:/app
+    environment:
+      DATABASE_URL: ${DATABASE_URL:-}
+      DB_CONNECTION: neon
+      DB_PORT: ${DB_PORT:-5432}
+      DB_DATABASE: ${DB_DATABASE:-temple_trust}
+      DB_USERNAME: ${DB_USERNAME:-temple_trust}
+      DB_PASSWORD: ${DB_PASSWORD:-dev}
+      DB_SSLMODE: ${DB_SSLMODE:-require}
+      REDIS_HOST: redis
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-dev}
+      REDIS_PORT: 6379
+      APP_ENV: ${APP_ENV:-local}
+    depends_on:
+      redis:
+        condition: service_healthy
+    command: >
+      sh -c "composer install --no-interaction --prefer-dist && exec php artisan schedule:work"
 
 volumes:
   redis-data:

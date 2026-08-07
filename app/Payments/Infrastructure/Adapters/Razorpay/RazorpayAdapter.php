@@ -101,6 +101,21 @@ final class RazorpayAdapter implements PaymentGatewayContract
 
     /**
      * Refund a captured payment.
+     *
+     * Razorpay's /v1/refunds API can return any of three statuses:
+     *   'processed' — refund completed by Razorpay's bank rail
+     *   'pending'   — refund accepted, still processing (legitimate interim state)
+     *   'failed'    — refund rejected (insufficient balance, fraud, etc.)
+     *
+     * Wave 1 fix (M2 + N7, 2026-08-06):
+     *   - The previous mapping collapsed 'failed' (and 'pending') to PENDING,
+     *     producing a false-positive REFUNDED in the orchestrator. Now each
+     *     Razorpay status maps to its canonical TransactionStatus.
+     *   - The Throwable catch no longer fabricates a RefundExceededException
+     *     message; non-RefundExceeded failures bubble up with the real
+     *     exception class so operator logs see the genuine root cause
+     *     (network error / 5xx / SDK auth failure) instead of a misleading
+     *     'refund exceeds captured' with hardcoded zeros.
      */
     public function refund(Identifier $transactionId, int $amount): Result
     {
@@ -110,23 +125,35 @@ final class RazorpayAdapter implements PaymentGatewayContract
                 ['amount' => $amount],
             );
 
-            $status = ((string) ($raw['status'] ?? '')) === 'processed'
-                ? TransactionStatus::REFUNDED
-                : TransactionStatus::PENDING;
-
-            return Result::success($status);
+            return Result::success($this->mapRefundStatus((string) ($raw['status'] ?? '')));
         } catch (RefundExceededException $e) {
             return Result::failure($e->getMessage());
         } catch (Throwable $e) {
-            return Result::failure(
-                RefundExceededException::exceedsCaptured(
-                    $transactionId->value(),
-                    $amount,
-                    0,
-                    $amount,
-                )->getMessage(),
-            );
+            // Bubble the real exception class/message — do NOT fabricate
+            // a RefundExceededException (N7 fix).
+            return Result::failure(sprintf(
+                'gateway_refund_transport_error [%s]: %s',
+                $e::class,
+                $e->getMessage(),
+            ));
         }
+    }
+
+    /**
+     * Map Razorpay refund status strings to TransactionStatus.
+     * - 'processed' → REFUNDED (terminal positive outcome)
+     * - 'pending'   → PENDING  (legitimate interim — orchestrator will retry)
+     * - 'failed'    → FAILED   (rejected — orchestrator must NOT mark REFUNDED)
+     * - anything else → PENDING (conservative default; orchestrator will retry)
+     */
+    private function mapRefundStatus(string $razorpayRefundStatus): TransactionStatus
+    {
+        return match (strtolower($razorpayRefundStatus)) {
+            'processed' => TransactionStatus::REFUNDED,
+            'failed' => TransactionStatus::FAILED,
+            'pending' => TransactionStatus::PENDING,
+            default => TransactionStatus::PENDING,
+        };
     }
 
     public function providerName(): string

@@ -68,8 +68,27 @@ final class RazorpayVerificationAdapter implements PaymentVerificationContract
         $payloadPayment = $body['payload']['payment']['entity'] ?? [];
         $payloadOrder = $body['payload']['order']['entity'] ?? [];
 
+        // Wave 1 B1 fix (2026-08-06): the order id can live in three
+        // places depending on which webhook event Razorpay fired:
+        //   - order.* events (order.paid, order.expired, etc.):
+        //       payload.order.entity.id
+        //   - payment.captured / payment.failed / payment.authorized:
+        //       payload.payment.entity.order_id
+        //     (and payload.order.entity is typically NOT present)
+        //   - error scenarios — only the payment entity is present.
+        // The previous code only checked payload.order.entity.id,
+        // causing every canonical payment.captured webhook (the
+        // donation-flipping event for Razorpay Standard Checkout) to
+        // produce gateway_order_id = '' and fail Stage 2 of
+        // PaymentVerificationService.
+        $orderIdFromOrder = (string) ($payloadOrder['id'] ?? '');
+        $orderIdFromPayment = (string) ($payloadPayment['order_id'] ?? '');
+        $gatewayOrderId = $orderIdFromPayment !== ''
+            ? $orderIdFromPayment
+            : $orderIdFromOrder;
+
         return Result::success([
-            'gateway_order_id' => (string) ($payloadOrder['id'] ?? ''),
+            'gateway_order_id' => $gatewayOrderId,
             'gateway_payment_id' => (string) ($payloadPayment['id'] ?? ''),
             'status' => $this->mapStatus((string) ($payloadPayment['status'] ?? '')),
             'amount' => (int) ($payloadPayment['amount'] ?? 0),

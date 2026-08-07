@@ -192,6 +192,8 @@ final class EnvValidator
      */
     private function productionMatrix(): array
     {
+        $paypalEnabled = (bool) $this->config->get('payments.providers.paypal.enabled', false);
+
         return [
             'APP_KEY' => true,
             'APP_URL' => true,
@@ -215,8 +217,12 @@ final class EnvValidator
             'RAZORPAY_KEY_ID' => true,
             'RAZORPAY_KEY_SECRET' => true,
             'RAZORPAY_WEBHOOK_SECRET' => true,
-            'PAYPAL_CLIENT_ID' => true,
-            'PAYPAL_CLIENT_SECRET' => true,
+            // Razorpay is the sole public gateway for the Indian launch;
+            // PayPal credentials are only required when explicitly enabled.
+            // (See config/payments.php — PAYPAL_ENABLED defaults to false.)
+            'PAYPAL_CLIENT_ID' => $paypalEnabled,
+            'PAYPAL_CLIENT_SECRET' => $paypalEnabled,
+            'PAYPAL_WEBHOOK_ID' => $paypalEnabled,
         ];
     }
 }

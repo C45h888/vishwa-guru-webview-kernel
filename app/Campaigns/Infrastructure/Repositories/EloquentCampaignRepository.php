@@ -163,6 +163,7 @@ final class EloquentCampaignRepository implements CampaignRepositoryContract
             startsAt: self::parseDate($row['starts_at'] ?? null),
             endsAt: self::parseDate($row['ends_at'] ?? null),
             coverImageFileId: self::nullIfEmpty($row['cover_image_file_id'] ?? null),
+            updatedAt: self::parseDate($row['updated_at'] ?? null),
         );
     }
 

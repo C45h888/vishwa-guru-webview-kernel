@@ -57,6 +57,12 @@ final class AdminSeeder extends Seeder
 
         $now = (new \DateTimeImmutable())->format(DATE_ATOM);
         $ulid = (string) Str::ulid();
+
+        // Persistence goes through the raw SQL adapter, NOT Eloquent's
+        // User model — so the `hashed` cast that would double-hash on
+        // assignment does NOT fire here. We hash once and write the
+        // bcrypt directly. (This is the inverse of UserFactory, which
+        // DOES go through Eloquent and must pass plaintext.)
         $bcrypt = password_hash($adminPassword, PASSWORD_BCRYPT);
 
         $r = $adapter->execute(

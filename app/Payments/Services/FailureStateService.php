@@ -129,9 +129,15 @@ class FailureStateService
         string $observedRawStatus,
         string $failureCode,
     ): FailureClassification {
-        if (! in_array($providerCode, ['razorpay', 'paypal'], true)) {
-            throw FailureClassificationException::unknownProvider($providerCode);
-        }
+        // Wave 1 N3 fix (2026-08-06): previously this method hardcoded
+        // ['razorpay', 'paypal'] and threw FailureClassificationException
+        // for any other code (including 'receipt_pipeline' which the
+        // receipt escalation path sends). The throw was masked because
+        // every call site passed an explicit classification, but adding a
+        // new provider (Stripe, etc.) or a caller that omits
+        // classification would break loudly. The defensive design here
+        // is: accept ANY provider code and default to RECOVERABLE_TERMINAL
+        // so the failure is captured rather than vanishing.
 
         $code = strtolower($failureCode);
 

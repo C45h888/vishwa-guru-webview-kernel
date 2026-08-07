@@ -37,6 +37,7 @@
     import { Label } from '$shared/ui/label';
     import { Upload, X } from 'lucide-svelte';
     import type { PageComponentProps } from '$shared/lib/inertia';
+    import { slugify } from '$shared/lib/slug';
 
     export type EventFormValues = {
         slug: string;
@@ -112,6 +113,7 @@
 
         const fd = new FormData();
         fd.append('file', file);
+        fd.append('purpose', 'event_cover');
 
         const xhr = new XMLHttpRequest();
         xhr.open('POST', '/admin/media/upload', true);
@@ -175,6 +177,21 @@
         } else {
             $form.put(action);
         }
+    }
+
+    // Slug auto-generate (Pass B polish). Once the admin edits
+    // the slug manually, the auto-fill stops so we do not trample
+    // their edits.
+    let slugWasManuallyEdited = $state($form.slug && $form.slug.length > 0);
+    function onTitleChange(event: Event) {
+        const target = event.target as HTMLInputElement;
+        if (!slugWasManuallyEdited) {
+            $form.slug = slugify(target.value);
+        }
+    }
+    function onSlugInput(event: Event) {
+        const target = event.target as HTMLInputElement;
+        slugWasManuallyEdited = target.value.length > 0;
     }
 
     const disabled = $derived($form.processing || uploadState === 'uploading');

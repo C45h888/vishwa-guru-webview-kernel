@@ -17,5 +17,10 @@
         "resources/js/**/*.ts",
         "resources/js/**/*.svelte"
     ],
+    "exclude": [
+        "vendor",
+        "node_modules",
+        "public/build"
+    ],
     "references": [{ "path": "./tsconfig.node.json" }]
 }

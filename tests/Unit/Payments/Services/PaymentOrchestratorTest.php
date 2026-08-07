@@ -12,7 +12,6 @@ use App\Payments\Domain\Enums\Currency;
 use App\Payments\Domain\Enums\DonationState;
 use App\Payments\Domain\Enums\PaymentProvider;
 use App\Payments\Domain\Enums\TransactionStatus;
-use App\Payments\Domain\Exceptions\RefundExceededException;
 use App\Payments\Domain\Repositories\AuditEventRepositoryContract;
 use App\Payments\Domain\Repositories\DonationRepositoryContract;
 use App\Payments\Domain\Repositories\DonorRepositoryContract;
@@ -111,7 +110,7 @@ final class PaymentOrchestratorTest extends TestCase
         $this->assertStringContainsString('payment_not_found', $result->error());
     }
 
-    public function testRefundThrowsRefundExceededExceptionWhenAmountExceedsCeiling(): void
+    public function testRefundReturnsFailureWhenAmountExceedsCeiling(): void
     {
         $payment = $this->makePayment(
             captured: 5000,
@@ -119,16 +118,20 @@ final class PaymentOrchestratorTest extends TestCase
         );
 
         $payments = $this->createMock(PaymentRepositoryContract::class);
-        $payments->method('findById')->willReturn($payment);
+        // Pass 1.4+ reads via lockByIdForUpdate; the old findById path is
+        // gone. Mock the lock to return the same payment so the ceiling
+        // check is exercised.
+        $payments->method('lockByIdForUpdate')->willReturn($payment);
 
         $orchestrator = $this->makeOrchestrator(payments: $payments);
 
         // 4000 already refunded + 2000 requested = 6000 > 5000 captured
-        $this->expectException(RefundExceededException::class);
-        $orchestrator->refund(
+        $result = $orchestrator->refund(
             new Identifier($payment->id()->ulid()),
             2000,
         );
+        $this->assertTrue($result->isFailure());
+        $this->assertStringContainsString('refund_exceeds_ceiling', $result->error());
     }
 
     public function testGetStatusReturnsFailureWhenPaymentNotFound(): void

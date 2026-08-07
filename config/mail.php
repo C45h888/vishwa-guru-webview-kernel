@@ -4,6 +4,14 @@ declare(strict_types=1);
 
 return [
 
+    // Doctrine: production launches MUST set MAIL_MAILER=smtp with a
+    // real provider (SES, Mailgun, Postmark, etc.). The 'log' default
+    // here is intentional for local dev — the success page and any
+    // post-payment email will write to storage/logs/laravel.log
+    // instead of being delivered. The launch checklist (.env.example
+    // docblock + README) requires flipping this before go-live; the
+    // success page promise "Receipt will be emailed" is only true
+    // when MAIL_MAILER=smtp.
     'default' => env('MAIL_MAILER', 'log'),
 
     'mailers' => [

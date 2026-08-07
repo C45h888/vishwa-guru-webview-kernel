@@ -100,6 +100,9 @@ final class PaymentStateMachine
         if (isset($context['verified_at'])) {
             $entityChanges['verified_at'] = (string) $context['verified_at'];
         }
+        if (isset($context['amount_refunded_minor'])) {
+            $entityChanges['amount_refunded_minor'] = (int) $context['amount_refunded_minor'];
+        }
 
         return new StateTransitionResult(
             toState: $to,
@@ -229,6 +232,10 @@ final class PaymentStateMachine
 
             // DISPUTED +
             'disputed|dispute_resolved_lost' => TransactionStatus::FAILED,
+
+            // PARTIALLY_REFUNDED +
+            'partially_refunded|refund_completed' => TransactionStatus::REFUNDED,
+            'partially_refunded|dispute_opened' => TransactionStatus::DISPUTED,
         ];
 
         if (! isset($table[$key])) {

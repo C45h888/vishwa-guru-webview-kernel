@@ -40,7 +40,11 @@ return [
         ],
 
         'paypal' => [
-            'enabled'                                => env('PAYPAL_ENABLED', true),
+            // PayPal is OFF by default. Razorpay is the sole public
+            // gateway for the Indian launch; flip to true (and provide
+            // PAYPAL_CLIENT_ID / PAYPAL_CLIENT_SECRET / PAYPAL_WEBHOOK_ID)
+            // only when international PayPal flows are explicitly enabled.
+            'enabled'                                => env('PAYPAL_ENABLED', false),
             'client_id'                              => env('PAYPAL_CLIENT_ID', ''),
             'client_secret'                          => env('PAYPAL_CLIENT_SECRET', ''),
             'webhook_id'                             => env('PAYPAL_WEBHOOK_ID', ''),

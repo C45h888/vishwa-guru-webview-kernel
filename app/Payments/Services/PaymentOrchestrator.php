@@ -13,7 +13,6 @@ use App\Payments\Domain\Enums\DonationState;
 use App\Payments\Domain\Enums\PaymentProvider;
 use App\Payments\Domain\Enums\TransactionStatus;
 use App\Payments\Domain\Exceptions\GatewaySelectionException;
-use App\Payments\Domain\Exceptions\RefundExceededException;
 use App\Payments\Domain\Repositories\AuditEventRepositoryContract;
 use App\Payments\Domain\Repositories\DonationRepositoryContract;
 use App\Payments\Domain\Repositories\DonorRepositoryContract;
@@ -189,6 +188,7 @@ class PaymentOrchestrator
                     'gateway_order_id' => $gatewayOrderId,
                 ],
                 id: EntityId::generate('payment'),
+                providerOrderId: $gatewayOrderId,
             );
             $this->payments->save($payment);
 
@@ -236,10 +236,12 @@ class PaymentOrchestrator
         // queues) only need to supply the gateway_order_id. This makes the
         // controller thin (pure transport) and centralizes the lookup here.
         //
-        // Pre-Pass-1.4 this code required the caller to surface all five
-        // expected fields via metadata. Pass 1.4+ uses the
-        // PaymentRepository fast-path by gateway_order_id so the lookup is
-        // canonical and the controller never needs to touch the repository.
+        // Pass 1.4+: the lookup + verification + state transition + donation
+        // transition all happen inside a single transaction under a
+        // SELECT … FOR UPDATE row lock on payments by gateway_order_id.
+        // Concurrent webhooks for the same order_id serialize on the lock,
+        // so two `payment.captured` events cannot both transition the row
+        // or both issue receipts.
         $metadata = $payload->metadata();
         $gatewayOrderId = trim((string) ($metadata['gateway_order_id'] ?? ''));
 
@@ -249,59 +251,60 @@ class PaymentOrchestrator
             );
         }
 
-        $local = $this->payments->findByGatewayOrderId($gatewayOrderId);
-        if ($local === null) {
-            return Result::failure(
-                'webhook_unknown_order: no local Payment with gateway_order_id='.$gatewayOrderId,
-            );
-        }
-
-        $expectedKey = (string) ($local->idempotencyKey() ?? '');
-        if ($expectedKey === '') {
-            // Doctrine: every Payment row carries an idempotency key. Missing
-            // key indicates a row pre-dating Pass 1.5; do not trust it.
-            return Result::failure(
-                'webhook_payment_missing_idempotency_key: gateway_order_id='.$gatewayOrderId,
-            );
-        }
-
-        $context = new VerificationContextDTO(
-            payload: $payload,
-            donationId: new Identifier($local->donationId()->ulid()),
-            paymentId: new Identifier($local->id()->ulid()),
-            expectedAmountMinor: $local->amountMinor(),
-            expectedCurrency: $local->currency(),
-            expectedIdempotencyKey: $expectedKey,
-        );
-
-        $verified = $this->verification->verify($context);
-        if ($verified->isFailure()) {
-            $this->failureStateService->record(
-                paymentId: $local->id(),
-                providerCode: $payload->provider()->value,
-                gatewayOrderId: $verified->error() ?? 'unknown',
-                observedStatus: TransactionStatus::FAILED,
-                failureCode: 'webhook_verification_failed',
-                failureReason: $verified->error(),
-                classification: null,
-                metadata: [
-                    'stage_results' => $context->stageResults(),
-                ],
-                context: [
-                    'correlation_id' => $payload->providerEventId() ?: null,
-                ],
-            );
-
-            return Result::failure(
-                'verification_failed: '.$verified->error(),
-            );
-        }
-
-        $verification = $verified->value();
-
+        // Verification runs OUTSIDE the lock because the HMAC verification
+        // is a pure function on (payload, secret). The lock only protects
+        // the local Payment row during the read-modify-write sequence.
         $commit = $this->coordinator->execute(function () use (
-            $verification, $local,
-        ): Payment {
+            $payload, $gatewayOrderId,
+        ): Result {
+            $local = $this->payments->lockByGatewayOrderIdForUpdate($gatewayOrderId);
+            if ($local === null) {
+                return Result::failure(
+                    'webhook_unknown_order: no local Payment with gateway_order_id='.$gatewayOrderId,
+                );
+            }
+
+            $expectedKey = (string) ($local->idempotencyKey() ?? '');
+            if ($expectedKey === '') {
+                return Result::failure(
+                    'webhook_payment_missing_idempotency_key: gateway_order_id='.$gatewayOrderId,
+                );
+            }
+
+            $context = new VerificationContextDTO(
+                payload: $payload,
+                donationId: new Identifier($local->donationId()->ulid()),
+                paymentId: new Identifier($local->id()->ulid()),
+                expectedAmountMinor: $local->amountMinor(),
+                expectedCurrency: $local->currency(),
+                expectedIdempotencyKey: $expectedKey,
+            );
+
+            $verified = $this->verification->verify($context);
+            if ($verified->isFailure()) {
+                $this->failureStateService->record(
+                    paymentId: $local->id(),
+                    providerCode: $payload->provider()->value,
+                    gatewayOrderId: $verified->error() ?? 'unknown',
+                    observedStatus: TransactionStatus::FAILED,
+                    failureCode: 'webhook_verification_failed',
+                    failureReason: $verified->error(),
+                    classification: null,
+                    metadata: [
+                        'stage_results' => $context->stageResults(),
+                    ],
+                    context: [
+                        'correlation_id' => $payload->providerEventId() ?: null,
+                    ],
+                );
+
+                return Result::failure(
+                    'verification_failed: '.$verified->error(),
+                );
+            }
+
+            $verification = $verified->value();
+
             $transitioned = $local->transitionTo(
                 machine: $this->paymentStateMachine,
                 to: $verification->status(),
@@ -326,19 +329,21 @@ class PaymentOrchestrator
                 $this->donations->update($donationTransitioned);
             }
 
-            return $transitioned;
+            return Result::success($transitioned);
         });
 
         if ($commit->isFailure()) {
             return $commit;
         }
 
+        $transitioned = $commit->value();
+
         // Receipt issuance is intentionally outside the verification
         // transaction so a receipt failure does not roll back the
         // verified payment. The receipt service escalates a
         // FailureState on its own failure path.
         $receiptResult = $this->receiptService->issue(
-            new Identifier($local->id()->ulid()),
+            new Identifier($transitioned->id()->ulid()),
         );
 
         if ($receiptResult->isFailure()) {
@@ -348,20 +353,29 @@ class PaymentOrchestrator
             $this->auditLog->append(
                 eventType: 'payment.receipt.deferred',
                 entityType: Payment::ENTITY_TYPE,
-                entityId: $local->id()->ulid(),
-                previousState: $commit->value()->status()->value,
-                newState: $commit->value()->status()->value,
+                entityId: $transitioned->id()->ulid(),
+                previousState: $transitioned->status()->value,
+                newState: $transitioned->status()->value,
                 context: [
                     'receipt_error' => $receiptResult->error(),
                 ],
                 occurredAt: $this->clock->now(),
             );
+        } else {
+            // Receipt issued cleanly. Fire-and-forget the donor email
+            // onto the receipts queue. The job is idempotent on
+            // receipt:{id}:email and tries=1 — an SMTP outage surfaces
+            // to ops rather than silently retrying, and re-dispatch
+            // from operator UI doesn't double-send within the TTL.
+            $issued = $receiptResult->value();
+            if ($issued instanceof \App\Payments\Domain\Entities\Receipt) {
+                \App\Jobs\ReceiptEmailJob::dispatch(
+                    new Identifier($issued->id()->ulid()),
+                );
+            }
         }
 
-        /** @var Result<Payment> $commit */
-        $commit = Result::success($commit->value());
-
-        return $commit;
+        return Result::success($transitioned);
     }
 
     /**
@@ -379,75 +393,120 @@ class PaymentOrchestrator
             );
         }
 
-        $payment = $this->payments->findById(
-            new EntityId('payment', $transactionId->value()),
-        );
-        if ($payment === null) {
-            return Result::failure(
-                'payment_not_found: '.$transactionId->value(),
+        // Refunds are concurrency-sensitive: two simultaneous partial
+        // refunds could each pass the ceiling check against a stale
+        // snapshot and issue two real refunds. Wrap the read-modify-
+        // write in a single transaction that takes a row lock for the
+        // duration. The gateway call happens INSIDE the transaction
+        // so the ceiling is enforced against the freshly-locked state.
+        $commit = $this->coordinator->execute(function () use (
+            $transactionId, $amountMinor,
+        ): Result {
+            $payment = $this->payments->lockByIdForUpdate(
+                new EntityId('payment', $transactionId->value()),
             );
-        }
+            if ($payment === null) {
+                return Result::failure(
+                    'payment_not_found: '.$transactionId->value(),
+                );
+            }
 
-        $captured = $payment->amountCapturedMinor() ?? 0;
-        $alreadyRefunded = $payment->amountRefundedMinor();
-        if ($captured - $alreadyRefunded < $amountMinor) {
-            throw RefundExceededException::exceedsCaptured(
-                $payment->id()->ulid(),
-                $captured,
-                $alreadyRefunded,
+            $captured = $payment->amountCapturedMinor() ?? 0;
+            $alreadyRefunded = $payment->amountRefundedMinor();
+            if ($captured - $alreadyRefunded < $amountMinor) {
+                return Result::failure(sprintf(
+                    'refund_exceeds_ceiling: captured=%d already_refunded=%d requested=%d',
+                    $captured,
+                    $alreadyRefunded,
+                    $amountMinor,
+                ));
+            }
+
+            // The gateway requires the PROVIDER-side payment id
+            // (`pay_XXXX` for Razorpay, `capture_id` for PayPal). The
+            // local ULID is meaningless to the gateway and gets the
+            // call rejected with 'payment not found'. Fail fast when
+            // no provider payment id is on file yet (i.e. webhook
+            // hasn't fired).
+            $providerPaymentId = $payment->providerPaymentId();
+            if ($providerPaymentId === null || $providerPaymentId === '') {
+                return Result::failure(
+                    'refund_provider_payment_id_unavailable: '.$payment->id()->ulid(),
+                );
+            }
+
+            $isFull = ($amountMinor === $captured - $alreadyRefunded);
+            $targetStatus = $isFull
+                ? TransactionStatus::REFUNDED
+                : TransactionStatus::PARTIALLY_REFUNDED;
+
+            $transitioned = $payment->transitionTo(
+                machine: $this->paymentStateMachine,
+                to: $targetStatus,
+                context: [
+                    'amount_minor' => $payment->amountMinor(),
+                    'amount_refunded_minor' => $alreadyRefunded + $amountMinor,
+                ],
+            );
+
+            $gateway = $this->resolveGatewayFor($payment);
+            if ($gateway->isFailure()) {
+                return $gateway;
+            }
+
+            $refundResult = $gateway->value()->refund(
+                new Identifier($providerPaymentId),
                 $amountMinor,
             );
-        }
+            if ($refundResult->isFailure()) {
+                // Gateway failed — the SM transition was held in
+                // memory only, the coordinator rolls back the lock
+                // release. No compensating action needed.
+                return Result::failure(
+                    'gateway_refund_failed: '.$refundResult->error(),
+                );
+            }
 
-        $isFull = ($amountMinor === $captured - $alreadyRefunded);
-        $targetStatus = $isFull
-            ? TransactionStatus::REFUNDED
-            : TransactionStatus::PARTIALLY_REFUNDED;
+            // Wave 1 M2 fix (2026-08-06): the gateway's authoritative
+            // status must match the locally-targeting transition. If
+            // Razorpay returned FAILED (e.g. insufficient merchant
+            // balance), we MUST NOT persist a local REFUNDED — that
+            // would mark the donor as refunded while Razorpay's ledger
+            // still holds the money. Only persist when the gateway
+            // confirms 'processed' or the legitimate interim 'pending'.
+            $gatewayStatus = $refundResult->value();
+            if ($gatewayStatus === TransactionStatus::FAILED) {
+                return Result::failure(sprintf(
+                    'gateway_refund_failed_at_gateway: pay=%s status=%s',
+                    $payment->id()->ulid(),
+                    $gatewayStatus->value,
+                ));
+            }
 
-        // SM validation FIRST — reject invalid states before touching the gateway.
-        // Refunds are out of scope for Pass 1.3; this guard ensures that if
-        // a refund request arrives for an invalid state, we fail cleanly without
-        // making an irreversible external gateway call.
-        $transitioned = $payment->transitionTo(
-            machine: $this->paymentStateMachine,
-            to: $targetStatus,
-            context: [
-                'amount_minor' => $payment->amountMinor(),
-                'amount_refunded_minor' => $alreadyRefunded + $amountMinor,
-            ],
-        );
+            $this->payments->update($transitioned);
 
-        $gateway = $this->resolveGatewayFor($payment);
-        if ($gateway->isFailure()) {
-            return $gateway;
-        }
-
-        $refundResult = $gateway->value()->refund($transactionId, $amountMinor);
-        if ($refundResult->isFailure()) {
-            // Gateway failed — SM state was never persisted (transitioned is
-            // a new object; $this->payments->update was never called). No
-            // compensating action needed; the local state is unchanged.
-            return Result::failure(
-                'gateway_refund_failed: '.$refundResult->error(),
+            $this->auditLog->append(
+                eventType: 'payment.refund',
+                entityType: Payment::ENTITY_TYPE,
+                entityId: $payment->id()->ulid(),
+                previousState: $payment->status()->value,
+                newState: $targetStatus->value,
+                context: [
+                    'amount_refunded_minor' => $amountMinor,
+                    'is_full_refund' => $isFull,
+                    'gateway_status' => $gatewayStatus->value,
+                ],
+                occurredAt: $this->clock->now(),
             );
+
+            return Result::success($transitioned);
+        });
+
+        if ($commit->isFailure()) {
+            return $commit;
         }
 
-        $this->payments->update($transitioned);
-
-        $this->auditLog->append(
-            eventType: 'payment.refund',
-            entityType: Payment::ENTITY_TYPE,
-            entityId: $payment->id()->ulid(),
-            previousState: $payment->status()->value,
-            newState: $targetStatus->value,
-            context: [
-                'amount_refunded_minor' => $amountMinor,
-                'is_full_refund' => $isFull,
-            ],
-            occurredAt: $this->clock->now(),
-        );
-
-        return Result::success($transitioned);
+        return $commit;
     }
 
     /**

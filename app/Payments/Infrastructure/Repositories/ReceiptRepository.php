@@ -74,6 +74,28 @@ final class ReceiptRepository implements ReceiptRepositoryContract
         return Receipt::fromRow($result->value()[0]);
     }
 
+    /**
+     * Look up a receipt by its access token (the secret credential that
+     * gates the public URL). The token is a 43-char URL-safe random
+     * minted at issue time and stored in `receipts.access_token`.
+     *
+     * This is the ONLY public-safe lookup. The receipt number alone is
+     * insufficient and must never be used to authorize access (the number
+     * is sequentially enumerable).
+     */
+    public function findByAccessToken(string $accessToken): ?Receipt
+    {
+        $result = $this->adapter->query(
+            'SELECT * FROM receipts WHERE access_token = :tok AND deleted_at IS NULL LIMIT 1',
+            ['tok' => $accessToken],
+        );
+        if ($result->isFailure() || empty($result->value())) {
+            return null;
+        }
+
+        return Receipt::fromRow($result->value()[0]);
+    }
+
     public function save(Receipt $receipt): void
     {
         $row = $receipt->toArray();
@@ -92,7 +114,8 @@ final class ReceiptRepository implements ReceiptRepositoryContract
             receipt_file_id, certificate_80g_file_id,
             content_hash, state, generated_at,
             delivered_at, delivery_channel,
-            delivery_metadata, metadata, created_at, updated_at, deleted_at
+            delivery_metadata, metadata, created_at, updated_at, deleted_at,
+            access_token
         ) VALUES (
             :id, :receipt_number, :donation_id, :payment_id, :campaign_id,
             :campaign_title_snapshot, :donor_name, :donor_email, :donor_pan,
@@ -101,7 +124,8 @@ final class ReceiptRepository implements ReceiptRepositoryContract
             :receipt_file_id, :certificate_80g_file_id,
             :content_hash, :state, :generated_at,
             :delivered_at, :delivery_channel,
-            :delivery_metadata, :metadata, :created_at, :updated_at, :deleted_at
+            :delivery_metadata, :metadata, :created_at, :updated_at, :deleted_at,
+            :access_token
         )';
 
         $params = [
@@ -139,6 +163,7 @@ final class ReceiptRepository implements ReceiptRepositoryContract
             'created_at' => $row['created_at'],
             'updated_at' => $row['updated_at'],
             'deleted_at' => $row['deleted_at'],
+            'access_token' => $row['access_token'],
         ];
 
         $exec = $this->adapter->execute($sql, $params);

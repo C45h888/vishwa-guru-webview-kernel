@@ -20,6 +20,11 @@ use InvalidArgumentException;
  * State semantics: the V1 `campaign_state` enum is exposed as a string
  * ('active' | 'completed' | etc.); the `isActive` boolean is computed
  * on detail DTOs only.
+ *
+ * Pass B polish: `updatedAt` is nullable so the public list path
+ * (`listDisplayable` / `listFeatured`) doesn't have to populate it —
+ * only the admin authoring path (`listAllIncludingDrafts`) does, since
+ * the admin index renders "last edited" columns.
  */
 final readonly class CampaignSummaryDTO
 {
@@ -36,6 +41,7 @@ final readonly class CampaignSummaryDTO
         public ?DateTimeImmutable $startsAt,
         public ?DateTimeImmutable $endsAt,
         public ?string $coverImageFileId,
+        public ?DateTimeImmutable $updatedAt = null,
     ) {
         if ($id === '') {
             throw new InvalidArgumentException('CampaignSummaryDTO id cannot be empty');
@@ -82,6 +88,7 @@ final readonly class CampaignSummaryDTO
             'starts_at'           => $this->startsAt?->format(DATE_ATOM),
             'ends_at'             => $this->endsAt?->format(DATE_ATOM),
             'cover_image_file_id' => $this->coverImageFileId,
+            'updated_at'          => $this->updatedAt?->format(DATE_ATOM),
         ];
     }
 }

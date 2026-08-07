@@ -301,6 +301,29 @@ class PaymentStateMachineTest extends TestCase
             TransactionStatus::PARTIALLY_REFUNDED,
             StateTransitionEvent::REFUND_COMPLETED,
         ));
+
+        $result = $this->machine->transition(
+            TransactionStatus::PARTIALLY_REFUNDED,
+            StateTransitionEvent::REFUND_COMPLETED,
+            ['amount_refunded_minor' => 10000],
+        );
+        $this->assertSame(TransactionStatus::REFUNDED, $result->toState());
+        $this->assertSame(10000, $result->entityChanges()['amount_refunded_minor']);
+        $this->assertArrayHasKey('refunded_at', $result->timestampChanges());
+    }
+
+    public function testAmountRefundedMinorFromContext(): void
+    {
+        $result = $this->machine->transition(
+            TransactionStatus::CAPTURED,
+            StateTransitionEvent::PARTIAL_REFUND_INITIATED,
+            [
+                'amount_minor' => 10000,
+                'amount_refunded_minor' => 2500,
+            ],
+        );
+        $this->assertSame(TransactionStatus::PARTIALLY_REFUNDED, $result->toState());
+        $this->assertSame(2500, $result->entityChanges()['amount_refunded_minor']);
     }
 
     public function testTransition_PENDING_CUSTOMER_CANCELLED(): void

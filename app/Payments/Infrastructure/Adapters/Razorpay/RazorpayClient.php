@@ -46,7 +46,7 @@ final class RazorpayClient
         try {
             $order = $this->api->order->create($payload);
 
-            return $order->toArray();
+            return $this->toArray($order);
         } catch (Throwable $e) {
             throw GatewayErrorTranslator::forInitialization('razorpay', $e);
         }
@@ -63,7 +63,7 @@ final class RazorpayClient
         try {
             $order = $this->api->order->fetch($orderId);
 
-            return $order->toArray();
+            return $this->toArray($order);
         } catch (Throwable $e) {
             throw GatewayErrorTranslator::forInitialization('razorpay', $e);
         }
@@ -80,7 +80,7 @@ final class RazorpayClient
         try {
             $payment = $this->api->payment->fetch($paymentId);
 
-            return $payment->toArray();
+            return $this->toArray($payment);
         } catch (Throwable $e) {
             throw GatewayErrorTranslator::forInitialization('razorpay', $e);
         }
@@ -98,7 +98,7 @@ final class RazorpayClient
         try {
             $refund = $this->api->payment->fetch($paymentId)->refund($body);
 
-            return $refund->toArray();
+            return $this->toArray($refund);
         } catch (Throwable $e) {
             throw GatewayErrorTranslator::forInitialization('razorpay', $e);
         }
@@ -117,5 +117,43 @@ final class RazorpayClient
         $expectedSignature = hash_hmac('sha256', $payload, $webhookSecret);
 
         return hash_equals($expectedSignature, $signatureHeader);
+    }
+
+    /**
+     * Convert whatever the Razorpay SDK returns into an associative array.
+     *
+     * Wave 1 N1 fix (2026-08-06): the SDK historically returned objects
+     * with a `toArray()` method (Razorpay\Api\Payment), but recent versions
+     * and stubbed test environments can return plain stdClass or already-array
+     * results. The adapter previously called `$obj->toArray()` unguarded,
+     * which crashes on stdClass (TypeError: Call to undefined method
+     * stdClass::toArray()) and on arrays (Call to a member function toArray()
+     * on array). This helper makes the adapter tolerant of all three.
+     *
+     * Tolerant of: object with toArray(), plain stdClass, array. Anything
+     * else throws — the caller is expected to forward a 502-class error.
+     */
+    private function toArray(mixed $raw): array
+    {
+        if (is_array($raw)) {
+            return $raw;
+        }
+        if (is_object($raw) && method_exists($raw, 'toArray')) {
+            // Razorpay\Api\* objects expose toArray() returning array.
+            /** @var array<string, mixed> $result */
+            $result = $raw->toArray();
+            return $result;
+        }
+        if ($raw instanceof \stdClass) {
+            // stdClass → cast each public property. Works for flat SDK
+            // responses; nested stdClass values will be stdClass objects
+            // in the result, which the adapter's typed accessors handle
+            // (e.g. (string) ($raw->status ?? ''), (int) ($raw->amount ?? 0)).
+            return (array) $raw;
+        }
+        throw new \RuntimeException(sprintf(
+            'RazorpayClient::toArray: unsupported SDK response type [%s]',
+            get_debug_type($raw),
+        ));
     }
 }

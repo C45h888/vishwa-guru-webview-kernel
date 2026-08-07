@@ -1,0 +1,189 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Jobs;
+
+use App\Payments\Domain\Entities\Receipt;
+use App\Payments\Domain\Repositories\ReceiptRepositoryContract;
+use App\Persistence\ValueObjects\EntityId;
+use App\Shared\ValueObjects\Identifier;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
+
+/**
+ * ReceiptEmailJob — fires the "your receipt is ready" email once a
+ * Receipt has been persisted in ISSUED state.
+ *
+ * Doctrine:
+ *   - Extends AbstractQueuedJob so the SETEX dedupe gate and per-class
+ *     retry policy apply uniformly. Receipts are quasi-financial — once
+ *     a verified payment exists, an idempotent receipt email with the
+ *     correct token URL is mandatory. Tries=1, backoff=[0] (financial
+ *     subclass override) so failures surface to ops immediately
+ *     instead of silently retrying.
+ *   - Queue = 'receipts' (matches docker-compose.yml worker
+ *     `--queue=default,receipts,webhooks,notifications`).
+ *   - Idempotency key = "receipt:{receiptId}:email". Re-dispatch (e.g.
+ *     operator click) won't double-send within the 7d TTL.
+ *
+ * Wiring:
+ *   - Dispatched from PaymentOrchestrator::handleWebhook() AFTER the
+ *     verified-payment transaction commits and ReceiptService::issue()
+ *     returns success. Receipt issuance is intentionally outside the
+ *     payment transaction (so a receipt failure does not roll back a
+ *     verified payment); the email dispatch lives one layer further
+ *     out so an SMTP outage never blocks the webhook response.
+ *   - The signed URL pattern (A3) is used for the receipt link, so
+ *     donors never receive a pan/address-bearing PDF in the email body
+ *     itself — they click through and the controller gates the download
+ *     on `?t=<access_token>`.
+ */
+final class ReceiptEmailJob extends AbstractQueuedJob
+{
+    /** Financial — fail-fast on SMTP errors so ops sees the gap. */
+    public int $tries = 1;
+
+    /** @var array<int, int> */
+    public array $backoff = [0];
+
+    /**
+     * Wave 1 fix (2026-08-06): Laravel's Queueable trait declares
+     * $queue as an untyped public property; PHP 8+ forbids the
+     * subclass from narrowing with `?string` annotation. Drop the
+     * type to allow the override.
+     */
+    public $queue = 'receipts';
+
+    /** 7 days — long enough to dedupe manual operator re-dispatches. */
+    public function idempotencyTtl(): int
+    {
+        return 7 * 24 * 3600;
+    }
+
+    public function __construct(
+        public readonly Identifier $receiptId,
+    ) {}
+
+    public function idempotencyKey(): ?string
+    {
+        // Per-receipt key — re-dispatching the same receipt (e.g. from
+        // operator UI) within the TTL is a no-op rather than a duplicate
+        // email.
+        return 'receipt:'.$this->receiptId->value().':email';
+    }
+
+    public function handle(): void
+    {
+        // Per the AbstractQueuedJob contract, handle() takes no arguments
+        // and resolves dependencies from the container. Wave 1 fix (2026-08-06):
+        // resolve the dependency inside the method body rather than via
+        // an argument that violated LSP against the parent's no-arg
+        // signature and aborted the entire phpunit process with a
+        // Declaration of ... must be compatible fatal.
+        $receipts = app(ReceiptRepositoryContract::class);
+
+        $receipt = $receipts->findById(
+            new EntityId('receipt', $this->receiptId->value()),
+        );
+
+        if ($receipt === null) {
+            Log::warning('ReceiptEmailJob: receipt not found', [
+                'receipt_id' => $this->receiptId->value(),
+            ]);
+            return;
+        }
+
+        $email = $receipt->donorEmail();
+        if ($email === null || $email === '') {
+            // Donor made the donation anonymous / no email captured.
+            // Nothing to send. Receipt is still valid for the donor's
+            // own download via the success page URL.
+            Log::info('ReceiptEmailJob: skipped, no donor email', [
+                'receipt_id' => $this->receiptId->value(),
+            ]);
+            return;
+        }
+
+        $signedUrl = route('receipts.show', [
+            'receiptNumber' => $receipt->receiptNumber(),
+            't' => $receipt->accessToken(),
+        ], absolute: true);
+
+        $body = $this->renderBody(
+            donorName: $receipt->donorName(),
+            amountFormatted: $this->formatAmount($receipt),
+            receiptNumber: $receipt->receiptNumber(),
+            campaignTitle: $receipt->campaignTitleSnapshot(),
+            signedUrl: $signedUrl,
+        );
+
+        $subject = sprintf(
+            'Your donation receipt %s — %s',
+            $receipt->receiptNumber(),
+            config('app.name', 'Temple Trust'),
+        );
+
+        Mail::raw($body, function ($message) use ($email, $subject): void {
+            $message
+                ->to($email)
+                ->subject($subject);
+        });
+
+        Log::info('ReceiptEmailJob: sent', [
+            'receipt_id' => $this->receiptId->value(),
+            'recipient' => $this->redactEmail($email),
+        ]);
+    }
+
+    /**
+     * Plain-text body — the success page is the visual receipt; the
+     * email is a hand-off that points donors to it. We intentionally
+     * do NOT embed donor PII (PAN, address) in the email body — A3's
+     * signed-URL pattern keeps that gated.
+     */
+    private function renderBody(
+        string $donorName,
+        string $amountFormatted,
+        string $receiptNumber,
+        string $campaignTitle,
+        string $signedUrl,
+    ): string {
+        $appName = (string) config('app.name', 'Temple Trust');
+
+        return implode("\n\n", [
+            "Namaste {$donorName},",
+            "Thank you for your donation of {$amountFormatted} towards \"{$campaignTitle}\".",
+            "Your official receipt ({$receiptNumber}) is ready. Click the link below to view and download it as a PDF:",
+            $signedUrl,
+            "This link is unique to your receipt — please do not share it. The 80G certificate (if applicable) is available on the receipt page once your PAN is on file.",
+            "With gratitude,\n{$appName}",
+        ]);
+    }
+
+    private function formatAmount(Receipt $receipt): string
+    {
+        $currency = $receipt->currency();
+        $factor = $currency->minorUnitFactor();
+        $major = $currency->exponent() === 0
+            ? (string) $receipt->amountMinor()
+            : number_format($receipt->amountMinor() / $factor, $currency->exponent(), '.', ',');
+
+        return "{$currency->symbol()} {$major}";
+    }
+
+    /**
+     * Redact the email for log lines so we keep a useful breadcrumb
+     * without writing PII to storage/logs. "a***@example.com"
+     */
+    private function redactEmail(string $email): string
+    {
+        [$local, $domain] = explode('@', $email, 2);
+        if ($local === '' || $domain === '') {
+            return '***';
+        }
+        $first = $local[0] ?? '*';
+
+        return $first.'***@'.$domain;
+    }
+}

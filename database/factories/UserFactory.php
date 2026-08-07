@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 
 /**
@@ -13,6 +12,12 @@ use Illuminate\Support\Str;
  *
  * Default password is the literal string `password` so tests can
  * construct the matching plaintext without re-reading the factory.
+ *
+ * The User model declares `'password' => 'hashed'` (Eloquent cast),
+ * which re-hashes whatever value is assigned. We therefore MUST pass
+ * the plaintext and let the cast perform the single Hash::make, else
+ * the stored value becomes bcrypt(bcrypt('password')) and
+ * Auth::attempt('password', …) fails for every test fixture.
  *
  * @extends Factory<\App\Models\User>
  */
@@ -31,7 +36,7 @@ final class UserFactory extends Factory
             'name' => $this->faker->name(),
             'email' => $this->faker->unique()->safeEmail(),
             'email_verified_at' => now(),
-            'password' => Hash::make(self::DEFAULT_PASSWORD),
+            'password' => self::DEFAULT_PASSWORD,
             'role' => 'admin',
             'remember_token' => Str::random(10),
         ];

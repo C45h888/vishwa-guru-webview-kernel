@@ -5,11 +5,15 @@
      * Doctrine (AGENTS.md §"Phase 4: Admin Kernel"):
      *   - Confirms the auth loop works end-to-end.
      *   - Pass 2 surfaces real campaign count + featured campaigns.
-     *   - Pass 3 will populate events_count + upcoming_events.
+     *   - Pass 3 surfaces events count + upcoming-events list.
+     *   - Pass B polish: `formatDbDate` parses the Postgres microsecond
+     *     timestamp format (the dashboard previously rendered "Invalid
+     *     Date" for events with the raw column).
      */
     import AdminLayout from '$shared/components/AdminLayout.svelte';
     import { Button } from '$shared/ui/button';
     import { PlusCircle, CalendarDays } from 'lucide-svelte';
+    import { formatDbDate } from '$shared/lib/dates';
     import type { PageComponentProps } from '$shared/lib/inertia';
 
     type Stats = {
@@ -39,18 +43,6 @@
     }>;
 
     let { appName, stats, featured_campaigns }: Props = $props();
-
-    function formatDate(iso: string, tz: string): string {
-        try {
-            return new Intl.DateTimeFormat('en-IN', {
-                dateStyle: 'medium',
-                timeStyle: 'short',
-                timeZone: tz || 'Asia/Kolkata',
-            }).format(new Date(iso));
-        } catch {
-            return iso;
-        }
-    }
 </script>
 
 <AdminLayout {appName}>
@@ -66,9 +58,7 @@
 
         <div class="grid gap-4 sm:grid-cols-2">
             <div class="rounded-lg border border-border bg-card p-5">
-                <p
-                    class="text-xs font-semibold uppercase tracking-wider text-muted-foreground"
-                >
+                <p class="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                     Campaigns
                 </p>
                 <p class="mt-2 text-3xl font-semibold">
@@ -80,9 +70,7 @@
             </div>
 
             <div class="rounded-lg border border-border bg-card p-5">
-                <p
-                    class="text-xs font-semibold uppercase tracking-wider text-muted-foreground"
-                >
+                <p class="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                     Events
                 </p>
                 <p class="mt-2 text-3xl font-semibold">
@@ -98,10 +86,7 @@
             <div class="rounded-lg border border-border bg-card p-5">
                 <div class="mb-4 flex items-center justify-between">
                     <p class="text-sm font-semibold">Upcoming events</p>
-                    <a
-                        href="/admin/events"
-                        class="text-xs text-muted-foreground hover:text-foreground"
-                    >
+                    <a href="/admin/events" class="text-xs text-muted-foreground hover:text-foreground">
                         View all →
                     </a>
                 </div>
@@ -126,7 +111,7 @@
                                 </div>
                             </div>
                             <span class="shrink-0 text-xs text-muted-foreground">
-                                {formatDate(e.starts_at, e.timezone)}
+                                {formatDbDate(e.starts_at, e.starts_at, { dateStyle: 'medium', timeStyle: 'short' })}
                             </span>
                         </a>
                     {/each}
@@ -138,10 +123,7 @@
             <div class="rounded-lg border border-border bg-card p-5">
                 <div class="mb-4 flex items-center justify-between">
                     <p class="text-sm font-semibold">Featured campaigns</p>
-                    <a
-                        href="/admin/campaigns"
-                        class="text-xs text-muted-foreground hover:text-foreground"
-                    >
+                    <a href="/admin/campaigns" class="text-xs text-muted-foreground hover:text-foreground">
                         View all →
                     </a>
                 </div>

@@ -12,6 +12,7 @@
         PaymentStatusProps,
         AppPageProps,
     } from '$shared/lib/inertia';
+    import { openRazorpayCheckout } from '$shared/lib/razorpay';
 
     let {
         payment,
@@ -25,8 +26,14 @@
     let latestStatus = $state<PaymentStatusProps>(payment);
     let pollAttempts = $state(0);
 
-    const MAX_POLL_ATTEMPTS = 30;
     const POLL_INTERVAL_MS = 2000;
+    // Wave 1 M7 fix (2026-08-06): extend the polling window from 60s to
+    // 5 minutes. Razorpay webhook delivery for non-instant methods
+    // (UPI, NetBanking, EMI, RECURRING) regularly takes 2-5 min. The
+    // previous 60s window triggered a misleading "Status check timed
+    // out" alert while the payment was still being processed.
+    const MAX_POLL_ATTEMPTS = 150; // 150 × 2s = 300s = 5 minutes
+    const POLL_TIMEOUT_TOTAL_MS = 60_000; // 60s — still surface the "delayed" alert at 1 minute so donor knows we're still listening
 
     type PollState =
         | 'captured'
@@ -141,93 +148,44 @@
         return () => teardownPoll();
     });
 
-    type RazorpayOptions = {
-        key: string;
-        order_id: string;
-        amount: number;
-        currency: string;
-        name: string;
-        description: string;
-        handler: (response: {
-            razorpay_payment_id: string;
-            razorpay_order_id: string;
-            razorpay_signature: string;
-        }) => void;
-        modal: { ondismiss: () => void };
-    };
-    type RazorpayCtor = new (options: RazorpayOptions) => {
-        open: () => void;
-        on: (event: string, handler: (response: unknown) => void) => void;
-    };
-
+    /**
+     * Wave 1 B3 follow-up: the inline Razorpay checkout wiring that used to
+     * live here was hoisted into $shared/lib/razorpay.openRazorpayCheckout
+     * so Donate.svelte and Success.svelte share one implementation. The
+     * success-page flow is the recovery path — donors land here if the
+     * modal was closed before the payment completed — so it still needs to
+     * be able to re-open checkout on demand.
+     */
     async function openCheckout(): Promise<void> {
         const keyId = latestStatus.public_key_id;
         const orderId = latestStatus.gateway_order_id;
         if (!keyId || !orderId) return;
 
         openingCheckout = true;
-
-        let scriptLoadedOk = true;
-        await new Promise<void>((resolve, reject) => {
-            const existing = document.getElementById(
-                'razorpay-checkout-js',
-            );
-            if (existing) {
-                resolve();
-                return;
-            }
-            const script = document.createElement('script');
-            script.id = 'razorpay-checkout-js';
-            script.src = 'https://checkout.razorpay.com/v1/checkout.js';
-            script.async = true;
-            script.onload = () => resolve();
-            script.onerror = () =>
-                reject(new Error('Razorpay checkout.js failed to load.'));
-            document.head.appendChild(script);
-        }).catch((err: Error) => {
-            scriptLoadedOk = false;
-            alert(err.message);
-        });
-
-        if (!scriptLoadedOk) {
-            openingCheckout = false;
-            return;
-        }
-
-        const RazorpayConstructor = (
-            window as unknown as { Razorpay?: RazorpayCtor }
-        ).Razorpay;
-        if (!RazorpayConstructor) {
-            openingCheckout = false;
-            alert('Razorpay is not available on window.');
-            return;
-        }
-
-        const checkout = new RazorpayConstructor({
-            key: keyId,
-            order_id: orderId,
-            amount: latestStatus.amount_minor ?? 0,
-            currency: latestStatus.currency_code ?? 'INR',
-            name: appName,
-            description: 'Donation',
-            handler: () => {
-                pollAttempts = 0;
-                pollHandle = setInterval(pollOnce, POLL_INTERVAL_MS);
-            },
-            modal: {
-                ondismiss: () => {
+        try {
+            await openRazorpayCheckout({
+                orderId,
+                keyId,
+                amountMinor: latestStatus.amount_minor ?? 0,
+                currency: latestStatus.currency_code ?? 'INR',
+                appName,
+                onSuccess: () => {
+                    pollAttempts = 0;
+                    pollHandle = setInterval(pollOnce, POLL_INTERVAL_MS);
+                },
+                onDismiss: () => {
                     openingCheckout = false;
                     router.visit('/donate/cancel');
                 },
-            },
-        });
-
-        checkout.on('payment.failed', (response) => {
-            console.error('Razorpay payment.failed', response);
+            });
+        } catch (err) {
             openingCheckout = false;
-        });
-
-        checkout.open();
+            alert(
+                err instanceof Error
+                    ? err.message
+                    : 'Razorpay failed to open.',
+            );
+        }
     }
 </script>
 
@@ -414,13 +372,7 @@
                         </Button>
                     {/if}
                 </div>
-
-                <p class="mt-6 text-xs text-muted-foreground">
-                    Razorpay public key id (test mode): <span class="font-mono"
-                        >{latestStatus.public_key_id || '—'}</span
-                    >
-                </p>
             </div>
-        </div>
-    </section>
-</PublicLayout>
+        </section>
+    </PublicLayout>
+

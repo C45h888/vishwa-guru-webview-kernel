@@ -93,6 +93,7 @@ final class Payment implements EntityContract
         string $idempotencyKey,
         array $metadata = [],
         ?EntityId $id = null,
+        ?string $providerOrderId = null,
     ): self {
         if ($amountMinor <= 0) {
             throw new InvalidArgumentException("Payment amount must be positive (got {$amountMinor})");
@@ -116,7 +117,7 @@ final class Payment implements EntityContract
             taxMinor: null,
             method: null,
             methodDetail: [],
-            providerOrderId: null,
+            providerOrderId: $providerOrderId,
             providerPaymentId: null,
             providerReferenceId: null,
             signature: null,
@@ -386,6 +387,8 @@ final class Payment implements EntityContract
                 => \App\Payments\Domain\StateMachines\StateTransitionEvent::REFUND_INITIATED,
             $this->status === TransactionStatus::SETTLED && $target === TransactionStatus::PARTIALLY_REFUNDED
                 => \App\Payments\Domain\StateMachines\StateTransitionEvent::PARTIAL_REFUND_INITIATED,
+            $this->status === TransactionStatus::PARTIALLY_REFUNDED && $target === TransactionStatus::REFUNDED
+                => \App\Payments\Domain\StateMachines\StateTransitionEvent::REFUND_COMPLETED,
 
             // ── Group 2: specific FAILED arms with distinct events ───────
             // These MUST come BEFORE the generic `target === FAILED` arm

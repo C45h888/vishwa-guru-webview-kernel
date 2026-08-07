@@ -1,9 +1,0 @@
-parameters:
-    level: 5
-    paths:
-        - app/
-    excludePaths:
-        - app/Shared/Exceptions/BaseException.php
-    ignoreErrors:
-        - '#Parameter .* expects array<string, mixed>, array<int, .*> given#'
-    reportUnmatchedIgnoredErrors: false

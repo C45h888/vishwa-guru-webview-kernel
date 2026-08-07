@@ -12,6 +12,7 @@
         CampaignSummaryProps,
         AppPageProps,
     } from '$shared/lib/inertia';
+    import { openRazorpayCheckout } from '$shared/lib/razorpay';
 
     // Razorpay environment: shared via HandleInertiaRequests. When 'test',
     // the donate flow surfaces a "Test mode" badge so anyone in the
@@ -44,7 +45,21 @@
     let donorName = $state<string>('');
     let donorEmail = $state<string>('');
     let donorPhone = $state<string>('');
+    let donorPan = $state<string>('');
+    let donorAddressLine1 = $state<string>('');
+    let donorAddressLine2 = $state<string>('');
+    let donorCity = $state<string>('');
+    let donorState = $state<string>('');
+    let donorPincode = $state<string>('');
+    let donorCountry = $state<string>('India');
+    let purpose = $state<string>('');
     let donorMessage = $state<string>('');
+
+    // Wave 1 M1 fix (2026-08-06): PAN and address fields surface only when
+    // the amount crosses the 80G reporting threshold (₹2,000 in India) AND
+    // the donor is identified. Anonymous donors never need PAN/address.
+    const showEightyGFields = $derived(!isAnonymous && parseFloat(amountRupees) > 2000);
+    const messageRemaining = $derived(500 - donorMessage.length);
 
     let submitting = $state(false);
     let errorMessage = $state<string | null>(null);
@@ -59,6 +74,17 @@
         return Math.round(parsed * 100);
     }
 
+    /**
+     * Wave 1 B4 fix (2026-08-06): after the backend returns the Razorpay
+     * order id, the Razorpay Standard Checkout modal is opened IMMEDIATELY.
+     * The previous flow redirected to /donate/success without opening the
+     * modal — donors saw a secondary "Open Razorpay checkout" link, which
+     * most treated as a utility link and abandoned. After a successful
+     * payment, the handler routes to the success page for status polling.
+     *
+     * The inline modal logic lives in $shared/lib/razorpay (openRazorpayCheckout)
+     * so it can be unit-tested and reused from other donation entry points.
+     */
     async function submit(event: SubmitEvent): Promise<void> {
         event.preventDefault();
 
@@ -68,8 +94,15 @@
         }
 
         const amountMinor = rupeesToMinor(amountRupees);
+        // RazorpayAdapter enforces ₹1..₹1 crore per adapter's
+        // minimumAmount()/maximumAmount() — match on the client too.
         if (amountMinor < 100) {
             errorMessage = 'Minimum donation is ₹1 (100 paise).';
+            return;
+        }
+        const maxMinor = 99_999_999;
+        if (amountMinor > maxMinor) {
+            errorMessage = 'Maximum donation is ₹9,99,999.99 (one crore paise).';
             return;
         }
 
@@ -81,6 +114,9 @@
                 ? crypto.randomUUID()
                 : `idemp_${Date.now()}_${Math.random().toString(36).slice(2)}`;
 
+        // Wave 1 M1 fix (2026-08-06): PAN + address + purpose flow from
+        // the form into the payload so the backend can populate 80G certs
+        // when the amount crosses the threshold AND the donor is identified.
         const payload = {
             amount_minor: amountMinor,
             currency: defaultCurrency,
@@ -89,8 +125,22 @@
                 name: isAnonymous ? null : donorName || null,
                 email: isAnonymous ? null : donorEmail || null,
                 phone: donorPhone || null,
+                pan: showEightyGFields ? donorPan || null : null,
+                address: isAnonymous
+                    ? null
+                    : (donorAddressLine1 || donorCity || donorPincode
+                        ? {
+                              line1: donorAddressLine1,
+                              line2: donorAddressLine2,
+                              city: donorCity,
+                              state: donorState,
+                              pincode: donorPincode,
+                              country: donorCountry,
+                          }
+                        : null),
             },
             donation_message: donorMessage || null,
+            purpose: purpose || null,
             idempotency_key: idempotencyKey,
         };
 
@@ -108,6 +158,7 @@
                     'Accept': 'application/json',
                     'X-CSRF-TOKEN': csrfToken,
                     'X-Requested-With': 'XMLHttpRequest',
+                    'Idempotency-Key': idempotencyKey,
                 },
                 body: JSON.stringify(payload),
                 credentials: 'same-origin',
@@ -125,15 +176,54 @@
 
             const data = await response.json();
             const orderId = data.order_id;
+            const keyId = data.key_id ?? '';
+            const amount = (data.amount_minor ?? amountMinor) as number;
+            const currency = (data.currency ?? defaultCurrency) as string;
+
             if (!orderId) {
                 errorMessage = 'Gateway did not return an order id.';
                 submitting = false;
                 return;
             }
+            if (!keyId) {
+                errorMessage =
+                    'Gateway did not return a Razorpay key id. Check that payments.providers.razorpay.key_id is configured.';
+                submitting = false;
+                return;
+            }
 
-            router.visit(
-                `/donate/success?gateway_order_id=${encodeURIComponent(orderId)}`,
-            );
+            // Open Razorpay modal immediately (B4 fix). If checkout.js
+            // fails to load or throws, fall back to the success page
+            // polling UX (preserves the previous no-modal path).
+            try {
+                await openRazorpayCheckout({
+                    orderId,
+                    keyId,
+                    amountMinor: amount,
+                    currency,
+                    appName,
+                    onSuccess: () => {
+                        router.visit(
+                            `/donate/success?gateway_order_id=${encodeURIComponent(orderId)}`,
+                        );
+                    },
+                    onDismiss: () => {
+                        router.visit('/donate/cancel');
+                    },
+                });
+                submitting = false;
+            } catch (modalErr) {
+                console.error('Razorpay modal open failed', modalErr);
+                alert(
+                    modalErr instanceof Error
+                        ? modalErr.message
+                        : 'Razorpay failed to open. Continuing to status page.',
+                );
+                router.visit(
+                    `/donate/success?gateway_order_id=${encodeURIComponent(orderId)}`,
+                );
+                submitting = false;
+            }
         } catch (err) {
             errorMessage = err instanceof Error ? err.message : 'Network error.';
             submitting = false;
@@ -268,7 +358,9 @@
                                     <CardTitle>Donor information</CardTitle>
                                     <CardDescription>
                                         Optional. Below ₹2,000 the donation
-                                        may remain anonymous.
+                                        may remain anonymous; above ₹2,000
+                                        PAN is required to issue an 80G
+                                        tax-deductible receipt.
                                     </CardDescription>
                                 </CardHeader>
                                 <CardContent class="space-y-3">
@@ -329,7 +421,128 @@
                                             bind:value={donorMessage}
                                             placeholder="A short dedication or note"
                                         />
+                                        <p
+                                            class="text-right text-xs text-muted-foreground"
+                                        >
+                                            {messageRemaining} / 500 remaining
+                                        </p>
                                     </div>
+
+                                    {#if showEightyGFields}
+                                        <div
+                                            class="space-y-2 border-t border-border/40 pt-4"
+                                        >
+                                            <p
+                                                class="text-xs font-semibold uppercase tracking-wider text-primary"
+                                            >
+                                                80G receipt details
+                                            </p>
+                                            <div class="space-y-2">
+                                                <Label for="pan"
+                                                    >PAN</Label
+                                                >
+                                                <Input
+                                                    id="pan"
+                                                    type="text"
+                                                    maxlength={10}
+                                                    pattern="[A-Z]{5}[0-9]{4}[A-Z]"
+                                                    bind:value={donorPan}
+                                                    placeholder="AAAAA9999A"
+                                                />
+                                                <p
+                                                    class="text-xs text-muted-foreground"
+                                                >
+                                                    Format: AAAAA9999A
+                                                </p>
+                                            </div>
+                                            <div class="space-y-2">
+                                                <Label for="address-line1"
+                                                    >Address line 1</Label
+                                                >
+                                                <Input
+                                                    id="address-line1"
+                                                    type="text"
+                                                    maxlength={255}
+                                                    bind:value={donorAddressLine1}
+                                                    placeholder="Street, building"
+                                                />
+                                            </div>
+                                            <div class="space-y-2">
+                                                <Label for="address-line2"
+                                                    >Address line 2 (optional)</Label
+                                                >
+                                                <Input
+                                                    id="address-line2"
+                                                    type="text"
+                                                    maxlength={255}
+                                                    bind:value={donorAddressLine2}
+                                                />
+                                            </div>
+                                            <div
+                                                class="grid grid-cols-1 gap-3 sm:grid-cols-3"
+                                            >
+                                                <div class="space-y-2">
+                                                    <Label for="city"
+                                                        >City</Label
+                                                    >
+                                                    <Input
+                                                        id="city"
+                                                        type="text"
+                                                        maxlength={120}
+                                                        bind:value={donorCity}
+                                                    />
+                                                </div>
+                                                <div class="space-y-2">
+                                                    <Label for="state"
+                                                        >State</Label
+                                                    >
+                                                    <Input
+                                                        id="state"
+                                                        type="text"
+                                                        maxlength={120}
+                                                        bind:value={donorState}
+                                                    />
+                                                </div>
+                                                <div class="space-y-2">
+                                                    <Label for="pincode"
+                                                        >Pincode</Label
+                                                    >
+                                                    <Input
+                                                        id="pincode"
+                                                        type="text"
+                                                        maxlength={12}
+                                                        bind:value={donorPincode}
+                                                    />
+                                                </div>
+                                            </div>
+                                            <div class="space-y-2">
+                                                <Label for="country"
+                                                    >Country</Label
+                                                >
+                                                <Input
+                                                    id="country"
+                                                    type="text"
+                                                    maxlength={64}
+                                                    bind:value={donorCountry}
+                                                />
+                                            </div>
+                                        </div>
+
+                                        <div
+                                            class="space-y-2 border-t border-border/40 pt-4"
+                                        >
+                                            <Label for="purpose"
+                                                >Purpose (optional)</Label
+                                            >
+                                            <Input
+                                                id="purpose"
+                                                type="text"
+                                                maxlength={120}
+                                                bind:value={purpose}
+                                                placeholder="E.g. Pooja sponsorship"
+                                            />
+                                        </div>
+                                    {/if}
                                 </CardContent>
                             </Card>
 
@@ -352,7 +565,7 @@
                                         aria-hidden="true"
                                     />
                                     {submitting
-                                        ? 'Submitting…'
+                                        ? 'Opening Razorpay…'
                                         : 'Continue to payment'}
                                 </Button>
                             </div>

@@ -232,6 +232,7 @@ final class EloquentEventRepository implements EventRepositoryContract
             isFeatured: self::bool($row['is_featured'] ?? false),
             isUpcoming: EventSummaryDTO::isUpcomingAt($startsAt, $now),
             bannerFileId: self::nullIfEmpty($row['banner_file_id'] ?? null),
+            updatedAt: self::parseDate($row['updated_at'] ?? null),
         );
     }
 
@@ -458,6 +459,13 @@ final class EloquentEventRepository implements EventRepositoryContract
         if (is_array($row['metadata'] ?? null)) {
             $row['metadata'] = json_encode($row['metadata'], JSON_THROW_ON_ERROR);
         }
+        // Doctrine: when an event is created with state='published', stamp
+        // published_at with now. Symmetric to end() which stamps
+        // completed_at when state=completed. Idempotent: never overwrites
+        // an explicit published_at.
+        if (($row['state'] ?? null) === 'published' && empty($row['published_at'])) {
+            $row['published_at'] = $now;
+        }
 
         $sql = 'INSERT INTO events (
                     id, slug, title, description, short_description,
@@ -538,6 +546,21 @@ final class EloquentEventRepository implements EventRepositoryContract
         }
         if (array_key_exists('is_featured', $diff)) {
             $diff['is_featured'] = self::toBool($diff['is_featured']) ? 1 : 0;
+        }
+        // Doctrine: when state transitions to 'published' and published_at
+        // is not already set, stamp published_at with now. Symmetric to
+        // end() which stamps completed_at on state=completed. Without
+        // this, an admin editing an event and flipping state to 'published'
+        // leaves published_at=NULL (Bug: confirmed via state audit
+        // 2026-08-06). Idempotent: never overwrites an existing
+        // published_at.
+        if (($diff['state'] ?? null) === 'published' && empty($diff['published_at'])) {
+            $existing = $this->findByIdIncludingDrafts($id);
+            if ($existing !== null && $existing->publishedAt === null) {
+                $diff['published_at'] = (new \DateTimeImmutable())->format(DATE_ATOM);
+            } else {
+                unset($diff['published_at']);
+            }
         }
 
         $assignments = [];

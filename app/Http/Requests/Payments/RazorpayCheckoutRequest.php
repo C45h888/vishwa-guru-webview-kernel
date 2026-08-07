@@ -58,7 +58,15 @@ final class RazorpayCheckoutRequest extends FormRequest
 
             'purpose' => ['sometimes', 'string', 'max:120'],
             'donation_message' => ['sometimes', 'nullable', 'string', 'max:500'],
-            'internal_notes' => ['sometimes', 'nullable', 'string', 'max:1000'],
+            // Wave 1 m12 fix (2026-08-06): 'internal_notes' was a publicly
+            // POSTable field on the donation contract — donors could
+            // taint the donations.internal_notes column with attacker
+            // content (admin-trust-boundary violation / XSS surface in
+            // any consumer that renders without escaping). It was
+            // accepted by the FormRequest but never sent by the
+            // legitimate Donate.svelte form. Removed from the public
+            // rules; staff-authored internal notes belong on a separate
+            // /admin/* endpoint once admin CMS lands.
             'idempotency_key' => ['sometimes', 'string', 'max:64'],
         ];
     }

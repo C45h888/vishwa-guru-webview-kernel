@@ -21,9 +21,10 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
  *     and returns Result<string> — we treat failure as 404 (PDF unavailable)
  *     rather than 500, because the receipt entity exists in DB but its
  *     file render failed (cache miss, transient error).
- *   - The receipt number is the access token (cryptographic randomness
- *     per ReceiptNumberAllocator). When auth lands, add `auth` middleware
- *     here and gate to the donor's own receipts.
+ *   - Access requires `?t=<access_token>` (a 43-char URL-safe random
+ *     minted at issue time). The receipt number alone is never
+ *     sufficient — it is sequentially enumerable and would expose
+ *     donor PAN, full address, email, phone to anyone.
  *
  * Routes registered in routes/receipts.php with the same regex constraint
  * as /receipts/{number}: TR-\d{4}-[A-Z0-9]{4,32}.
@@ -36,9 +37,17 @@ final class ReceiptDownloadController
         DonationRepositoryContract $donations,
         ReceiptPdfGenerator $pdfGenerator,
         string $receiptNumber,
+        \Illuminate\Http\Request $request,
     ): Response {
-        $receipt = $receipts->findByReceiptNumber($receiptNumber);
-        if ($receipt === null) {
+        $token = (string) $request->query('t', '');
+        if ($token === '') {
+            throw new NotFoundHttpException(
+                "Receipt [{$receiptNumber}] requires an access token",
+            );
+        }
+
+        $receipt = $receipts->findByAccessToken($token);
+        if ($receipt === null || $receipt->receiptNumber() !== $receiptNumber) {
             throw new NotFoundHttpException(
                 "Receipt [{$receiptNumber}] not found",
             );

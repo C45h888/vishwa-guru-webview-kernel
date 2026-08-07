@@ -281,10 +281,25 @@ final class DonationRepository implements DonationRepositoryContract
 
     public function findByGatewayOrderId(string $gatewayOrderId): ?Donation
     {
-        // This requires joining through payments; for now do a best-effort
-        // by querying only donations that have an associated payment.
-        // The actual join will be implemented when PaymentService wires this.
-        return null;
+        // Wave 1 donation-state-drift fix: the previous stub returned null
+        // unconditionally, masking any actual lookup failure and breaking
+        // cross-kernel joins when callers queried Donation by gateway order id.
+        // Implements the join through `payments` correctly so the
+        // DonationRepository now behaves like the contract advertises.
+        $result = $this->adapter->query(
+            'SELECT d.* FROM donations d
+             INNER JOIN payments p ON p.donation_id = d.id
+             WHERE p.provider_order_id = :oid
+               AND d.deleted_at IS NULL
+               AND p.deleted_at IS NULL
+             LIMIT 1',
+            ['oid' => $gatewayOrderId],
+        );
+        if ($result->isFailure() || empty($result->value())) {
+            return null;
+        }
+
+        return Donation::fromRow($result->value()[0]);
     }
 
     public function lockByIdForUpdate(EntityId $id): ?Donation

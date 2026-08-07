@@ -92,6 +92,17 @@ final class AmountInWords
         }
 
         $parts = [];
+        // Wave 1 N2 fix (2026-08-06): explicitly initialize the
+        // by-reference outputs BEFORE passing them. PHP 8.3 raises a
+        // TypeError / warning when undefined variables are passed by
+        // reference; the previous code relied on splitIntoIndianGroups
+        // to assign-before-use, but several test fixtures supplied
+        // mixed signed/undefined values and crashed in convertNumber().
+        $crores = 0;
+        $lakhs = 0;
+        $thousands = 0;
+        $hundreds = 0;
+        $ones = 0;
         self::splitIntoIndianGroups($number, $crores, $lakhs, $thousands, $hundreds, $ones);
 
         if ($crores > 0) {

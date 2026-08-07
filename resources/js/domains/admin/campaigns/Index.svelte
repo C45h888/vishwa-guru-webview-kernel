@@ -9,10 +9,15 @@
      *     active=primary, completed=muted.
      *   - Pagination: prev/next links, server-driven via ?page=.
      *   - "New campaign" CTA routes to /admin/campaigns/new.
+     *   - `updated_at` is rendered via `formatDbDate` (Pass B polish
+     *     bugfix): Postgres' microsecond-precision timestamp format
+     *     breaks `new Date()` so the raw column renders as "Invalid
+     *     Date" — the helper normalises the format before parsing.
      */
     import AdminLayout from '$shared/components/AdminLayout.svelte';
     import { Button } from '$shared/ui/button';
     import { PlusCircle, ChevronLeft, ChevronRight } from 'lucide-svelte';
+    import { formatDbDate } from '$shared/lib/dates';
     import type { PageComponentProps } from '$shared/lib/inertia';
 
     type CampaignRow = {
@@ -121,7 +126,7 @@
                                 {money(c.target_amount_minor, c.currency_code)}
                             </td>
                             <td class="px-4 py-3 text-right text-xs text-muted-foreground">
-                                {new Date(c.updated_at).toLocaleDateString()}
+                                {formatDbDate(c.updated_at, '—', { dateStyle: 'medium' })}
                             </td>
                             <td class="px-4 py-3 text-right">
                                 <a

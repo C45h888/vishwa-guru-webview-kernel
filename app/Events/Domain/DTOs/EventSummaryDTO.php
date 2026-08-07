@@ -15,6 +15,11 @@ use InvalidArgumentException;
  *
  * Doctrine: `isUpcoming` is computed at DTO build time as
  * `$startsAt >= $now`. `bannerFileId` is opaque in V1.
+ *
+ * Pass B polish: `updatedAt` is nullable so the public list path
+ * doesn't have to populate it — only the admin authoring path
+ * (`listAllIncludingDrafts`) does, since the admin index renders
+ * "last edited" data.
  */
 final readonly class EventSummaryDTO
 {
@@ -32,6 +37,7 @@ final readonly class EventSummaryDTO
         public bool $isFeatured,
         public bool $isUpcoming,
         public ?string $bannerFileId,
+        public ?DateTimeImmutable $updatedAt = null,
     ) {
         if ($id === '') {
             throw new InvalidArgumentException('EventSummaryDTO id cannot be empty');
@@ -77,6 +83,7 @@ final readonly class EventSummaryDTO
             'is_featured'         => $this->isFeatured,
             'is_upcoming'         => $this->isUpcoming,
             'banner_file_id'      => $this->bannerFileId,
+            'updated_at'          => $this->updatedAt?->format(DATE_ATOM),
         ];
     }
 }

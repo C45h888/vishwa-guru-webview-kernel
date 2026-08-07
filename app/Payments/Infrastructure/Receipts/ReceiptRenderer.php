@@ -14,6 +14,7 @@ use App\Payments\Domain\Repositories\DonationRepositoryContract;
 use App\Payments\Domain\Repositories\PaymentRepositoryContract;
 use App\Payments\Domain\Repositories\ReceiptRepositoryContract;
 use App\Payments\Domain\ValueObjects\ReceiptDraft;
+use App\Campaigns\Domain\Repositories\CampaignRepositoryContract;
 use App\Payments\Services\FailureStateService;
 use App\Persistence\ValueObjects\EntityId;
 use App\Shared\Support\Clock;
@@ -49,6 +50,7 @@ final class ReceiptRenderer implements ReceiptGenerationContract
         private readonly ReceiptStorage $storage,
         private readonly Receipt80GValidator $validator80G,
         private readonly FailureStateService $failureStateService,
+        private readonly CampaignRepositoryContract $campaigns,
         private readonly Clock $clock,
     ) {}
 
@@ -219,12 +221,20 @@ final class ReceiptRenderer implements ReceiptGenerationContract
         EntityId $fileAssetId,
         ?string $certificateNumber,
     ): Receipt {
+        $campaignTitle = 'Temple donation';
+        if ($donation !== null) {
+            $campaign = $this->campaigns->findById($donation->campaignId()->ulid());
+            if ($campaign !== null && $campaign->title !== '') {
+                $campaignTitle = $campaign->title;
+            }
+        }
+
         return Receipt::issue(
             donationId: $payment->donationId(),
             paymentId: $payment->id(),
             campaignId: $donation?->campaignId() ?? EntityId::generate('campaign'),
             receiptNumber: $receiptNumber,
-            campaignTitleSnapshot: 'Temple donation',
+            campaignTitleSnapshot: $campaignTitle,
             donorName: $donation?->donorNameSnapshot() ?? 'Anonymous',
             amountMinor: $payment->amountMinor(),
             currency: $payment->currency(),

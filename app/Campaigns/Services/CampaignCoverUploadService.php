@@ -145,6 +145,6 @@ final class CampaignCoverUploadService
 
         $this->fileAssets->save($record);
 
-        return $record->id;
+        return $record->id();
     }
 }

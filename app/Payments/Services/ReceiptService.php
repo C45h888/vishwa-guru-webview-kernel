@@ -14,6 +14,7 @@ use App\Payments\Domain\Repositories\ReceiptRepositoryContract;
 use App\Payments\Domain\StateMachines\ReceiptStateMachine;
 use App\Payments\Domain\StateMachines\StateTransitionEvent;
 use App\Payments\Domain\ValueObjects\ReceiptDraft;
+use App\Campaigns\Domain\Repositories\CampaignRepositoryContract;
 use App\Persistence\ValueObjects\EntityId;
 use App\Shared\Support\Clock;
 use App\Shared\Support\Result;
@@ -52,6 +53,7 @@ class ReceiptService
         private readonly ReceiptRepositoryContract $receipts,
         private readonly PaymentRepositoryContract $payments,
         private readonly DonationRepositoryContract $donations,
+        private readonly CampaignRepositoryContract $campaigns,
         private readonly FailureStateService $failureStateService,
         private readonly ReceiptGenerationContract $receiptGenerator,
         private readonly ReceiptStateMachine $receiptStateMachine,
@@ -92,11 +94,17 @@ class ReceiptService
             );
         }
 
-        if ($this->receipts->existsForTransaction($payment->id())) {
-            $existing = $this->receipts->findByTransactionId($payment->id());
-            if ($existing !== null) {
-                return Result::success($existing);
-            }
+        // Wave 1 F3 fix (2026-08-06): replace the exists-then-save TOCTOU
+        // with a single fetch first (cheap on the no-row path). Then
+        // INSERT, and on unique-constraint violation (the only
+        // remaining race window between two concurrent webhook retries
+        // that both saw null), re-fetch the winning row. This is the
+        // SQLite/Postgres-portable equivalent of ON CONFLICT DO NOTHING
+        // RETURNING — the canonical Repository contract has no
+        // native upsert primitive, so we wire it at the service layer.
+        $existing = $this->receipts->findByTransactionId($payment->id());
+        if ($existing !== null) {
+            return Result::success($existing);
         }
 
         $draft = $this->receiptGenerator->draft($transactionId);
@@ -114,7 +122,7 @@ class ReceiptService
 
         $donation = $this->donations->findById($payment->donationId());
         $campaignId = $donation?->campaignId() ?? EntityId::generate('campaign');
-        $campaignTitleSnapshot = 'Temple donation';
+        $campaignTitleSnapshot = $this->resolveCampaignTitle($donation);
         $donorName = $donation?->donorNameSnapshot() ?? 'Anonymous';
 
         $receipt = Receipt::issue(
@@ -145,7 +153,25 @@ class ReceiptService
             id: EntityId::generate('receipt'),
         );
 
-        $this->receipts->save($receipt);
+        try {
+            $this->receipts->save($receipt);
+        } catch (\RuntimeException $e) {
+            // Likely the receipts_unique_per_payment unique-constraint
+            // collision from a concurrent webhook retry. Re-fetch the
+            // winning row so callers see a stable Receipt and no duplicate
+            // PDF / audit event is generated.
+            $winning = $this->receipts->findByTransactionId($payment->id());
+            if ($winning !== null) {
+                return Result::success($winning);
+            }
+            // Different RuntimeException — surface as failure.
+            return $this->escalateFailure(
+                $transactionId,
+                'receipt.issue',
+                'persist_failed',
+                $e->getMessage(),
+            );
+        }
 
         return Result::success($receipt);
     }
@@ -231,5 +257,26 @@ class ReceiptService
             ReceiptDeliveryState::BOUNCED => StateTransitionEvent::DELIVERY_BOUNCED,
             ReceiptDeliveryState::PENDING => StateTransitionEvent::DELIVERY_REDISPATCHED,
         };
+    }
+
+    /**
+     * Resolve the campaign title for the receipt snapshot. Returns the
+     * actual title when the donation is attached to a known campaign,
+     * or a generic fallback when the donation is unattached or the
+     * campaign has been deleted. The fallback intentionally never
+     * reads 'Temple donation' as a default because that mis-attributes
+     * funds on a printed 80G receipt.
+     */
+    private function resolveCampaignTitle(?\App\Payments\Domain\Entities\Donation $donation): string
+    {
+        if ($donation === null) {
+            return 'Temple donation';
+        }
+        $campaign = $this->campaigns->findById($donation->campaignId()->ulid());
+        if ($campaign !== null && $campaign->title !== '') {
+            return $campaign->title;
+        }
+
+        return 'Temple donation';
     }
 }
