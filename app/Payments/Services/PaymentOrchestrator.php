@@ -177,6 +177,18 @@ class PaymentOrchestrator
             );
             $this->donations->save($donation);
 
+            // Wave 1 fix (2026-08-07): PostgreSQL may mark the transaction as
+            // aborted due to a deferred constraint or trigger violation that
+            // doesn't throw a PDO exception. Check the transaction status
+            // explicitly before proceeding to the Payment save.
+            $txStatus = $this->coordinator->getTransactionStatus();
+            if ($txStatus === 'aborted') {
+                throw new \RuntimeException(
+                    'Transaction aborted after Donation save. ' .
+                    'Check PostgreSQL logs for constraint violations.'
+                );
+            }
+
             $payment = Payment::initialize(
                 donationId: $donation->id(),
                 providerCode: $provider,

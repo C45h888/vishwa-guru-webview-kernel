@@ -87,4 +87,23 @@ final class TransactionCoordinator
             ['deferred' => 'Pass 1.4', 'method' => 'withRowLock'],
         );
     }
+
+    /**
+     * Check if the current transaction has been aborted by PostgreSQL.
+     *
+     * PostgreSQL marks a transaction as aborted when any statement fails,
+     * even if the application doesn't detect the failure. This method
+     * allows callers to check the transaction status explicitly.
+     *
+     * @return string 'active', 'aborted', or 'idle'
+     */
+    public function getTransactionStatus(): string
+    {
+        try {
+            $result = $this->adapter->query('SELECT 1');
+            return $result->isFailure() ? 'aborted' : 'active';
+        } catch (\Throwable) {
+            return 'aborted';
+        }
+    }
 }
