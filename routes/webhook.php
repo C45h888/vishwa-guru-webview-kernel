@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Http\Controllers\Payments\RazorpayWebhookController;
+use App\Payments\Http\Controllers\RazorpayWebhookController;
 use Illuminate\Support\Facades\Route;
 
 /*

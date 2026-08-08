@@ -30,6 +30,18 @@ Maintaining this separation preserves clear domain boundaries and prevents payme
 
 ---
 
+## Per-kernel Landing Page
+
+> **Per-kernel landing page:** for a one-screen navigation map of the
+> Payments kernel (Boundaries, Contracts, Providers, FSMs, Module class,
+> Tests), see [`app/Payments/Kernel.md`](app/Payments/Kernel.md). Note that
+> Payments HTTP controllers and form requests live inside the Payments
+> kernel at `App\Payments\Http\Controllers\*` and
+> `App\Payments\Http\Requests\*` — see
+> [`agents.md` § Payments HTTP Consolidation](agents.md#payments-http-consolidation).
+
+---
+
 # Financial Integrity
 
 Financial integrity is one of the core engineering principles of the repository.

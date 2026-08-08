@@ -24,6 +24,10 @@ Gallery, or Events kernel contract directly. This invariant is the
 defining architectural property of the CMS module and is enforced at the
 service-provider boundary.
 
+> **Per-kernel landing page:** for a one-screen navigation map of the
+> CMS kernel (Boundaries, Contracts, Providers, FSMs, Tests), see
+> [`app/Cms/Kernel.md`](app/Cms/Kernel.md).
+
 ### §0.1 V1 Kernel Scope
 
 In scope (this spec instantiates these):

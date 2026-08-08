@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Tests\Unit\Http\Requests\Payments;
+namespace Tests\Unit\Payments\Http\Requests;
 
-use App\Http\Requests\Payments\RazorpayCheckoutRequest;
+use App\Payments\Http\Requests\RazorpayCheckoutRequest;
 use App\Persistence\ValueObjects\EntityId;
 use Illuminate\Support\Facades\Validator;
 use Tests\TestCase;

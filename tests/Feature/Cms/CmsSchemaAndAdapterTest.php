@@ -21,7 +21,7 @@ use Tests\Feature\Payments\Infrastructure\InfrastructureTestCase;
  * SQLite-migration + adapter round-trip tests for the CMS kernel.
  *
  * These tests are the load-bearing verification for the new
- * database/migrations/2026_07_16_000005_create_cms_tables_sqlite.php
+ * database/migrations/2026_07_16_000005_k_cms_create_cms_tables_sqlite.php
  * migration. They run on the in-memory SQLite DB via the inherited
  * RefreshDatabase + InfrastructureTestCase base.
  */

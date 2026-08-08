@@ -74,21 +74,27 @@ PHP provides a stable, mature, and production-proven runtime with decades of eco
 
 **Frontend**
 
-Blade Templates
+Svelte 5 (components) + Inertia 2 (server-driven SPA bridge)
 
-The application uses Laravel Blade templates for server-side rendering. Blade enables clean separation between presentation and business logic while avoiding the complexity of maintaining an independent frontend application.
+The frontend is built as a Svelte 5 + Inertia 2 single-page application
+mounted through the single Laravel Blade view (`resources/views/app.blade.php`)
+that exists ONLY as the Inertia root shell. Server-driven navigation comes
+from `Inertia::render` responses in controllers; client components live
+under `resources/js/domains/<Domain>/` (one folder per business kernel)
+plus a `resources/js/shared/` cross-cutting layer.
 
 **Styling**
 
-Tailwind CSS
+Tailwind CSS + shadcn-svelte (bits-ui) UI primitives
 
-Tailwind CSS provides a utility-first design system that promotes consistency, responsive layouts, and maintainable styling without requiring extensive custom CSS frameworks.
+Tailwind provides the utility-first design system; shadcn-svelte (built on
+bits-ui) supplies accessible, framework-native UI primitives that match
+Svelte 5 idioms.
 
-**Frontend Interactivity**
+**Frontend Build**
 
-Alpine.js
-
-Alpine.js is used only where lightweight client-side interaction is required. The project intentionally avoids heavy frontend frameworks unless future requirements clearly justify their introduction.
+Vite 5 + laravel-vite-plugin. Path aliases:
+`$shared/*` → `resources/js/shared/*`, `$domains/*` → `resources/js/domains/*`.
 
 **Database**
 
@@ -112,13 +118,46 @@ Razorpay serves as the primary payment processor for domestic transactions, whil
 
 **Caching and Queues**
 
-Redis (future deployment)
+Redis (active)
 
-Redis will be introduced when asynchronous jobs, background processing, queue workers, or caching become necessary.
+Redis is active in the codebase: SETEX dedupe for webhook + idempotency
+middleware, and the Cms resolved-page cache. The connection is reached
+exclusively through `App\Redis\Contracts\RedisConnectorContract` — kernel
+code never calls `Illuminate\Support\Facades\Redis` directly.
 
 ---
 
 # Repository Structure
+
+The application follows Laravel's standard directory structure wherever
+possible (`app/`, `bootstrap/`, `config/`, `database/`, `routes/`,
+`resources/`, `tests/`), with one architectural addition: the
+business code under `app/` is partitioned into **ten kernels**.
+
+| Kernel | Owns | Landing page |
+|---|---|---|
+| `app/Campaigns/` | Cause-side donation lifecycle (slug, target, dates, state) | [`app/Campaigns/Kernel.md`](app/Campaigns/Kernel.md) |
+| `app/Cms/` | Public-content orchestration (static pages, hero banners, contact info, rendering pipeline) | [`app/Cms/Kernel.md`](app/Cms/Kernel.md) |
+| `app/Events/` | Temple events read surface + admin mutations | [`app/Events/Kernel.md`](app/Events/Kernel.md) |
+| `app/Gallery/` | Photo galleries read surface | [`app/Gallery/Kernel.md`](app/Gallery/Kernel.md) |
+| `app/Payments/` | Money-side lifecycle (intent → verify → capture → receipt → refund); Razorpay + PayPal gateway adapters; receipt rendering; file-asset storage | [`app/Payments/Kernel.md`](app/Payments/Kernel.md) |
+| `app/Persistence/` | Persistence-adapter boundary (`PersistenceAdapterContract`), `RepositoryRegistry`, `EntityId` value object | [`app/Persistence/Kernel.md`](app/Persistence/Kernel.md) |
+| `app/Redis/` | Redis connection surface (`RedisConnectorContract`) | [`app/Redis/Kernel.md`](app/Redis/Kernel.md) |
+| `app/Queue/` | Queue connection surface (`QueueConnectorContract`) | [`app/Queue/Kernel.md`](app/Queue/Kernel.md) |
+| `app/Runtime/` | Failure state machine, diagnostics, console commands, validation, HTTP middleware | [`app/Runtime/Kernel.md`](app/Runtime/Kernel.md) |
+| `app/Shared/` | Architectural root — `ConfigurationContract`, `EnvironmentContract`, `ModuleContract`, base value-object / service / repository contracts | [`app/Shared/Kernel.md`](app/Shared/Kernel.md) |
+
+Every kernel directory contains a `Kernel.md` landing page with the
+same five-section template (Boundaries → Contracts → Providers → FSMs →
+Tests). When a new kernel is added, its `Kernel.md` lands in the same
+commit.
+
+The `ModuleContract` discovery seam (`App\Shared\Contracts\ModuleContract`)
+is implemented only by the four content kernels (`CampaignsModule`,
+`CmsModule`, `EventsModule`, `GalleryModule`). The six infrastructure +
+foundation kernels (Shared, Persistence, Redis, Queue, Runtime, Payments)
+do not implement it — the asymmetry is documented inside each
+`Kernel.md`.
 
 The repository is organized to encourage long-term maintainability.
 
@@ -140,7 +179,11 @@ The first development phase establishes the project's engineering foundations th
 
 The second phase focuses on backend implementation, including authentication, authorization, domain models, database migrations, service classes, payment infrastructure, notification systems, and administrative capabilities.
 
-The final phase introduces frontend presentation using Blade templates, Tailwind CSS, and Alpine.js. User interface development is performed only after backend workflows have reached functional stability.
+The final phase introduces frontend presentation using Svelte 5 components
+mounted through Inertia 2, Tailwind CSS for utility-first styling, and
+shadcn-svelte (bits-ui) for accessible UI primitives. User interface
+development is performed only after backend workflows have reached functional
+stability.
 
 Testing, documentation updates, and security review accompany every development milestone.
 
@@ -209,7 +252,11 @@ The application targets [Neon](https://neon.tech) PostgreSQL as its production d
 
 ## Apply the canonical schema
 
-The schema lives at `schema-neon/V1-schema.sql`. The Laravel migration `database/migrations/2026_07_16_000001_create_v1_schema_postgres.php` loads it via `DB::unprepared()`. To apply:
+The schema lives at `schema-neon/V1-schema.sql`. The Laravel migration
+`database/migrations/2026_07_16_000001_k_bootstrap_create_v1_schema_postgres.php`
+loads it via `DB::unprepared()`. All migration filenames in
+`database/migrations/` use the prefix `k_<kernel>_` between the timestamp
+and the slug so the owning kernel is visible at a glance. To apply:
 
 ```bash
 DB_CONNECTION=neon php artisan migrate

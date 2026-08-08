@@ -168,6 +168,110 @@ Modules should remain cohesive and self-contained.
 
 ---
 
+# Kernel.md Discipline
+
+Every kernel directory under `app/` contains a `Kernel.md` landing page
+following a fixed five-section template:
+
+1. **Boundaries** — what the kernel owns, what it explicitly does NOT
+   own, and the inbound/outbound cross-kernel edges (each with the
+   contract FQCN it traverses).
+2. **Contracts** — the public contracts other kernels consume (paths +
+   FQCNs).
+3. **Providers** — the `ServiceProvider` filename + the boot-order
+   invariant this kernel pins (cross-reference
+   `tests/Unit/Bootstrap/ProviderOrderTest.php`).
+4. **FSMs** — paths to any handwritten state machines, with allowed
+   events; or "None — state is validated at the FormRequest boundary
+   (Phase 4 doctrine)" if the kernel has no FSMs.
+5. **Tests** — `tests/Unit/<Kernel>/...` and `tests/Feature/<Kernel>/...`
+   inventory.
+
+When a new kernel is added, its `Kernel.md` lands in the same commit.
+When an existing kernel's surface changes (new contract, new outbound
+edge, new FSM), the `Kernel.md` updates alongside the code change.
+Architectural drift caused by an out-of-date `Kernel.md` is considered
+the same class of defect as an out-of-date doc-comment — fix it in the
+same commit.
+
+The current ten `Kernel.md` files:
+
+- `app/Campaigns/Kernel.md`
+- `app/Cms/Kernel.md`
+- `app/Events/Kernel.md`
+- `app/Gallery/Kernel.md`
+- `app/Payments/Kernel.md`
+- `app/Persistence/Kernel.md`
+- `app/Redis/Kernel.md`
+- `app/Queue/Kernel.md`
+- `app/Runtime/Kernel.md`
+- `app/Shared/Kernel.md`
+
+---
+
+# Migration Filename Convention
+
+All migrations live in `database/migrations/` and use the prefix
+`k_<kernel>_` between the timestamp and the slug. This is a visual
+grouping mechanism only — Laravel's migrator keys on the class inside the
+file, not the filename, so renaming does not affect already-applied
+migrations.
+
+Examples:
+
+- `2026_07_16_000001_k_bootstrap_create_v1_schema_postgres.php`
+- `2026_07_16_000005_k_cms_create_cms_tables_sqlite.php`
+- `2026_08_02_000011_k_auth_create_users_table_postgres.php`
+- `2026_08_07_000001_k_payments_add_receipt_access_token.php`
+
+When writing a new migration:
+
+1. Pick the kernel that owns the table. If no kernel owns it (e.g.
+   `failed_jobs`, `job_batches`), use `k_bootstrap_`.
+2. Place the prefix immediately after the timestamp:
+   `YYYY_MM_DD_HHMMSS_k_<kernel>_<slug>.php`.
+3. The kernel segment is single-word, lowercase. Valid values: `bootstrap`,
+   `cms`, `gallery`, `events`, `campaigns`, `payments`, `auth`, `runtime`,
+   `persistence`, `redis`, `queue`, `shared`.
+
+Do not introduce a `loadMigrationsFrom()` call — the default Laravel
+discovery already covers `database/migrations/*.php`, and adding a
+non-default discovery path would couple the migrator to a particular
+kernel layout.
+
+---
+
+# Payments HTTP Consolidation
+
+Payments HTTP controllers and form requests live inside the Payments
+kernel at `App\Payments\Http\Controllers\*` and
+`App\Payments\Http\Requests\*` — NOT at the global
+`App\Http\Controllers\Payments\*` or `App\Http\Requests\Payments\*`
+namespaces that earlier phases used.
+
+This is the only FQCN-changing structural rule in the codebase. Every
+other kernel's HTTP surface (admin + public) stays at
+`App\Http\Controllers\Admin\<Domain>\` and
+`App\Http\Controllers\Public\<Domain>\` respectively, per the Phase 4
+admin doctrine and the public-route symmetry convention.
+
+When adding a new Payments HTTP controller:
+
+1. Place the file under `app/Payments/Http/Controllers/`.
+2. Declare `namespace App\Payments\Http\Controllers;`.
+3. Reach form requests from `App\Payments\Http\Requests\*` (sibling
+   subdirectory).
+4. Wire the route in `routes/donation.php` or `routes/webhook.php` using
+   the new FQCN.
+5. Do NOT recreate `app/Http/Controllers/Payments/` or
+   `app/Http/Requests/Payments/` — those paths are intentionally empty.
+
+When the test suite needs to cover a Payments FormRequest, the test
+lives at `tests/Unit/Payments/Http/Requests/` (NOT under
+`tests/Unit/Http/Requests/Payments/`, which is intentionally empty).
+
+---
+
 # Service Layer Rules
 
 Business logic belongs exclusively within services.
@@ -428,7 +532,7 @@ Both surfaces are gated behind a single canonical admin role (`'admin'`). One ad
 ## Canonical references
 
   - DB schema: applied via Neon MCP. Source of truth is the live Neon `br-shiny-poetry-aow2d8mt` branch.
-  - Laravel migration mirrors: `database/migrations/2026_08_02_000011_create_users_table_postgres.php` (PG, guarded) + `2026_08_02_000012_create_users_table_sqlite.php` (SQLite test mirror).
+  - Laravel migration mirrors: `database/migrations/2026_08_02_000011_k_auth_create_users_table_postgres.php` (PG, guarded) + `2026_08_02_000012_k_auth_create_users_table_sqlite.php` (SQLite test mirror).
   - Auth architecture mirrors Laravel Breeze 1.x's `inertia-common` stubs (controllers + middleware + routes) so a future Laravel 11 / Breeze 2.x upgrade is a swap, not a rewrite. The Svelte login page is hand-rolled because Breeze 1.x ships only React/Vue stubs for Laravel 10.
 
 ## Authentication surface

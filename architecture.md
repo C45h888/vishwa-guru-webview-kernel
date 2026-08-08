@@ -22,6 +22,32 @@ Laravel is intentionally used as the primary application framework because it pr
 
 ---
 
+## Per-kernel Documentation
+
+The application's `app/` directory is partitioned into ten kernels (four
+content kernels + one money kernel + five infrastructure / foundation
+kernels). Every kernel directory contains a `Kernel.md` landing page
+following a fixed five-section template: Boundaries → Contracts →
+Providers → FSMs → Tests. See [`README.md` § Repository Structure](README.md#repository-structure)
+for the table; the canonical per-kernel landing pages are:
+
+- [`app/Campaigns/Kernel.md`](app/Campaigns/Kernel.md)
+- [`app/Cms/Kernel.md`](app/Cms/Kernel.md)
+- [`app/Events/Kernel.md`](app/Events/Kernel.md)
+- [`app/Gallery/Kernel.md`](app/Gallery/Kernel.md)
+- [`app/Payments/Kernel.md`](app/Payments/Kernel.md)
+- [`app/Persistence/Kernel.md`](app/Persistence/Kernel.md)
+- [`app/Redis/Kernel.md`](app/Redis/Kernel.md)
+- [`app/Queue/Kernel.md`](app/Queue/Kernel.md)
+- [`app/Runtime/Kernel.md`](app/Runtime/Kernel.md)
+- [`app/Shared/Kernel.md`](app/Shared/Kernel.md)
+
+The `Kernel.md` discipline is codified in [`agents.md` § Kernel.md
+Discipline](agents.md#kernelmd-discipline). When the architecture of a
+kernel changes, its `Kernel.md` updates alongside the code change.
+
+---
+
 # Architectural Objectives
 
 The architecture has been designed with the following long-term objectives:
@@ -263,7 +289,7 @@ The canonical schema installs three PostgreSQL extensions via `CREATE EXTENSION 
 - `citext` — case-insensitive text (donor emails)
 - `btree_gist` — enables `EXCLUDE` constraints (used by `static_pages.is_homepage`)
 
-These are installed by the schema migration (`database/migrations/2026_07_16_000001_create_v1_schema_postgres.php` running `schema-neon/V1-schema.sql`). The `Owner` role must have `CREATE EXTENSION` privilege. The runtime probe (`temple:neon:ping` and `/health` JSON) verifies these extensions are present and reports `neon` subsystem health accordingly.
+These are installed by the schema migration (`database/migrations/2026_07_16_000001_k_bootstrap_create_v1_schema_postgres.php` running `schema-neon/V1-schema.sql`). The `Owner` role must have `CREATE EXTENSION` privilege. The runtime probe (`temple:neon:ping` and `/health` JSON) verifies these extensions are present and reports `neon` subsystem health accordingly.
 
 ### Connection Preset Doctrine
 

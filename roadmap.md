@@ -12,6 +12,10 @@ Development follows a backend-first philosophy. Financial correctness, database 
 
 Each phase concludes only after its architectural objectives have been satisfied. New functionality should never be introduced while unresolved instability exists within a lower architectural layer.
 
+> **Cross-reference:** for the runtime substrate (failure state machine,
+> diagnostics, validation rules) the execution sequence below relies on,
+> see [`app/Runtime/Kernel.md`](app/Runtime/Kernel.md).
+
 ---
 
 # Phase 0 — Repository Constitution

@@ -43,8 +43,8 @@ return [
             // Phase 4: Admin Kernel — wired to the canonical User model.
             // The previous `null` was a deliberate V1 placeholder while no
             // users table existed; the table now lands via the Neon MCP
-            // migration (2026_08_02_000011_create_users_table) and the
-            // SQLite mirror (2026_08_02_000012_create_users_table_sqlite).
+            // migration (2026_08_02_000011_k_auth_create_users_table_postgres)
+            // and the SQLite mirror (2026_08_02_000012_k_auth_create_users_table_sqlite).
             'model' => \App\Models\User::class,
         ],
     ],

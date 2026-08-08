@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace App\Http\Controllers\Payments;
+namespace App\Payments\Http\Controllers;
 
-use App\Http\Requests\Payments\RazorpayWebhookRequest;
+use App\Payments\Http\Requests\RazorpayWebhookRequest;
 use App\Payments\Domain\Enums\PaymentProvider;
 use App\Payments\Domain\ValueObjects\WebhookPayload;
 use App\Payments\Services\PaymentService;

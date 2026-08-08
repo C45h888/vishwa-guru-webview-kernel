@@ -43,7 +43,7 @@ $pdo = \Illuminate\Support\Facades\DB::connection('probe_sqlite')->getPdo();
 
 $basePath = base_path();
 $migration = (function () use ($basePath): string {
-    return file_get_contents($basePath.'/database/migrations/2026_07_16_000005_create_cms_tables_sqlite.php')
+    return file_get_contents($basePath.'/database/migrations/2026_07_16_000005_k_cms_create_cms_tables_sqlite.php')
         ?: throw new \RuntimeException('CMS migration file not found');
 })();
 

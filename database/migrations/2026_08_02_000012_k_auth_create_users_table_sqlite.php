@@ -25,7 +25,7 @@ use Illuminate\Support\Facades\Schema;
  *     that Laravel's Schema Builder does not emit by default).
  *   - Connection guard: this migration ONLY runs on sqlite. PG is
  *     owned by the sibling migration 2026_08_02_000011.
- *   - Doctrine parity with `2026_07_16_000002_create_v1_schema_sqlite`:
+ *   - Doctrine parity with `2026_07_16_000002_k_bootstrap_create_v1_schema_sqlite`:
  *     raw DB::statement for indexes that the Schema Builder doesn't
  *     expose cleanly.
  */

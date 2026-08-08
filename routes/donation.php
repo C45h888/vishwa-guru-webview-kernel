@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Http\Controllers\Payments\RazorpayCheckoutController;
+use App\Payments\Http\Controllers\RazorpayCheckoutController;
 use Illuminate\Support\Facades\Route;
 
 /*

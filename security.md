@@ -10,6 +10,11 @@ Security within this repository is not considered an isolated feature or a colle
 
 The objective of this document is to establish a consistent security posture that preserves financial integrity, protects operational data, and ensures that the application remains trustworthy throughout its lifecycle.
 
+> **Cross-reference:** for the runtime substrate that owns the failure
+> state machine, diagnostics, console commands, validation rules, and
+> HTTP middleware this document's principles are enforced through, see
+> [`app/Runtime/Kernel.md`](app/Runtime/Kernel.md).
+
 ---
 
 # Security Philosophy

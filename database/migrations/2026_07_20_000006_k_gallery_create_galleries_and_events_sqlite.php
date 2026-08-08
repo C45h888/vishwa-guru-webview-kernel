@@ -33,7 +33,7 @@ use Illuminate\Support\Facades\Schema;
  * is authoritative (loaded via DB::unprepared in 000001); running this
  * against pgsql would attempt to recreate tables that PG already owns.
  *
- * Companion: 2026_07_16_000005_create_cms_tables_sqlite.php.
+ * Companion: 2026_07_16_000005_k_cms_create_cms_tables_sqlite.php.
  *
  * @see /Users/kamii/Vishwaguru-webview-kernel/vishwa-guru-webview-kernel/database/schema-neon/V1-schema.sql
  */

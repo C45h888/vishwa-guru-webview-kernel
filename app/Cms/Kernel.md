@@ -1,0 +1,94 @@
+# Cms Kernel
+
+> One-screen navigation map for the `Cms` kernel.
+> Read order: Boundaries → Contracts → Providers → FSMs → Module class → Tests.
+
+## Boundaries
+
+**Owns:** public-content orchestration. Five V1 entities: `StaticPage`,
+`HeroBanner`, `StaticPageReference`, `ContactInformation`,
+`CmsMediaAsset`. Owns the rendering pipeline (block registry +
+`StaticPageBodyRenderer`) and the Redis-backed resolved-page cache. The CMS
+kernel is the only kernel the frontend (Phase 3 Svelte/Inertia UI)
+consumes directly.
+
+**Does NOT own:** user accounts (`Auth` — Phase 4 Admin kernel), donations
+or receipts (`Payments`), campaigns themselves (`Campaigns`). Cross-kernel
+data is resolved exclusively through the Module's declared dependencies —
+never by importing another kernel's implementation code.
+
+**Outbound edges:**
+- Into Payments via `App\Payments\Contracts\CampaignQueryContract` (Shape A
+  bridge — Payments owns the contract because the producing kernel declares
+  the boundary).
+- Into Shared for identifier generation and configuration.
+
+## Contracts
+
+| Contract | FQCN | Direction |
+|---|---|---|
+| BlockRendererContract | `App\Cms\Contracts\BlockRendererContract` | Marker for block-renderer implementations |
+| ImageUrlResolverContract | `App\Cms\Contracts\ImageUrlResolverContract` | Resolves file-asset id → URL (Phase 4 replaces stub with real storage) |
+| PublicMediaQueryContract | `App\Cms\Contracts\PublicMediaQueryContract` | Public read of Cms media |
+| ResolvedPageCacheContract | `App\Cms\Contracts\ResolvedPageCacheContract` | Resolved-page cache (Redis-backed) |
+| StaticPageRendererContract | `App\Cms\Contracts\StaticPageRendererContract` | Public render entry point |
+
+Plus 5 internal repository contracts under
+`App\Cms\Domain\Repositories\` (Static/Hero/Reference/Contact/Media).
+
+## Providers
+
+`App\Cms\Providers\CmsServiceProvider` — pinned position in the provider
+order: Shared → Persistence → Runtime → Redis → Queue → Payments → **Cms**
+→ Campaigns → Gallery → Events. The CMS provider boots after Payments so
+it can resolve the Shape A bridge (`CampaignQueryContract`).
+
+Bindings (see `register()` for axis labels A–G):
+- 5 repository contracts → Eloquent implementations
+- `StaticPageStateMachine` singleton (pure-function FSM)
+- `ResolvedPageCacheContract → RedisResolvedPageCache`
+- `BlockRendererRegistry` singleton (constructed with 5 block renderers)
+- `StaticPageRendererContract → StaticPageRendererService`
+- `ImageUrlResolverContract → PublicMediaUrlResolver`
+- 9 service singletons (`StaticPageService`, `StaticPageQueryService`,
+  `HeroBannerService`, `ContactInformationService`,
+  `ReferenceResolutionService`, `PublicMediaPresentationService`,
+  `HomepageContentFactory`, `AboutPageContentFactory`,
+  `StaticPageRendererService`)
+
+`boot()` registers 4 entity types against `RepositoryRegistryContract`
+and subscribes `CacheInvalidationListener` to 9 Cms domain events
+(`CmsDomainEvents`).
+
+## FSMs
+
+`App\Cms\Domain\StateMachines\StaticPageStateMachine` — handwritten FSM
+covering the static-page state graph (draft → published → archived).
+Allowed transitions + guard conditions live in this file. The machine is
+registered as a singleton; the `StaticPageService` invokes it on every
+mutation. See `cms-architecture.md` §6 for the full transition matrix.
+
+Tests: `tests/Unit/Cms/StateMachines/`.
+
+## Module class
+
+Present: `App\Cms\CmsModule` (implements `App\Shared\Contracts\ModuleContract`).
+
+`dependencies()`: `App\Shared\Contracts\ModuleContract` +
+`App\Payments\Contracts\CampaignQueryContract`. The CMS module does **not**
+depend on `App\Payments\Services`, `App\Payments\Infrastructure`, or
+`App\Payments\Domain` directly — the contract surface is the only
+sanctioned cross-kernel import. See `cms-architecture.md` §7.
+
+## Tests
+
+- `tests/Unit/Cms/Domain/` — entity + value-object unit tests (incl.
+  `ValueObjects/` — blocks, page bodies, SEO metadata).
+- `tests/Unit/Cms/Infrastructure/` — repository + rendering pipeline
+  unit tests (incl. `Persistence/` mappers).
+- `tests/Unit/Cms/StateMachines/` — `StaticPageStateMachine` allowed/
+  forbidden transition tests.
+- `tests/Feature/Cms/CmsSchemaAndAdapterTest.php` — load-bearing
+  verification that the renamed SQLite mirror
+  (`2026_07_16_000005_k_cms_create_cms_tables_sqlite.php`) lands every
+  expected CMS table.

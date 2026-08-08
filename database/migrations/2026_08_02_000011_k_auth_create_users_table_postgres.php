@@ -17,7 +17,7 @@ use Illuminate\Support\Facades\Schema;
  *
  * Doctrine (AGENTS.md §"Phase 4: Admin Kernel"):
  *   - This file is the PG-path mirror. SQLite has its own mirror at
- *     2026_08_02_000012_create_users_table_sqlite.php. Each is connection-guarded
+ *     2026_08_02_000012_k_auth_create_users_table_sqlite.php. Each is connection-guarded
  *     so neither runs against the wrong driver.
  *   - In production, `migrate` against PG is a no-op because the table
  *     already exists from the MCP apply. The `Schema::hasTable('users')`

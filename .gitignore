@@ -30,5 +30,11 @@ Thumbs.db
 .env.testing
 .env.testing.*.local
 
+# Scratch / debug files (Phase 0 of repo restructure)
+/.tmp_*.php
+/debug_*.php
+/test_*.php
+/.env*.backup
+
 # Codegen output for php artisan inertia:dump-types
 resources/js/shared/lib/inertia.generated.ts

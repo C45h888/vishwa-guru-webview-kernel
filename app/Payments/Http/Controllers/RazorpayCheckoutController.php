@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace App\Http\Controllers\Payments;
+namespace App\Payments\Http\Controllers;
 
-use App\Http\Requests\Payments\RazorpayCheckoutRequest;
+use App\Payments\Http\Requests\RazorpayCheckoutRequest;
 use App\Payments\Domain\Enums\Currency;
 use App\Payments\Domain\ValueObjects\DonationIntent;
 use App\Payments\Domain\ValueObjects\DonorIdentity;

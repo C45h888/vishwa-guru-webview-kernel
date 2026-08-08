@@ -29,7 +29,7 @@ return new class extends Migration
      *
      * Other V1 tables (static_pages, hero_banners, hero_banner_pages,
      * static_page_references, contact_information) are added by the
-     * sibling migration 2026_07_16_000005_create_cms_tables_sqlite.
+     * sibling migration 2026_07_16_000005_k_cms_create_cms_tables_sqlite.
      * Galleries, events, notifications are deferred to their own passes.
      */
     public function up(): void
