@@ -11,17 +11,16 @@
 #           Do not deploy this docker-compose to a server.
 #
 # Usage:
-#   docker compose --env-file .env.local up -d   # start (NEON mode: uses .env.local creds)
-#   docker compose --env-file .env.local down     # stop
-#   docker compose --env-file .env.local down -v # stop + wipe volumes (fresh state)
+#   docker compose up -d   # start (uses .env for all configuration)
+#   docker compose down     # stop
+#   docker compose down -v # stop + wipe volumes (fresh state)
 #
 # ─── ENVIRONMENT FILE ─────────────────────────────────────────────────
-# This stack reads from .env.local — the same credential file the host-side
-# `php artisan serve` uses. This ensures Docker runtime is an accurate
-# reflection of production, not a separate test-parallel universe.
+# This stack reads from .env — the single source of truth for all
+# configuration. All environment variables are defined there.
 #
 # ─── DATABASE MODE (AUTO-DETECT) ──────────────────────────────────────
-# The app/worker containers read DATABASE_URL from .env.local to decide
+# The app/worker containers read DATABASE_URL from .env to decide
 # which database mode to run in:
 #
 #   LOCAL mode  — DATABASE_URL is empty/unset
@@ -36,13 +35,6 @@
 #                 → the local `postgres` container still starts (cheap, idle)
 #                 but is NOT used by the app/worker containers
 #
-# Connection details (override via .env.local):
-#   Postgres:  localhost:5432, db=temple_trust, user=temple_trust
-#   Redis:     localhost:6379, password=dev (AOF on, durable across restarts)
-#   PHP app:   localhost:8000
-#   Worker:    no exposed port — runs `php artisan queue:work redis`
-#              continuously; logs to docker compose logs -f worker
-#
 # =====================================================================
 
 services:
@@ -51,10 +43,12 @@ services:
     image: redis:7-alpine
     container_name: temple-trust-redis
     restart: unless-stopped
+    env_file:
+      - .env
     command:
       - redis-server
       - --requirepass
-      - ${REDIS_PASSWORD:-dev}
+      - ${REDIS_PASSWORD}
       - --appendonly
       - yes
       - --appendfsync
@@ -68,7 +62,7 @@ services:
     volumes:
       - redis-data:/data
     healthcheck:
-      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD:-dev}", "--no-auth-warning", "PING"]
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "--no-auth-warning", "PING"]
       interval: 5s
       timeout: 3s
       retries: 5
@@ -81,6 +75,8 @@ services:
     image: postgres:15-alpine
     container_name: temple-trust-postgres
     restart: unless-stopped
+    env_file:
+      - .env
     environment:
       POSTGRES_DB: ${DB_DATABASE:-temple_trust}
       POSTGRES_USER: ${DB_USERNAME:-temple_trust}
@@ -96,7 +92,7 @@ services:
       retries: 5
 
   # ── PHP runtime (Phase 2 — Dockerfile builds ext-redis + extensions) ─
-  # DATABASE_MODE is computed from .env.local at compose time. The
+  # DATABASE_MODE is computed from .env at compose time. The
   # bootstrap script inlined in `command` then decides whether to run
   # `migrate` and what DB_HOST the app should see.
   app:
@@ -106,6 +102,8 @@ services:
     container_name: temple-trust-app
     restart: unless-stopped
     working_dir: /app
+    env_file:
+      - .env
     volumes:
       - .:/app
     # Public DNS resolvers — override the host DNS because the corporate
@@ -116,37 +114,6 @@ services:
       - 8.8.8.8
     ports:
       - "8000:8000"
-    environment:
-      # APP_KEY and APP_URL must be explicitly passed so they are present
-      # at container startup — php artisan serve caches env at boot and does
-      # not re-read .env. The host shell may have APP_KEY= (empty) which
-      # would shadow the .env value without this block.
-      APP_KEY: ${APP_KEY}
-      APP_URL: ${APP_URL:-http://localhost:8000}
-      # DATABASE_URL is the single source of truth when set — it overrides
-      # every discrete DB_* key. The app/worker below still see the discrete
-      # keys, but only USE them when DATABASE_URL is empty.
-      DATABASE_URL: ${DATABASE_URL:-}
-      # Doctrine: in NEON mode the runtime MUST use the `neon` connection
-      # block (config/database.php) which forces sslmode=require and
-      # application_name=temple-trust. The `pgsql` block does NOT enforce
-      # SSL — using it leaks financial data in plaintext.
-      DB_CONNECTION: neon
-      # Intentionally omit DB_HOST from compose env — config/database.php
-      # will read it from .env. In NEON mode .env has no DB_HOST so
-      # the URL parse path wins. In LOCAL mode .env has DB_HOST=postgres
-      # (the docker-compose-managed .env, separate from the host .env
-      # users use on production Neon).
-      DB_PORT: ${DB_PORT:-5432}
-      DB_DATABASE: ${DB_DATABASE:-temple_trust}
-      DB_USERNAME: ${DB_USERNAME:-temple_trust}
-      DB_PASSWORD: ${DB_PASSWORD:-dev}
-      DB_SSLMODE: ${DB_SSLMODE:-require}
-      REDIS_HOST: redis
-      REDIS_PASSWORD: ${REDIS_PASSWORD:-dev}
-      REDIS_PORT: 6379
-      CACHE_STORE: redis
-      QUEUE_CONNECTION: redis
     depends_on:
       redis:
         condition: service_healthy
@@ -160,17 +127,9 @@ services:
              fi &&
              php artisan serve --host=0.0.0.0 --port=8000 --no-reload"
 
-  # ── Queue worker (Phase 2 — separate container, doctrine-aligned) ─────
-  # Doctrine: HTTP and async are separate concerns. One stuck worker
-  # does NOT take down donation intake — donors can still POST /donate
-  # while the worker is recovering. This service runs
-  # `php artisan queue:work redis` continuously, processing jobs dispatched
-  # by the app service. Per-job retry policy is enforced by each job's
-  # $tries/$backoff properties (see AbstractQueuedJob); these CLI flags
-  # are the worker-level fallback.
-  #
-  # In NEON mode the worker also talks to Neon directly via DATABASE_URL.
-  # In LOCAL mode it falls back to the local `postgres` container.
+  # ── Queue worker (Phase 2 — processes queued jobs) ──────────────────
+  # Runs `php artisan queue:work redis` continuously.
+  # In NEON mode, talks directly to Neon via DATABASE_URL.
   worker:
     build:
       context: .
@@ -178,83 +137,17 @@ services:
     container_name: temple-trust-worker
     restart: unless-stopped
     working_dir: /app
+    env_file:
+      - .env
     volumes:
       - .:/app
-    # Same DNS override as the app — Neon pooler resolution must work
-    # in both containers.
-    dns:
-      - 1.1.1.1
-      - 8.8.8.8
-    environment:
-      DATABASE_URL: ${DATABASE_URL:-}
-      # Doctrine: in NEON mode the worker MUST use the `neon` connection
-      # block (config/database.php) which forces sslmode=require. The
-      # `pgsql` block bypasses SSL — using it sends queue processing data
-      # in plaintext.
-      DB_CONNECTION: neon
-      DB_PORT: ${DB_PORT:-5432}
-      DB_DATABASE: ${DB_DATABASE:-temple_trust}
-      DB_USERNAME: ${DB_USERNAME:-temple_trust}
-      DB_PASSWORD: ${DB_PASSWORD:-dev}
-      DB_SSLMODE: ${DB_SSLMODE:-require}
-      REDIS_HOST: redis
-      REDIS_PASSWORD: ${REDIS_PASSWORD:-dev}
-      REDIS_PORT: 6379
-      QUEUE_CONNECTION: redis
-      QUEUE_GENERAL_TRIES: ${QUEUE_GENERAL_TRIES:-3}
-      QUEUE_GENERAL_BACKOFF: ${QUEUE_GENERAL_BACKOFF:-10,60,300}
-      QUEUE_FINANCIAL_TRIES: ${QUEUE_FINANCIAL_TRIES:-1}
-      QUEUE_FINANCIAL_BACKOFF: ${QUEUE_FINANCIAL_BACKOFF:-0}
-      QUEUE_WORKER_MAX_TIME: ${QUEUE_WORKER_MAX_TIME:-3600}
-      QUEUE_WORKER_SLEEP: ${QUEUE_WORKER_SLEEP:-3}
-      QUEUE_WORKER_TIMEOUT: ${QUEUE_WORKER_TIMEOUT:-60}
-      QUEUE_FAILED_RETENTION_HOURS: ${QUEUE_FAILED_RETENTION_HOURS:-720}
     depends_on:
       redis:
         condition: service_healthy
     command: >
-      sh -c "composer install --no-interaction --prefer-dist && exec php artisan queue:work redis
-        --queue=default,receipts,webhooks,notifications
-        --tries=$$QUEUE_GENERAL_TRIES
-        --backoff=$$QUEUE_GENERAL_BACKOFF
-        --max-time=$$QUEUE_WORKER_MAX_TIME
-        --sleep=$$QUEUE_WORKER_SLEEP
-        --timeout=$$QUEUE_WORKER_TIMEOUT
-        --verbose"
-
-  # Scheduler — runs `php artisan schedule:work` so kernel-scheduled
-  # commands (temple:redis:info, queue:prune-failed, etc.) actually
-  # execute. Without this service the scheduler is silent and the
-  # log files it would write are never produced.
-  scheduler:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: temple-trust-scheduler
-    restart: unless-stopped
-    working_dir: /app
-    volumes:
-      - .:/app
-    environment:
-      DATABASE_URL: ${DATABASE_URL:-}
-      DB_CONNECTION: neon
-      DB_PORT: ${DB_PORT:-5432}
-      DB_DATABASE: ${DB_DATABASE:-temple_trust}
-      DB_USERNAME: ${DB_USERNAME:-temple_trust}
-      DB_PASSWORD: ${DB_PASSWORD:-dev}
-      DB_SSLMODE: ${DB_SSLMODE:-require}
-      REDIS_HOST: redis
-      REDIS_PASSWORD: ${REDIS_PASSWORD:-dev}
-      REDIS_PORT: 6379
-      APP_ENV: ${APP_ENV:-local}
-    depends_on:
-      redis:
-        condition: service_healthy
-    command: >
-      sh -c "composer install --no-interaction --prefer-dist && exec php artisan schedule:work"
+      sh -c "composer install --no-interaction --prefer-dist &&
+             php artisan queue:work redis --sleep=3 --tries=3 --timeout=60"
 
 volumes:
   redis-data:
-    name: temple-trust-redis-data
   postgres-data:
-    name: temple-trust-postgres-data
