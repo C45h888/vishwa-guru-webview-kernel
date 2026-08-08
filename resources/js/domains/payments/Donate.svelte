@@ -13,6 +13,9 @@
         AppPageProps,
     } from '$shared/lib/inertia';
     import { openRazorpayCheckout } from '$shared/lib/razorpay';
+    import { toE164, countryByCode } from '$shared/lib/phone';
+    import { validateEmail, emailErrorMessage } from '$shared/lib/validate';
+    import PhoneInput from '$shared/ui/phone-input/PhoneInput.svelte';
 
     // Razorpay environment: shared via HandleInertiaRequests. When 'test',
     // the donate flow surfaces a "Test mode" badge so anyone in the
@@ -45,6 +48,7 @@
     let donorName = $state<string>('');
     let donorEmail = $state<string>('');
     let donorPhone = $state<string>('');
+    let donorPhoneCountry = $state<string>('IN');
     let donorPan = $state<string>('');
     let donorAddressLine1 = $state<string>('');
     let donorAddressLine2 = $state<string>('');
@@ -60,6 +64,35 @@
     // the donor is identified. Anonymous donors never need PAN/address.
     const showEightyGFields = $derived(!isAnonymous && parseFloat(amountRupees) > 2000);
     const messageRemaining = $derived(500 - donorMessage.length);
+
+    // UX pass (2026-08-08): inline validation state for email + phone. When
+    // the donor is identified (non-anonymous), both are required before we
+    // allow submission — mirroring the backend rule on donor.name. The
+    // `touched` flags keep errors from nagging before the user has typed.
+    const isIdentified = $derived(!isAnonymous);
+    const phoneValidity = $derived(
+        (() => {
+            const country = countryByCode(donorPhoneCountry);
+            const e164 = toE164(country, donorPhone);
+            return e164 === null
+                ? { ok: false as const }
+                : { ok: true as const, e164 };
+        })(),
+    );
+    const emailValid = $derived(validateEmail(donorEmail).ok);
+    // Required + currently invalid (or empty) when identified.
+    const emailRequiredError = $derived(
+        isIdentified && !emailValid ? (emailErrorMessage(validateEmail(donorEmail)) ?? 'Email is required.') : null,
+    );
+    const phoneRequiredError = $derived(
+        isIdentified && !phoneValidity.ok ? 'A valid phone number is required.' : null,
+    );
+    let emailTouched = $state(false);
+    let phoneTouched = $state(false);
+    const emailError = $derived(emailTouched ? emailRequiredError : null);
+    const phoneError = $derived(
+        phoneTouched || isIdentified ? phoneRequiredError : null,
+    );
 
     let submitting = $state(false);
     let errorMessage = $state<string | null>(null);
@@ -104,6 +137,23 @@
             return;
         }
 
+        // UX pass (2026-08-08): when the donor is identified (non-anonymous),
+        // require a valid email + phone before submit — matching the backend
+        // rule that rejects identified donations lacking them. Anonymous
+        // donors keep these optional.
+        if (isIdentified) {
+            emailTouched = true;
+            phoneTouched = true;
+            if (emailRequiredError) {
+                errorMessage = emailRequiredError;
+                return;
+            }
+            if (phoneRequiredError) {
+                errorMessage = phoneRequiredError;
+                return;
+            }
+        }
+
         const amountMinor = rupeesToMinor(amountRupees);
         // RazorpayAdapter enforces ₹1..₹1 crore per adapter's
         // minimumAmount()/maximumAmount() — match on the client too.
@@ -134,8 +184,12 @@
             campaign_id: selectedCampaignData?.id ?? '',
             donor: {
                 name: isAnonymous ? null : donorName || null,
-                email: isAnonymous ? null : donorEmail || null,
-                phone: donorPhone || null,
+                email: isAnonymous ? null : (donorEmail.trim() || null),
+                // E.164 (e.g. +919876543210) — always satisfies the backend
+                // phone regex and gives the gateway/storage one canonical form.
+                phone: (phoneValidity.ok && phoneValidity.e164
+                    ? phoneValidity.e164
+                    : (donorPhone ? toE164(countryByCode(donorPhoneCountry), donorPhone) : null)),
                 pan: showEightyGFields ? donorPan || null : null,
                 address: isAnonymous
                     ? null
@@ -405,19 +459,28 @@
                                             type="email"
                                             maxlength={255}
                                             bind:value={donorEmail}
+                                            oninput={() => (emailTouched = true)}
                                             placeholder="you@example.com"
                                             disabled={isAnonymous}
+                                            aria-invalid={emailError ? 'true' : undefined}
+                                            aria-describedby={emailError ? 'email-error' : undefined}
+                                            class={emailError ? 'border-destructive' : ''}
                                         />
+                                        {#if emailError}
+                                            <p id={`email-error`} class="text-xs text-destructive">{emailError}</p>
+                                        {/if}
                                     </div>
 
                                     <div class="space-y-2">
-                                        <Label for="phone">Phone</Label>
-                                        <Input
+                                        <PhoneInput
                                             id="phone"
-                                            type="tel"
-                                            maxlength={20}
+                                            label="Phone"
                                             bind:value={donorPhone}
-                                            placeholder="+91 98765 43210"
+                                            bind:country={donorPhoneCountry}
+                                            required={isIdentified}
+                                            disabled={isAnonymous}
+                                            error={phoneError}
+                                            validate={() => (phoneTouched = true)}
                                         />
                                     </div>
 

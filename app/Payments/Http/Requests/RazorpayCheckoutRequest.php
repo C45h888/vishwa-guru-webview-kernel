@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Payments\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 /**
  * Validates the public Razorpay Standard Checkout initialization request.
@@ -14,9 +15,14 @@ use Illuminate\Foundation\Http\FormRequest;
  *     enforced downstream in PaymentOrchestrator via the PaymentStateMachine.
  *     The webhook signature does the actual auth on the callback path.
  *   - Validation enforces the Razorpay API minimums (INR + amount ≥ ₹1).
- *   - Donor fields are optional (anonymous donations are legal in India for
+ *   - Donor fields are optional for anonymous donations (legal in India for
  *     amounts below the 80G-reporting threshold); strict 80G PAN format
  *     applies only when a PAN is supplied.
+ *   - A *non-anonymous* donation (one carrying a donor.name) MUST provide a
+ *     contactable email and phone. Identification is signalled by
+ *     `donor.name` being present — mirroring DonorIdentity::anonymous() in
+ *     RazorpayCheckoutController::buildDonor(). Anonymous donations (no
+ *     name) keep email/phone optional.
  *
  * After validation, the controller builds a DonationIntent and hands it to
  * the PaymentService. No business logic lives here.
@@ -26,6 +32,15 @@ final class RazorpayCheckoutRequest extends FormRequest
     public function authorize(): bool
     {
         return true;
+    }
+
+    /**
+     * A donor is "identified" when a name is supplied. Anonymous donors send
+     * name as null/absent; the controller maps that to DonorIdentity::anonymous().
+     */
+    private function hasIdentifiedDonor(): bool
+    {
+        return $this->filled('donor.name');
     }
 
     /**
@@ -45,8 +60,24 @@ final class RazorpayCheckoutRequest extends FormRequest
 
             'donor' => ['sometimes', 'array'],
             'donor.name' => ['sometimes', 'nullable', 'string', 'min:1', 'max:120'],
-            'donor.email' => ['sometimes', 'nullable', 'email:rfc', 'max:255'],
-            'donor.phone' => ['sometimes', 'nullable', 'string', 'regex:/^\+?[0-9\s\-()]{7,20}$/'],
+            // NOTE: don't add `sometimes` to email/phone — `sometimes` makes
+            // an *absent* key skip validation entirely, so an identified
+            // donation omitting email/phone would pass. With only `nullable`
+            // + `Rule::requiredIf(identified)`, an identified donation that
+            // omission or blanks these fields fails, while anonymous donations
+            // (no name) keep them optional.
+            'donor.email' => [
+                'nullable',
+                Rule::requiredIf($this->hasIdentifiedDonor()),
+                'email:rfc',
+                'max:255',
+            ],
+            'donor.phone' => [
+                'nullable',
+                Rule::requiredIf($this->hasIdentifiedDonor()),
+                'string',
+                'regex:/^\+?[0-9\s\-()]{7,20}$/',
+            ],
             'donor.pan' => ['sometimes', 'nullable', 'string', 'regex:/^[A-Z]{5}[0-9]{4}[A-Z]$/'],
             'donor.address' => ['sometimes', 'nullable', 'array'],
             'donor.address.line1' => ['sometimes', 'string', 'max:255'],
@@ -78,6 +109,8 @@ final class RazorpayCheckoutRequest extends FormRequest
     {
         return [
             'currency.in' => 'Razorpay only supports INR at this time.',
+            'donor.email.required_if' => 'Email is required for identified donations.',
+            'donor.phone.required_if' => 'Phone is required for identified donations.',
             'donor.pan.regex' => 'PAN must match the format AAAAA9999A.',
             'donor.phone.regex' => 'Phone must be 7-20 characters, digits with optional + ( ) -.',
         ];
