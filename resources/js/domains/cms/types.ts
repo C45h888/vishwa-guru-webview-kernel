@@ -116,6 +116,21 @@ export interface ContactPointProps {
 
 export interface ContactPageProps extends AppPageProps {
     contactPoints: ContactPointProps[];
+    /**
+     * Public OpenStreetMap embed URL derived from the primary address
+     * contact point server-side. Null when no address row is seeded;
+     * the Svelte page falls back to the placeholder in that case.
+     * The embed uses OSM's no-key `/export/embed.html` endpoint so no
+     * API key is required. Center is driven by APP_MAP_CENTER_LAT /
+     * APP_MAP_CENTER_LON env vars (default: 12.331205, 76.666993 —
+     * the canonical temple office pin confirmed via the trust's
+     * Google Maps short link).
+     */
+    mapEmbedUrl: string | null;
+    /** Plain-text address used to label the map, for the aria-title. */
+    mapAddress: string | null;
+    /** Human-facing "Open in OpenStreetMap" link (the directions page, not the embed). */
+    mapOpenUrl: string | null;
 }
 
 export interface AboutPageProps extends AppPageProps {

@@ -4,9 +4,14 @@
 
     interface Props {
         appName?: string;
+        appShortName?: string;
     }
 
-    let { appName = 'Temple Trust' }: Props = $props();
+    // Header chrome uses the short brand identifier (config('app.short_name'),
+    // default 'VSRSMS') so the bar is legible at small breakpoints. The full
+    // legal name remains available via appName for footers, meta tags, and
+    // copy blocks that need the complete trust name.
+    let { appShortName = 'VSRSMS' }: Props = $props();
 </script>
 
 <header class="sticky top-0 z-40">
@@ -22,7 +27,7 @@
 
         <div class="container relative">
             <div class="flex h-20 items-center justify-between gap-6">
-                <a href="/" class="flex items-center gap-3">
+                <a href="/" class="flex items-center gap-3" aria-label={appShortName}>
                     <MandalaDecoration
                         size={56}
                         tint="gold"
@@ -31,7 +36,7 @@
                     <span
                         class="whitespace-nowrap font-serif text-sm font-semibold leading-tight tracking-tight text-foreground lg:text-base"
                     >
-                        {appName}
+                        {appShortName}
                     </span>
                 </a>
 

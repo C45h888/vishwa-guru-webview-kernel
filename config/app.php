@@ -14,6 +14,7 @@ return [
     */
 
     'name'      => env('APP_NAME', 'Temple Trust'),
+    'short_name' => env('APP_SHORT_NAME', 'VSRSMS'),
     'env'       => env('APP_ENV', 'production'),
     'debug'     => (bool) env('APP_DEBUG', false),
     'url'       => env('APP_URL', 'http://localhost'),

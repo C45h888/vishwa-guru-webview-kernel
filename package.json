@@ -7,7 +7,7 @@
         "dev": "vite",
         "build": "vite build",
         "build:prod": "vite build --mode production",
-        "check": "svelte-check --tsconfig ./tsconfig.json --config ./vite.config.ts"
+        "check": "svelte-check --tsconfig ./tsconfig.json"
     },
     "devDependencies": {
         "@inertiajs/svelte": "^2.1.0",

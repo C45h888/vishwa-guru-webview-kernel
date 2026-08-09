@@ -192,4 +192,4 @@ This is the must-do list for trust counsel + finance before signing with any pro
 
 ---
 
-*Prepared for SPEC use only — no code is being written. Numbers marked "verified" were pulled directly from the linked page on 2026-08-08 via `curl -sL -A "Mozilla/5.0 ..."`. Items marked "unverified" or "could not verify" should be re-pulled in a follow-up pass before any production commitment.*
+*Prepared for SPEC use only — no code is being written. Numbers marked "verified" were pulled directly from the linked page on 2026-08-08 via `curl -sL -A "Mozilla/5.0 ..."`. Items marked "unverified" or "could not verify" should be re-pulled in a follow-up pass before any production code 

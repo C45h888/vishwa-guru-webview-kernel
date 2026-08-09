@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 return [
 
-    'driver' => env('SESSION_DRIVER', 'array'),
+    'driver' => env('SESSION_DRIVER', 'file'),
 
     'lifetime' => (int) env('SESSION_LIFETIME', 120),
 

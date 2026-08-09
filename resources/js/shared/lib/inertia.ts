@@ -12,6 +12,7 @@ export interface AuthUser {
 
 export interface SharedPageProps {
     appName: string;
+    appShortName: string;
     appUrl: string;
     authUser: AuthUser | null;
     /**

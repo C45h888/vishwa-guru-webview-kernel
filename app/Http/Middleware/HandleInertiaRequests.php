@@ -48,6 +48,13 @@ final class HandleInertiaRequests extends Middleware
 
         return array_merge(parent::share($request), [
             'appName' => (string) config('app.name'),
+            // Short brand identifier used in the public site header so the
+            // long legal name stays available in body copy, footers, and
+            // receipts. Doctrine: keep the full name authoritative in
+            // config('app.name'); only the header chrome reads the short
+            // form. The two are decoupled so a future rebrand of the
+            // header does not require touching receipt templates.
+            'appShortName' => (string) config('app.short_name'),
             'appUrl' => (string) config('app.url'),
             // Phase 4: Admin Kernel — explicit CSRF token for Inertia forms.
             // Inertia's client normally reads this from the <meta name="csrf-token">

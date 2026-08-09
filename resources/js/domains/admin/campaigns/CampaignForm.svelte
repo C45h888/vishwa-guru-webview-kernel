@@ -140,6 +140,10 @@
         xhr.withCredentials = true;
         xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
         xhr.setRequestHeader('Accept', 'application/json');
+        const csrfToken = document.querySelector<HTMLMetaElement>('meta[name="csrf-token"]')?.content;
+        if (csrfToken) {
+            xhr.setRequestHeader('X-CSRF-TOKEN', csrfToken);
+        }
 
         xhr.upload.onprogress = (e) => {
             if (e.lengthComputable) {

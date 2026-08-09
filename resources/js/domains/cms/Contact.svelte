@@ -13,7 +13,13 @@
     } from 'lucide-svelte';
     import type { ContactPageProps } from './types';
 
-    let { contactPoints, appName }: ContactPageProps = $props();
+    let {
+        contactPoints,
+        mapEmbedUrl,
+        mapAddress,
+        mapOpenUrl,
+        appName,
+    }: ContactPageProps = $props();
 
     // WhatsApp link — wa.me takes the number with the leading + stripped
     // and the country code prefixed. +91 98441 32318 → 919844132318.
@@ -36,6 +42,17 @@
         if (t === 'url') return value;
         return null;
     }
+
+    // "Open in OpenStreetMap" link (the human-facing directions page,
+    // not the embed). Provided by the controller as `mapOpenUrl`; we
+    // fall back to building it from the address if missing for older
+    // server payloads.
+    const fallbackOpenUrl = $derived(
+        mapAddress
+            ? `https://www.openstreetmap.org/search?query=${encodeURIComponent(mapAddress)}`
+            : null,
+    );
+    const mapsOpenUrl = $derived(mapOpenUrl ?? fallbackOpenUrl);
 
     const grouped = $derived.by(() => {
         const map = new Map<string, typeof contactPoints>();
@@ -144,17 +161,52 @@
                         </div>
                     </div>
 
+                    <!--
+                        Map slot. Embeds Google Maps when the
+                        contact_information table has an `address` row;
+                        otherwise degrades to the original placeholder.
+                        The iframe is sandboxed, lazy-loaded, and
+                        has a labelled title for screen readers. A
+                        "Open in Google Maps" link sits below it so
+                        visitors on browsers that block third-party
+                        iframes can still navigate to the address.
+                    -->
                     <div
                         class="aspect-[4/3] overflow-hidden rounded-md border border-border/40 bg-ivory"
-                        aria-label="Map placeholder"
+                        aria-label={mapAddress
+                            ? `Map of ${mapAddress}`
+                            : 'Map placeholder'}
                     >
-                        <div
-                            class="flex h-full flex-col items-center justify-center gap-1 text-xs text-muted-foreground"
-                        >
-                            <MapPin class="h-5 w-5 text-primary/60" aria-hidden="true" />
-                            <span>Map will appear here</span>
-                        </div>
+                        {#if mapEmbedUrl}
+                            <iframe
+                                src={mapEmbedUrl}
+                                title={`Map of ${mapAddress ?? 'temple office'}`}
+                                class="h-full w-full border-0"
+                                loading="lazy"
+                                referrerpolicy="no-referrer-when-downgrade"
+                                allowfullscreen
+                            ></iframe>
+                        {:else}
+                            <div
+                                class="flex h-full flex-col items-center justify-center gap-1 text-xs text-muted-foreground"
+                            >
+                                <MapPin class="h-5 w-5 text-primary/60" aria-hidden="true" />
+                                <span>Map will appear here</span>
+                            </div>
+                        {/if}
                     </div>
+
+                    {#if mapsOpenUrl && mapAddress}
+                        <a
+                            href={mapsOpenUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            class="inline-flex items-center gap-1.5 text-xs font-medium text-primary hover:underline"
+                        >
+                            <MapPin class="h-3.5 w-3.5" aria-hidden="true" />
+                            Open in OpenStreetMap
+                        </a>
+                    {/if}
                 </aside>
 
                 <div class="space-y-10 lg:col-span-8">
