@@ -43,13 +43,14 @@
         return null;
     }
 
-    // "Open in OpenStreetMap" link (the human-facing directions page,
-    // not the embed). Provided by the controller as `mapOpenUrl`; we
-    // fall back to building it from the address if missing for older
-    // server payloads.
+    // "Open in Bing Maps" link (the human-facing directions page on
+    // bing.com, not the iframe). The consumer site is X-Frame-Options
+    // locked, but works fine when opened in a new tab. Provided by the
+    // controller as `mapOpenUrl`; we fall back to building a Bing URL
+    // from the address if missing for older server payloads.
     const fallbackOpenUrl = $derived(
         mapAddress
-            ? `https://www.openstreetmap.org/search?query=${encodeURIComponent(mapAddress)}`
+            ? `https://www.bing.com/maps?q=${encodeURIComponent(mapAddress)}`
             : null,
     );
     const mapsOpenUrl = $derived(mapOpenUrl ?? fallbackOpenUrl);
@@ -172,7 +173,7 @@
                         iframes can still navigate to the address.
                     -->
                     <div
-                        class="aspect-[4/3] overflow-hidden rounded-md border border-border/40 bg-ivory"
+                        class="aspect-[3/2] overflow-hidden rounded-md border border-border/40 bg-ivory"
                         aria-label={mapAddress
                             ? `Map of ${mapAddress}`
                             : 'Map placeholder'}
@@ -204,7 +205,7 @@
                             class="inline-flex items-center gap-1.5 text-xs font-medium text-primary hover:underline"
                         >
                             <MapPin class="h-3.5 w-3.5" aria-hidden="true" />
-                            Open in OpenStreetMap
+                            Open in Bing Maps
                         </a>
                     {/if}
                 </aside>
