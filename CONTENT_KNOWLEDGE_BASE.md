@@ -74,39 +74,34 @@ The core brand voice should balance spiritual depth with professional charitable
 - Donor certificates and complimentary cow-related products should be described as intended future benefits and must be reviewed for operational, legal, tax, and fulfilment implications.
 - A separate legal page will be commissioned by the project owner. Copy agents may reference it once approved, but must not invent compliance language.
 
-## 6. Initial copy diagnosis
+## 6. Public copy state (current as of the latest copy pass)
 
-### Message clarity
+The previous "Initial copy diagnosis" listed the issues that triggered the public copy pass. Most of those issues have since been resolved. The remaining items are listed under §11.
 
-- The organisation name is extremely long and dominates the hero. It is appropriate as the formal legal name, but not as the primary emotional headline on every surface.
-- The hero explains the current ask, but the visitor must work to understand the relationship between the trust’s historic work, the current project, and the donation.
-- “Second chapter” is a useful organising idea, but it needs a short proof point immediately beside it.
+### What the copy pass fixed
 
-### Credibility and proof
+- The organisation name is now used as the formal legal name in the footer, the visit address, and the receipt title; the short brand VSRSMS is used in the header and as the homepage hero headline. The hero subtitle carries the full legal name on a single follow-up line.
+- The About page now states the two chapters clearly: the children's-care chapter (2007–2022, approximately 300 children in need of care) and the current ask (the land acquisition for the proposed three-acre healing and service campus near Nanjangud, outside Mysore).
+- The About page stats use "approximately 300" and "15+" years; the placeholder dash and "Multiple" values have been removed.
+- The visit address is now Nanjangud, Karnataka (outside Mysore), not Mysore.
+- The placeholder trustee "Sri-ram Ramdas" has been replaced with the canonical spiritual leader "Sri Ram Ram Das Guruji", with the role "Spiritual Leader, VSRSMS". The second trustee card now states that the board roster will be published once it is formally registered (no invented names).
+- The timeline has been replaced with the four correctly-dated milestones: 2007, 2012 (Guruji receives Power of Attorney), 2022 (children's-care chapter concludes), 2026 (land acquisition campaign launches). The legacy 1998/2005/2019/2024 entries are gone.
+- The campaign fallbacks library (`resources/js/shared/lib/campaign-fallbacks.ts`) has been replaced with three current-narrative categories — `land_acquisition`, `gaushala_build`, `cow_care_future` — and the legacy `maintenance`, `general`, `diwali` fallbacks have been rewritten to align with the new narrative. The "is this a live payment?" test-mode FAQ has been removed; the 80G hard claim has been softened to the contract-blessed phrasing.
+- The homepage hero subtitle, the homepage story, the homepage programs, the homepage trust panel, and the homepage donate CTA have all been rewritten to align with the new narrative.
+- The donate page now leads with "Support the land acquisition campaign" rather than "Donate". The donor information card description has been softened to the contract-blessed 80G phrasing.
+- The campaigns index PILLARS have been replaced with the three fundraising stages. The campaigns index editorial copy and bottom CTA have been rewritten.
+- The events `event-slides.ts` has been replaced with three new-narrative editorial slides (children's-care chapter, current land acquisition, planned campus construction). The legacy festival calendar labels (Varalakshmi Vratam, Cultural Evenings, Brahmotsavam) are no longer presented as the page's editorial story.
+- The footer social links are now honestly disabled (cursor-not-allowed, aria-disabled, rel="nofollow") and expressed as "Facebook (coming soon)" etc. The Placeholder legal links now point to /contact until the legal page is reviewed and approved.
+- The BottomCtaBand defaults now read "Support the land acquisition campaign" and "Your contribution moves the proposed healing and service campus one step closer.“ The legacy default "Join our mission of seva / daily pooja, annadanam, temple maintenance” is gone.
+- The TrustBadgeRow now reads "Razorpay Secure · Nanjangud, Karnataka" instead of "Razorpay Secure · Registered Trust".
+- The Contact page hero now reads "Contact the trust" and the body asks for "donations, events, CSR enquiries, project updates, and future volunteering or support" instead of "seva bookings".
+- The ProductionSeeder ABOUT_PAGE about_page_content has been rewritten to mirror the new About fallback. The meta_description has been replaced with the new narrative summary. The sample campaign description has been reset to administrative support.
 
-- Several claims are specific but unsupported in the copy: 18 years, multiple establishments, children supported, power of attorney, registered status, and exact programme history.
-- The About page currently uses placeholder-like values such as “—”, “Multiple”, and generic trustee roles. These weaken confidence and should be replaced with verified numbers or removed.
-- Tax language must be precise. “Tax-deductibility status will be confirmed at the time of each donation” is not a substitute for stating the actual legal position where known.
-- The site should distinguish clearly between completed work, ongoing work, planned work, and fundraising targets.
+### Residual issues (tracked in §11)
 
-### Tone and readability
-
-- The voice is thoughtful but often over-compressed and abstract: “operating doctrine”, “the visible primary actor”, “care that continues across years”, and similar phrases sound authored rather than immediately understood.
-- Long paragraphs carry several ideas at once. Public-facing sections should use shorter paragraphs, concrete verbs, and one primary idea per block.
-- “Sacred”, “devotion”, “seva”, “dharma”, and “care” are meaningful brand terms, but repeated use without concrete detail can make the copy feel ornamental.
-- “The children are raised, not processed” is memorable but risks sounding adversarial or making a claim about other institutions. Prefer affirmative language focused on the trust’s practice.
-
-### Conversion and donor experience
-
-- Donation CTAs are clear but the surrounding copy needs stronger specificity: what is being acquired, what stage the project is in, what a contribution supports, and how accountability works.
-- “Every donation through this site goes to this work” is a high-stakes allocation claim and must match payment, campaign, receipt, and accounting behaviour.
-- Campaign copy and homepage copy currently disagree about whether donations support temple operations or the land acquisition project.
-
-### Information architecture
-
-- Navigation labels are conventional, but the content hierarchy should make the current campaign discoverable from the homepage, About page, and donation flow.
-- Empty social links and placeholder gallery/event language should not appear as if they are active public destinations.
-- Metadata should describe the actual approved narrative, not the legacy temple-operations story.
+- The assets pipeline has not changed: the public photos still need to be staged and wired so the gradient placeholders disappear. The CMS media ids referenced in the fallback files are still null; that is correct — the page renders the gradient fallback until assets are wired.
+- The contact_information table currently has no office address beyond the placeholder; the About visit.address and the Visit card on the About page render the placeholder text. This is expected until the trust office is operational.
+- The “Legal & Compliance” page is not yet published. The footer link routes to /contact until the legal page is reviewed and approved.
 
 ## 7. Editorial voice
 
@@ -190,8 +185,12 @@ Every copy agent should return:
 
 ## 11. Immediate next work
 
-1. Confirm which of the two narratives is authoritative.
-2. Build the claim ledger for all public copy.
-3. Reconcile `ProductionSeeder.php` with the approved fallback/CMS content.
-4. Rewrite homepage and About copy as the first controlled editorial pass.
-5. Audit donation and campaign language against actual payment/accounting behaviour.
+1. Confirm which of the two narratives is authoritative. (Done — VSRSMS new narrative is canonical per the development contract.)
+2. Build the claim ledger for all public copy. (Done — see the public copy state report that accompanies the rewrite.)
+3. Reconcile `ProductionSeeder.php` with the approved fallback/CMS content. (Done — ABOUT_PAGE and sample campaign description updated; meta_description replaced.)
+4. Rewrite homepage and About copy as the first controlled editorial pass. (Done — homepage-fallbacks.ts and about-fallbacks.ts are now aligned with the new narrative, and the page components that consume them have been updated.)
+5. Audit donation and campaign language against actual payment/accounting behaviour. (Partial — donor-benefit and 80G language softened to the contract-blessed phrasing. A full audit against live payment/accounting behaviour is still pending and is the next material pass.)
+6. Wire the public photo assets so the gradient placeholders disappear (asset pipeline work, not a copy pass).
+7. Publish the "Legal & Compliance" page once the project owner has reviewed and approved the legal copy.
+8. Publish the full board roster once the trust office has formally registered it.
+9. Translate the new narrative to the languages the four primary audiences need (Kannada for the local audience, Hindi for the national audience, plus English for diaspora and international supporters). Not in scope for this pass.

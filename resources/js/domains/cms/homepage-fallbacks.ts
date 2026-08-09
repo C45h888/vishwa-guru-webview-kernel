@@ -6,82 +6,100 @@ import type { HomepageContentProps } from '$shared/lib/inertia';
  * `satisfies HomepageContentProps` gives a compile-time guarantee that
  * every field matches the wire contract. Svelte components import only
  * this module — they never duplicate prose in their own files.
+ *
+ * Canon: VSRSMS — Sri Vishwaguru Sri Sri Sriram Shishyavrundham Mahasamsthanam.
+ * The full legal name is held in `appName` (env-driven) and surfaces in
+ * the footer, metadata, and receipt titles. The home-page hero uses the
+ * short brand VSRSMS so the headline is legible; the legal name appears
+ * in the eyebrow line directly below.
+ *
+ * Narrative canon (see CONTENT_KNOWLEDGE_BASE.md):
+ *   - Spiritual leader: Sri Ram Ram Das Guruji.
+ *   - First chapter: 2007–2022, residential care & education for
+ *     approximately 300 children in need of care. Concluded.
+ *   - Second chapter: a proposed three-acre healing and service campus
+ *     near Nanjangud, outside Mysore. Land is under discussion; the
+ *     Gaushala, a simple Shiva temple, and a healing environment are
+ *     planned but not yet built. The first fundraising stage is land
+ *     acquisition.
  */
-export const FALLBACK_HERO_TITLE = 'Sri Vishwaguru Sri Sri Sriram Shishyavrundham Mahasamsthanam';
+
+export const FALLBACK_HERO_TITLE = 'VSRSMS — A charitable trust, now building its next chapter';
 
 export const FALLBACK_HERO_SUBTITLE =
-    "Eighteen years of children's education and housing. Now building a Gaushala and a Shiva temple — and asking for your seva to help acquire the land.";
+    'Sri Vishwaguru Sri Sri Sriram Shishyavrundham Mahasamsthanam. Approximately 300 children in need of care were housed and educated between 2007 and 2022. Now raising funds to acquire land near Nanjangud, outside Mysore, for a proposed healing and service campus.';
 
 export const FALLBACK_HOMEPAGE_CONTENT: HomepageContentProps = {
     version: 1,
     story: {
         eyebrow: 'Our Story',
-        title: 'A trust in its second chapter',
-        body: 'Sri Vishwaguru Sri Sri Sriram Shishyavrundham Mahasamsthanam is a registered charitable trust founded in 2008 and operating from Mysore. The first chapter of the trust\'s work was the children — housing them, schooling them, raising them into steady adult lives across multiple establishments in Mysore. The trust\'s Mysore branch holds the main trust\'s power of attorney and is now raising funds for its second chapter: the acquisition of land on which to build a Gaushala, a shelter for the sacred cows, and a temple dedicated to Shiva. The trust\'s work has always been sustained by devotees who treat seva as both a personal practice and a collective responsibility. That is still how the new chapter will be funded.',
-        cta_label: 'Read more about the trust',
+        title: 'Two chapters, one discipline of service',
+        body: 'Sri Vishwaguru Sri Sri Sriram Shishyavrundham Mahasamsthanam (VSRSMS) is a charitable trust led by Sri Ram Ram Das Guruji. Between 2007 and 2022, the trust ran a residential care and education programme for approximately 300 children in need of care. The children received schooling, life skills, and cultural training including Bharatanatyam. That chapter is now complete — the children have completed their education and moved forward in life. The trust is now raising funds for its next chapter: a proposed three-acre healing and service campus near Nanjangud, outside Mysore, anchored by a Gaushala, a simple Shiva temple, and a disciplined environment for recovery and service. The land is under discussion; we are not yet building. We are asking for your support to acquire it.',
+        cta_label: 'Learn about the trust',
         cta_url: '/about',
         image_file_id: null,
-        alt_text: 'Temple and sacred grounds',
+        alt_text: 'A glimpse of the trust work',
         image: null,
     },
     mission_quote: {
         eyebrow: 'Our Mission',
-        quote: 'To shelter and educate children in our care, to live dharmically in the world, and now to secure a sacred home for the cows — every act of seva held to the same standard of care, devotion, and purpose.',
-        attribution: null,
+        quote: 'To complete the children\u2019s care chapter with the same seriousness it has always been held, and to acquire the land on which the next chapter can begin — steady, accountable, and open to every devotee who chooses to be part of it.',
+        attribution: 'Sri Ram Ram Das Guruji',
     },
     programs: [
         {
             key: 'pooja',
-            eyebrow: 'Education',
-            title: "Children's Education",
-            body: 'Continuous schooling for the children in the trust\'s care — in person, broad in curriculum, paced to what each child has actually come in with. The first generation of children who came through this programme are now contributing to the trust\'s own work.',
+            eyebrow: 'First chapter · 2007–2022',
+            title: 'Children\u2019s care and education',
+            body: 'A residential care and education programme for children in need of care. Approximately 300 children were housed, educated, and supported across changing batches. The chapter concluded because the children completed their education and moved forward in life. Many of the first generation contribute to the work of the trust in their own right.',
             image_file_id: null,
-            alt_text: "Children's education programme",
+            alt_text: 'Children from the trust\u2019s first chapter',
             image: null,
         },
         {
             key: 'annadanam',
-            eyebrow: 'Care',
-            title: "Children's Housing",
-            body: 'Residential care in Mysore, with the rhythms of a real home rather than the routines of an institution. The children are raised, not processed. Many of them grow up to give back to the trust in their own right.',
+            eyebrow: 'Current',
+            title: 'Land acquisition',
+            body: 'The trust is raising funds to acquire land near Nanjangud, outside Mysore, for the proposed healing and service campus. The land is under discussion; the acquisition requires additional capital. Until the land is secured, no construction begins. This is the current ask, and the only construction stage where contributions are needed today.',
             image_file_id: null,
-            alt_text: "Children's residential care",
+            alt_text: 'Proposed land near Nanjangud',
             image: null,
         },
         {
             key: 'temple_care',
-            eyebrow: 'Stewardship',
-            title: 'Gaushala Project',
-            body: 'The trust\'s current capital project. Land is being acquired on which to build a Gaushala — a shelter for the sacred cows — and a Shiva temple. Construction begins when the land is secured. Every donation through this site goes to this work.',
+            eyebrow: 'Planned',
+            title: 'Gaushala, temple, and healing environment',
+            body: 'On the secured land, the trust intends to build a Gaushala for the care and protection of cows, a simple Shiva temple with Kamadhenu and Shiva-family shrines, and a disciplined environment for people recovering from addiction or serious personal difficulty. Future plans also include cow-related farming and products for devotees, and community events and fundraisers. Construction begins after the land is acquired; cow care and welfare follow once the campus becomes operational.',
             image_file_id: null,
-            alt_text: 'Gaushala land project',
+            alt_text: 'The proposed campus skyline',
             image: null,
         },
     ],
     trust_panel: {
         eyebrow: 'Trust & Accountability',
-        title: 'Stewardship you can rely on',
+        title: 'A trust that earns its support',
         registration:
-            'The trust is formally registered and operates from Mysore under a power of attorney held by its trustee.',
+            'Sri Vishwaguru Sri Sri Sriram Shishyavrundham Mahasamsthanam is a charitable trust registered in India. The current campaign is the land acquisition for the proposed campus near Nanjangud, Karnataka.',
         tax_status:
-            'Donation receipts are issued for every contribution. Tax-deductibility status will be confirmed at the time of each donation.',
+            'An official receipt is issued for every donation. Tax-deductibility, including 80G certificates where applicable, is confirmed at the time of each donation in line with applicable law. The trust will publish a dedicated legal page once it has been reviewed and approved.',
         operating_principles: [
-            'Dharma before convenience',
-            'Care held as practice, not sentiment',
+            'Service held as practice, not sentiment',
+            'Children in our care are raised, not processed',
             'Devotion without recognition',
-            'Purpose in service of the work',
+            'Disciplined stewardship of every offering',
         ],
         vows: [
-            'Hold the children with the same seriousness we have always held them',
+            'Honour the children\u2019s-care chapter with the same seriousness it has always been held',
             'Treat every donation with the same care we treat our own resources',
-            'Remain accountable to devotees and to the public record',
+            'Publish how campaign funds are spent when each stage closes',
+            'Describe the project honestly — proposed, planned, under discussion, or built',
         ],
     },
     donate_cta: {
-        eyebrow: 'Offer Your Seva',
-        title: 'Help build the Gaushala and the Shiva temple',
-        body: 'Every offering supports the current capital project — acquiring the land on which the Gaushala and the Shiva temple will stand.',
-        cta_label: 'Donate Now',
+        eyebrow: 'Support the land acquisition',
+        title: 'Help us acquire the land for the new campus',
+        body: 'Every donation supports the current campaign — acquiring the land on which the proposed healing and service campus will be built. Construction follows once the land is secured. Contributions of any size are received with the trust\u2019s gratitude and acknowledged with an official receipt.',
+        cta_label: 'Support the Land Acquisition Campaign',
         cta_url: '/donate',
     },
 };

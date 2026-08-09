@@ -193,11 +193,13 @@
                     By the numbers
                 </p>
                 <h2 class="font-serif text-3xl font-semibold lg:text-4xl">
-                    What the temple looks like, year after year
+                    The trust at a glance
                 </h2>
                 <p class="text-base text-muted-foreground">
-                    Numbers that the trust tracks and reports every year —
-                    they are not aspirational, they are records.
+                    Numbers the trust has tracked and reported \u2014 the
+                    children\u2019s-care chapter, the fundraising sequence, and
+                    the proposed campus. Approximate figures are stated as
+                    approximate; verified figures are stated as they are.
                 </p>
             </div>
 
@@ -282,11 +284,13 @@
                 What we do
             </p>
             <h2 class="font-serif text-3xl font-semibold lg:text-4xl">
-                Four programmes, every day of the year
+                Four stages, told honestly
             </h2>
             <p class="text-base text-muted-foreground">
-                Each programme has its own rhythm, its own people, and its own
-                ledger. None of them is a one-off.
+                Each stage has its own scope, its own people, and its own
+                ledger. The first chapter is concluded, the current
+                stage is the land acquisition, and the planned stages are
+                the campus construction and the cow care.
             </p>
         </div>
 
@@ -334,11 +338,12 @@
                     Our Journey
                 </p>
                 <h2 class="font-serif text-3xl font-semibold lg:text-4xl">
-                    Milestones in the trust's life
+                    Milestones in the trust\u2019s work
                 </h2>
                 <p class="text-base text-muted-foreground">
-                    The arc of the trust — from the founding of the temple
-                    to the launch of this public digital platform.
+                    The arc of the trust\u2019s work \u2014 from the beginning
+                    of the children\u2019s-care chapter to the launch of the land
+                    acquisition campaign.
                 </p>
             </div>
 
@@ -398,11 +403,11 @@
                 Leadership
             </p>
             <h2 class="font-serif text-3xl font-semibold lg:text-4xl">
-                Trustees of the trust
+                Leadership of the trust
             </h2>
             <p class="text-base text-muted-foreground">
-                The board and officers responsible for the day-to-day
-                stewardship of the temple.
+                The spiritual leader and the wider board responsible for
+                the day-to-day stewardship of the trust\u2019s work.
             </p>
         </div>
 
@@ -474,19 +479,19 @@
                     From the gallery
                 </p>
                 <h2 class="font-serif text-3xl font-semibold lg:text-4xl">
-                    Three windows into the temple
+                    Three windows into the trust
                 </h2>
                 <p class="text-base text-muted-foreground">
-                    Each gallery gathers a different part of the year — the
-                    daily, the festive, and the people who carry both.
+                    Each gallery gathers a different part of the trust\u2019s work
+                    \u2014 the daily, the festive, and the people who carry both.
                 </p>
             </div>
 
             <div class="mx-auto mt-12 grid max-w-5xl grid-cols-1 gap-6 sm:grid-cols-3">
                 {#each [
-                    { slug: 'sacred-rituals', title: 'Sacred Rituals', subtitle: 'Daily pooja' },
-                    { slug: 'sacred-festivals', title: 'Sacred Festivals', subtitle: 'Festival calendar' },
-                    { slug: 'community-cultural', title: 'Community & Cultural', subtitle: 'People and offerings' },
+                    { slug: 'sacred-rituals', title: 'Sacred Rituals', subtitle: 'From the children\u2019s-care chapter' },
+                    { slug: 'sacred-festivals', title: 'Sacred Festivals', subtitle: 'Community moments across the year' },
+                    { slug: 'community-cultural', title: 'Community & Cultural', subtitle: 'People and the work they do' },
                 ] as card (card.slug)}
                     <a
                         href={`/gallery/${card.slug}`}

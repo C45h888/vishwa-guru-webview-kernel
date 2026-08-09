@@ -85,11 +85,12 @@
                     Get in touch
                 </p>
                 <h1 class="font-serif text-4xl font-semibold lg:text-5xl">
-                    Contact
+                    Contact the trust
                 </h1>
                 <p class="text-base text-muted-foreground lg:text-lg">
-                    Reach the temple office for seva bookings, donation
-                    enquiries, and general questions.
+                    Reach the trust office for donations, events, CSR
+                    enquiries, project updates, and future volunteering
+                    or support.
                 </p>
                 <div class="pt-2">
                     <TrustBadgeRow />
@@ -140,9 +141,10 @@
                 class="mx-auto max-w-xl rounded-md border border-dashed border-border bg-ivory/60 p-8 text-center"
             >
                 <p class="text-sm text-muted-foreground">
-                    Contact details will be published by the temple
-                    office. For urgent matters, please write to the
-                    temple office and a response will be arranged.
+                    Contact details will be published by the trust
+                    office shortly. In the meantime, you can reach the
+                    office on +91 98441 32318, and a response will be
+                    arranged.
                 </p>
             </div>
         {:else}
@@ -278,9 +280,9 @@
     </section>
 
     <BottomCtaBand
-        title="Plan a visit"
-        body="Come experience the temple in person. We welcome all devotees."
-        ctaLabel="View Events"
+        title="Visit the trust"
+        body="The trust office is near Nanjangud, outside Mysore. Visitors are welcome to coordinate a visit through the office in advance."
+        ctaLabel="See upcoming events"
         ctaHref="/events"
     />
 </PublicLayout>

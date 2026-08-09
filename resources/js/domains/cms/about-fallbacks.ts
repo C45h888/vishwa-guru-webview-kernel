@@ -9,50 +9,60 @@ import type { AboutPageContentProps } from '$shared/lib/inertia';
  *
  * Mirrors `homepage-fallbacks.ts`. The values here are also seeded by
  * `Database\Seeders\ProductionSeeder::seedAboutPage()` so the page is
- * populated with real content the moment the row lands. Edits made
- * in either place will diverge; the seed is the canonical source, this
+ * populated with real content the moment the row lands. Edits made in
+ * either place will diverge; the seed is the canonical source, this
  * file is the placeholder of last resort.
  *
  * V2 grammar sections:
  *   - values (single)         — eyebrow/title/body + pillars[] + image
  *   - story  (single)         — magazine intro + image
  *   - stats  (3-6)            — number/label cards
- *   - programs (3-4)          — ongoing programmes with icon
+ *   - programs (3-4)          — current + planned project stages
  *   - timeline (1+)           — year-anchored milestones
  *   - trustees (0+)           — leadership cards
  *   - visit  (single)         — address/timings/phone/dress
  *   - donate_cta (single)     — bottom donate CTA band copy
+ *
+ * Canon (see CONTENT_KNOWLEDGE_BASE.md):
+ *   - VSRSMS led by Sri Ram Ram Das Guruji.
+ *   - Children's-care chapter: 2007–2022, approximately 300 children.
+ *   - Current project: proposed three-acre healing and service campus
+ *     near Nanjangud, outside Mysore. Land under discussion.
+ *   - Three-stage fundraising sequence: land → construction → cow care.
+ *   - Pledge certificates and cow products are future benefits, not
+ *     guaranteed.
  */
+
 export const FALLBACK_ABOUT_PAGE_CONTENT: AboutPageContentProps = {
     version: 2,
 
     // ── Values ────────────────────────────────────────────────────────────
     values: {
         eyebrow: 'Our Values',
-        title: 'Dharma, Care, Devotion, Purpose',
-        body: 'Four commitments that the trust holds as operating doctrine — not aspirations, but the standards by which every decision is checked. They are older than any single project of the trust, and they will outlast whichever projects come and go. They are the reason the children have stayed housed and educated through the years, and they are the reason the new chapter — the Gaushala and the Shiva temple — has been taken up with the same seriousness as the work that came before.',
+        title: 'Service, care, devotion, and purpose',
+        body: 'Four commitments that hold the trust\u2019s work together — not aspirations, but the standards by which every decision is checked. They guided the children\u2019s-care chapter for nearly two decades, and they will guide the proposed campus as it is planned and built. They are the reason the work has been steady, and they are the reason the new chapter will be approached with the same seriousness as the one before it.',
         image_file_id: null,
         alt_text: null,
         image: null,
         pillars: [
             {
-                name: 'Dharma',
-                description: 'The discipline of right action. Every decision at the trust is checked against dharma before it is checked against convenience, cost, or speed — what is the right thing to do here, and who is it right for.',
-                icon_key: 'dharma',
-            },
-            {
-                name: 'Care',
-                description: 'Compassion held as practice, not as sentiment. The children who have lived with us, the cows who will live at the Gaushala, the devotees who walk in — all received with the same attention to their actual needs, not the ones we imagine they have.',
+                name: 'Service',
+                description: 'The practice of showing up, daily, without recognition. The work of the trust is sustained by people who treat service as a discipline — not a favour to anyone, and not a performance for anyone.',
                 icon_key: 'care',
             },
             {
+                name: 'Care',
+                description: 'Attention to the actual needs of those in our charge. The children who lived with the trust, the devotees who walk in, and the cows who will live at the proposed campus — each received with the same care, not the care we imagine they need but the care they actually need.',
+                icon_key: 'dharma',
+            },
+            {
                 name: 'Devotion',
-                description: 'The thread that holds the work together. The daily rhythm of service, the unforced steadiness of those who keep the work going, the willingness to do the next right thing without being asked and without recognition.',
+                description: 'The thread that holds the work together. The unforced steadiness of those who keep the work going, the willingness to do the next right thing without being asked, and the daily rhythm of prayer, work, and care that runs underneath the visible activity.',
                 icon_key: 'devotion',
             },
             {
                 name: 'Purpose',
-                description: 'A clear sense of what the trust is for. Not preservation as an end in itself, but seva in the world — shelter, education, and now a sacred home for the cows. The work is the purpose; everything else is in service to the work.',
+                description: 'A clear sense of what the trust is for. Not preservation as an end in itself, but service in the world — the children first, and now a proposed home for the cows, the temple, and the people who will visit. The work is the purpose; everything else is in service to the work.',
                 icon_key: 'purpose',
             },
         ],
@@ -61,8 +71,8 @@ export const FALLBACK_ABOUT_PAGE_CONTENT: AboutPageContentProps = {
     // ── Story ─────────────────────────────────────────────────────────────
     story: {
         eyebrow: 'Our Story',
-        title: 'Eighteen years of children, and now a home for the cows',
-        body: "The trust was founded in 2008 and has been operating from Mysore ever since. In its first chapter the work was the children: housing them, schooling them, raising them into steady adult lives. Many of the children who came through the trust's early programmes are now contributing to its work themselves, in capacities that range from the kitchen to the office to the management of new projects. The trust runs multiple establishments across Mysore and has accumulated a great deal of operational practice over the years — none of it abstract, all of it grounded in the daily work. The trust now acts from a branch that holds the main trust's power of attorney, with the branch trustee as the visible primary actor across all of the trust's events, donations, and imagery. The branch's current capital project is the acquisition of land on which to build a Gaushala — a shelter for the sacred cows — and a Shiva temple. The land must be bought before the construction can begin. Every donation received through this site goes to that work.",
+        title: 'One chapter closed, the next being prepared',
+        body: 'Sri Vishwaguru Sri Sri Sriram Shishyavrundham Mahasamsthanam (VSRSMS) is a charitable trust led by Sri Ram Ram Das Guruji. Guruji came from a teaching background and became a respected ritual and spiritual guide in Mysore. In 2012, he received Power of Attorney for the trust and began the major service endeavour that has shaped the public work since then. Between 2007 and 2022, the trust ran a residential care and education programme for approximately 300 children in need of care. The children received schooling, life skills, and cultural training including Bharatanatyam. That chapter is now complete — the children have completed their education and moved forward in life. The trust\u2019s next chapter is a proposed three-acre healing and service campus near Nanjangud, outside Mysore. The land is under discussion; we are not yet building. We are asking for your support to acquire it first.',
         image_file_id: null,
         alt_text: null,
         image: null,
@@ -71,51 +81,51 @@ export const FALLBACK_ABOUT_PAGE_CONTENT: AboutPageContentProps = {
     // ── Stats ──────────────────────────────────────────────────────────────
     stats: [
         {
-            number: '18+',
-            label: 'Years of continuous service',
-            description: 'Since the trust was founded in 2008. The work has not stopped, and the rhythm of the day has not been broken, in any of those years.',
+            number: '15+',
+            label: 'Years of the children\u2019s-care chapter',
+            description: 'From 2007 to 2022, the trust ran a continuous residential care and education programme for children in need of care. The chapter concluded because the children completed their education and moved forward in life.',
         },
         {
-            number: '—',
-            label: 'Children supported through our programmes',
-            description: 'Many years of residential care, schooling, and steady adult mentoring for the children in our charge. Exact figures are kept by the trust office and shared on request.',
+            number: '~300',
+            label: 'Children housed and educated',
+            description: 'Approximately 300 children in need of care were housed, educated, and supported across changing batches. The first generation of alumni contribute to the work of the trust in their own right.',
         },
         {
-            number: 'Multiple',
-            label: 'Establishments operating across Mysore',
-            description: 'Residential homes, classrooms, and operational premises — each one a working part of the trust\'s daily rhythm, none of them ornamental.',
+            number: '3',
+            label: 'Stages of the current fundraising plan',
+            description: 'Land acquisition first, then construction of the proposed campus, then the care and welfare of the cows once the campus is operational. The trust only asks for the stage that is currently active.',
         },
         {
-            number: '1',
-            label: 'Active capital project',
-            description: 'Land acquisition for the Gaushala and the Shiva temple. The single current ask the trust is raising funds for, until it is met.',
+            number: '3 acres',
+            label: 'Proposed campus size',
+            description: 'A proposed three-acre healing and service campus near Nanjangud, outside Mysore. The land is under discussion and additional capital is required to complete the acquisition.',
         },
     ],
 
     // ── Programs ───────────────────────────────────────────────────────────
     programs: [
         {
-            eyebrow: 'Programme · 01',
-            title: "Children's Education",
-            body: 'The trust has run a continuous schooling programme since its early years — not as an enrichment to the residential work, but as one of its two pillars. Children in the trust\'s care learn at age-appropriate level and at a pace that respects what each child has actually come in with. The teaching is in person, the curriculum is broad, and the expectation is that the children leave the programme able to continue their own education.',
+            eyebrow: 'Concluded · 2007–2022',
+            title: 'Children\u2019s care and education',
+            body: 'The trust\u2019s first chapter. Residential care and education for children in need of care, with cultural training including Bharatanatyam. The programme ran for approximately 15 years and ended because the children completed their education and moved forward in life. It is not a current ask and is not accepting donations for its operations.',
             icon_key: 'children_education',
         },
         {
-            eyebrow: 'Programme · 02',
-            title: "Children's Housing",
-            body: 'Residential care for the children in the trust\'s charge, in Mysore, with the rhythms of a real home rather than the routines of an institution. The children are raised, not processed. The first generation of children who came through this programme are now contributing to the trust\'s work in their own right.',
-            icon_key: 'children_housing',
+            eyebrow: 'Current · Land acquisition',
+            title: 'Acquiring land near Nanjangud',
+            body: 'The trust is raising funds to acquire land near Nanjangud, outside Mysore, for the proposed three-acre campus. The land is under discussion; the acquisition requires additional capital. Until the land is secured, no construction begins. This is the current and only active fundraising ask.',
+            icon_key: 'land_acquisition',
         },
         {
-            eyebrow: 'Programme · 03',
-            title: 'Gaushala',
-            body: 'The trust\'s current capital project. A shelter for the sacred cows, to be built on land that the trust is in the process of acquiring. The Gaushala is conceived as a long-term home for the cows, not a short-term campaign — care that continues across years, with the same seriousness as the children\'s programmes.',
+            eyebrow: 'Planned · Stage 2',
+            title: 'Build the Gaushala, temple, and healing environment',
+            body: 'On the acquired land, the trust intends to build a Gaushala for the care and protection of cows, a simple Shiva temple with Kamadhenu and Shiva-family shrines, and a disciplined environment for people recovering from addiction or serious personal difficulty. Construction begins after land acquisition closes. This stage is not yet fundraising.',
             icon_key: 'gaushala',
         },
         {
-            eyebrow: 'Programme · 04',
-            title: 'Shiva Temple',
-            body: 'A temple dedicated to Shiva, to be built alongside the Gaushala on the same land. The temple is conceived as the spiritual centre of the trust\'s Mysore campus, and as the place from which the daily rhythms of the new chapter will be conducted. Construction begins once the land is secured.',
+            eyebrow: 'Planned · Stage 3',
+            title: 'Care and welfare of the cows',
+            body: 'Once the campus is operational, the trust will focus on the long-term care and welfare of the cows resident at the Gaushala. Future plans include cow-related farming and products for devotees, in accordance with the project\u2019s operating and legal framework. These are intended future benefits, not guaranteed offerings.',
             icon_key: 'shiva_temple',
         },
     ],
@@ -123,33 +133,33 @@ export const FALLBACK_ABOUT_PAGE_CONTENT: AboutPageContentProps = {
     // ── Timeline ───────────────────────────────────────────────────────────
     timeline: [
         {
-            year: 2008,
-            title: 'Trust founded',
-            description: 'The trust is established as a charitable body, with the children\'s home as the anchor of every other activity to follow.',
+            year: 2007,
+            title: 'Children\u2019s-care chapter begins',
+            description: 'The trust begins its residential care and education programme for children in need of care, near Mysore. The first cohort of children joins the homes and the schools.',
             image_file_id: null,
             image_alt_text: null,
             image: null,
         },
         {
-            year: 2014,
-            title: "Children's programmes expand",
-            description: 'Residential care, schooling, and vocational mentoring grow into their present scale — each one a working part of the trust\'s daily rhythm in Mysore.',
+            year: 2012,
+            title: 'Guruji receives Power of Attorney',
+            description: 'Sri Ram Ram Das Guruji receives Power of Attorney for the trust and takes responsibility for the major service endeavour that has shaped the public work since then.',
             image_file_id: null,
             image_alt_text: null,
             image: null,
         },
         {
             year: 2022,
-            title: 'Branch consolidation under POA',
-            description: 'The trust\'s Mysore operations consolidate under a branch that holds the main trust\'s power of attorney. The branch trustee becomes the visible primary actor across events, donations, and imagery.',
+            title: 'Children\u2019s-care chapter concludes',
+            description: 'The residential and education programme concludes. The children of the final cohort have completed their education and moved forward in life. The trust begins planning the next chapter.',
             image_file_id: null,
             image_alt_text: null,
             image: null,
         },
         {
             year: 2026,
-            title: 'Gaushala + Shiva temple campaign',
-            description: 'The trust begins raising funds to acquire land on which to build a Gaushala (cow shelter) and a Shiva temple. This is the current capital project.',
+            title: 'Land acquisition campaign launches',
+            description: 'The trust publicly shares its plan for a proposed three-acre healing and service campus near Nanjangud, outside Mysore, and begins raising funds for the land.',
             image_file_id: null,
             image_alt_text: null,
             image: null,
@@ -159,24 +169,17 @@ export const FALLBACK_ABOUT_PAGE_CONTENT: AboutPageContentProps = {
     // ── Trustees ───────────────────────────────────────────────────────────
     trustees: [
         {
-            name: 'Sri-ram Ramdas',
-            role: 'Trustee & Spiritual Head, Power of Attorney',
+            name: 'Sri Ram Ram Das Guruji',
+            role: 'Spiritual Leader, VSRSMS',
             photo_file_id: null,
-            bio: 'Sri-ram Ramdas holds the power of attorney for the main trust and acts as the trustee of its Mysore branch. He is the visible primary actor across every public event the trust runs and the subject of the trust\'s published imagery. He has been the principal author of the trust\'s pivot to the Gaushala and Shiva temple project, and remains the point of contact for donations, event coordination, and the trust\'s spiritual direction.',
+            bio: 'Sri Ram Ram Das Guruji came from a teaching background and became a respected ritual and spiritual guide in Mysore. In 2012, he received Power of Attorney for the trust and has been the principal author of the trust\u2019s service work since then. He is the visible primary actor across every public event the trust runs and the subject of the trust\u2019s published imagery. He remains the point of contact for donations, event coordination, and the trust\u2019s spiritual direction.',
             photo: null,
         },
         {
-            name: 'Trustee',
-            role: 'Board of Trustees',
+            name: 'Board of Trustees',
+            role: 'To be published',
             photo_file_id: null,
-            bio: 'The composition of the wider board is recorded with the trust office. Trustee cards will populate this section as additional board members are formally listed.',
-            photo: null,
-        },
-        {
-            name: 'Treasurer',
-            role: 'Board of Trustees',
-            photo_file_id: null,
-            bio: 'The treasurer of the trust is recorded with the trust office. A full bio will appear here when the trust publishes the formal board roster.',
+            bio: 'The composition of the wider board is recorded with the trust office. A full directory — names, roles, and short bios — will be published once the board\u2019s formal roster is registered and approved.',
             photo: null,
         },
     ],
@@ -184,10 +187,10 @@ export const FALLBACK_ABOUT_PAGE_CONTENT: AboutPageContentProps = {
     // ── Visit ──────────────────────────────────────────────────────────────
     visit: {
         eyebrow: 'Plan your visit',
-        title: 'The trust operates from Mysore',
-        body: 'The trust\'s Mysore premises are operational year-round. Specific pooja timings, gate hours, and darshan windows are published by the temple office once they are finalised for the current calendar. Visitors who wish to attend any of the trust\'s events or to see the children\'s programmes in operation are asked to write to the temple office in advance.',
-        address: 'Sri Vishwaguru Sri Sri Sriram Shishyavrundham Mahasamsthanam\nMysore, Karnataka',
-        timings: 'Temple hours and event timings will be published by the temple office',
+        title: 'The trust operates near Nanjangud, outside Mysore',
+        body: 'Office hours, specific pooja timings, and gate details will be published by the trust office once they are finalised for the current calendar. Visitors who wish to attend a trust event or to ask about a donation are asked to write to the office in advance.',
+        address: 'Sri Vishwaguru Sri Sri Sriram Shishyavrundham Mahasamsthanam\nNanjangud, Karnataka (outside Mysore)',
+        timings: 'Office hours published by the trust office',
         phone: '+91 98441 32318',
         dress_code: 'Modest clothing preferred for visits to the temple premises. Specific dress requirements for the inner sanctum will be published with the formal timings.',
         map_url: null,
@@ -195,10 +198,10 @@ export const FALLBACK_ABOUT_PAGE_CONTENT: AboutPageContentProps = {
 
     // ── Donate CTA ─────────────────────────────────────────────────────────
     donate_cta: {
-        eyebrow: 'Offer Your Seva',
-        title: 'Help build the Gaushala and the Shiva temple',
-        body: 'Every donation received through this site goes to the current capital project — acquiring the land on which the Gaushala and the Shiva temple will stand. Contributions of any size are received with the trust\'s gratitude and acknowledged with an official receipt.',
-        cta_label: 'Donate Now',
+        eyebrow: 'Support the land acquisition',
+        title: 'Help us acquire the land for the new campus',
+        body: 'Every donation supports the current campaign — acquiring the land on which the proposed healing and service campus will be built. Construction follows once the land is secured. Cow care and welfare follow once the campus is operational. Contributions of any size are received with the trust\u2019s gratitude and acknowledged with an official receipt.',
+        cta_label: 'Support the Land Acquisition Campaign',
         cta_url: '/donate',
     },
 };

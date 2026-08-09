@@ -169,8 +169,9 @@
                     What we're doing today
                 </h2>
                 <p class="text-base text-muted-foreground">
-                    Active causes the trust is currently sustaining. Every
-                    donation goes directly to temple operations.
+                    The current campaign is the land acquisition for the
+                    proposed campus near Nanjangud. Every donation supports
+                    that work.
                 </p>
                 <div class="pt-1">
                     <Button

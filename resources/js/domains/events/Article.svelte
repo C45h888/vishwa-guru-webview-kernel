@@ -177,9 +177,9 @@
     </article>
 
     <BottomCtaBand
-        title="Sustain the work behind every entry"
-        body="The journal is a record of what the trust does on a daily, weekly, and seasonal basis. Your donation keeps the next entry possible."
-        ctaLabel="Donate to the trust"
+        title="Support the next chapter"
+        body="The journal is a record of the trust\u2019s work. Your donation moves the proposed campus \u2014 and the next entry \u2014 forward."
+        ctaLabel="Donate to the land acquisition"
         ctaHref="/donate"
     />
 </PublicLayout>

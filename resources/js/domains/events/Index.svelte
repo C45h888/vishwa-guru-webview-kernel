@@ -212,9 +212,9 @@ const isAdmin = $derived($page.props.authUser?.role === 'admin');
     </section>
 
     <BottomCtaBand
-        title="Support our events"
-        body="Festival sponsorships and event seva keep our traditions alive."
-        ctaLabel="Sponsor an event"
+        title="Project updates and community moments"
+        body="The trust shares its progress on the land acquisition campaign and marks the year with devotional and community events."
+        ctaLabel="Support the land acquisition"
         ctaHref="/donate"
     />
 </PublicLayout>

@@ -97,24 +97,24 @@
     const PILLARS = [
         {
             src: '/campaign-pill-images/01-home.png',
-            alt: 'The daily rhythms that hold the temple together',
-            eyebrow: 'Daily offering',
-            title: 'The work that happens each day',
-            body: 'Pooja at sunrise, noon, and sunset. Annadanam served to all who arrive. The quiet, continuous labour of keeping the temple alive.',
+            alt: 'The land acquisition campaign',
+            eyebrow: 'Current \u00b7 Stage 1',
+            title: 'Acquire the land for the new campus',
+            body: 'The trust is raising funds to acquire land near Nanjangud, outside Mysore. The land is under discussion; the acquisition requires additional capital. Until the land is secured, no construction begins.',
         },
         {
             src: '/campaign-pill-images/02-main.jpg',
-            alt: 'The care of the temple structure',
-            eyebrow: 'Sacred work',
-            title: 'The building, kept sound',
-            body: 'The sanctum, the prakara, the inner halls. Repairs done with traditional materials and craftspeople, so the structure can hold another century of practice.',
+            alt: 'The proposed campus vision',
+            eyebrow: 'Planned \u00b7 Stage 2',
+            title: 'Build the Gaushala, temple, and healing environment',
+            body: 'On the secured land, the trust intends to build a Gaushala for the care and protection of cows, a simple Shiva temple with Kamadhenu and Shiva-family shrines, and a disciplined healing environment. Construction begins after land acquisition closes.',
         },
         {
             src: '/campaign-pill-images/03-second.jpg',
-            alt: 'A festival at the temple',
-            eyebrow: 'Festival',
-            title: 'Lamps through the year',
-            body: 'The special poojas, the sweets, the extended annadanam, the decorations. A single season of the temple\u2019s year, made possible by your support.',
+            alt: 'The long-term care of the cows',
+            eyebrow: 'Planned \u00b7 Stage 3',
+            title: 'Care and welfare of the cows',
+            body: 'Once the campus is operational, the trust will focus on the long-term care and welfare of the cows resident at the Gaushala, with future plans for cow-related farming and products for devotees in accordance with the project\u2019s operating and legal framework.',
         },
     ];
 </script>
@@ -241,19 +241,20 @@
                     class="space-y-4 text-base leading-relaxed text-muted-foreground lg:text-lg"
                 >
                     <p>
-                        Every campaign at {appName} names a specific need —
-                        a season of temple maintenance, a day of annadanam,
-                        a festival of lamps, an initiative to expand the
-                        kitchen. Each one has a clear goal, a clear timeline,
-                        and a clear use for every rupee given.
+                        Every campaign at {appName} names a specific stage of
+                        the trust\u2019s work \u2014 the land acquisition, the
+                        construction of the proposed campus, or the long-term
+                        care of the cows. The current campaign is the land
+                        acquisition. Each campaign has a clear goal, a clear
+                        timeline, and a clear use for every rupee given.
                     </p>
                     <p>
                         Your offering goes to the campaign you choose, not to
                         a general fund. The trust treats each campaign as its
                         own ledger, with progress visible on every page. When
                         a campaign closes, the trust publishes how the
-                        offerings were spent — so the giving stays accountable
-                        and the rhythm continues.
+                        offerings were spent \u2014 so the giving stays accountable
+                        and the next stage can begin.
                     </p>
                 </div>
 
@@ -450,8 +451,8 @@
     {/if}
 
     <BottomCtaBand
-        title="Support a cause today"
-        body="Every contribution sustains daily pooja, annadanam, and temple maintenance."
+        title="Support the land acquisition campaign"
+        body="Every contribution moves the proposed healing and service campus one step closer to breaking ground."
         ctaLabel="Donate Now"
         ctaHref="/donate"
     />

@@ -629,11 +629,12 @@
                     </div>
                     <div class="space-y-0.5">
                         <p class="text-sm font-medium">
-                            Your donation is 80G eligible
+                            An official receipt is issued for every donation
                         </p>
                         <p class="text-xs text-muted-foreground">
-                            An official certificate is mailed within seven
-                            working days of capture.
+                            Tax-deductibility, including 80G certificates where
+                            applicable, is confirmed at the time of each donation
+                            in line with applicable law.
                         </p>
                     </div>
                 </div>

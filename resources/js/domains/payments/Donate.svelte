@@ -297,11 +297,11 @@
 </script>
 
 <svelte:head>
-    <title>Donate — {appName}</title>
-    <meta
-        name="description"
-        content="Support a campaign at {appName} via Razorpay."
-    />
+<title>Support the Land Acquisition Campaign — {appName}</title>
+<meta
+    name="description"
+    content="Support the trust\u2019s land acquisition campaign for the proposed healing and service campus near Nanjangud, outside Mysore. Secure payments via Razorpay."
+/>
 </svelte:head>
 
 <PublicLayout>
@@ -327,19 +327,21 @@
                     <p
                         class="text-xs font-semibold uppercase tracking-[0.25em] text-primary"
                     >
-                        Offer your seva
+                        Support the land acquisition
                     </p>
                     <h1
                         class="font-serif text-3xl font-semibold leading-tight lg:text-5xl"
                     >
-                        Donate
+                        Donate to the land acquisition campaign
                     </h1>
                     <p
                         class="max-w-md text-base leading-relaxed text-muted-foreground lg:text-lg"
                     >
-                        Your contribution supports the current capital
-                        project — acquiring the land on which the Gaushala
-                        and the Shiva temple will stand.
+                        The current campaign is the land acquisition for the
+                        proposed three-acre healing and service campus near
+                        Nanjangud, outside Mysore. The land is under
+                        discussion; the acquisition requires additional
+                        capital. Every donation supports this stage.
                     </p>
                     <div
                         class="flex items-center gap-2 pt-2 text-xs text-muted-foreground"
@@ -349,7 +351,8 @@
                             aria-hidden="true"
                         />
                         <span>
-                            Secure payment via Razorpay{#if isTestMode}
+                            Secure payment via Razorpay · An official receipt
+                            is issued for every donation{#if isTestMode}
                                 · <span class="font-semibold text-primary">Test mode</span>{/if}
                         </span>
                     </div>
@@ -422,10 +425,12 @@
                                 <CardHeader>
                                     <CardTitle>Donor information</CardTitle>
                                     <CardDescription>
-                                        Optional. Below ₹2,000 the donation
-                                        may remain anonymous; above ₹2,000
-                                        PAN is required to issue an 80G
-                                        tax-deductible receipt.
+                                        Optional. An official receipt is
+                                        issued for every donation.
+                                        Tax-deductibility, including 80G
+                                        certificates where applicable, is
+                                        confirmed at the time of each donation
+                                        in line with applicable law.
                                     </CardDescription>
                                 </CardHeader>
                                 <CardContent class="space-y-3">

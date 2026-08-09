@@ -357,8 +357,8 @@
     </article>
 
     <BottomCtaBand
-        title="Support our work"
-        body="Your contributions make every darshan, festival, and seva possible."
+        title="Support the next chapter"
+        body="Your contributions make the proposed campus and the next chapter of the trust\u2019s work possible."
         ctaLabel="Donate Now"
         ctaHref="/donate"
     />

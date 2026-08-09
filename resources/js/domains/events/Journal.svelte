@@ -193,9 +193,9 @@
     {/each}
 
     <BottomCtaBand
-        title="Support the year-round work"
-        body="The journal records what the trust does on a daily, weekly, and seasonal basis. Your donation sustains the work that makes the next entry possible."
-        ctaLabel="Donate to the trust"
+        title="Support the next chapter"
+        body="The journal records the trust\u2019s recent work and the progress of the land acquisition campaign. Your donation moves the next chapter forward."
+        ctaLabel="Donate to the land acquisition"
         ctaHref="/donate"
     />
 </PublicLayout>

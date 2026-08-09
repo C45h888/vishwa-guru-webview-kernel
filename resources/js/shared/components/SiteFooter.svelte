@@ -18,16 +18,24 @@
         { href: '/contact', label: 'Contact' },
     ];
 
+    // Social destinations are intentionally unlinked until the trust
+    // confirms which channels are active. The labels remain visible so
+    // visitors know where the trust is eventually going to be, but the
+    // href="#" + aria-disabled + rel="nofollow" pattern is honest about
+    // the fact that these are not yet live destinations.
     const social = [
-        { href: '#', label: 'Facebook' },
-        { href: '#', label: 'X' },
-        { href: '#', label: 'Instagram' },
-        { href: '#', label: 'YouTube' },
+        { href: '#', label: 'Facebook', ariaLabel: 'Facebook (coming soon)' },
+        { href: '#', label: 'X', ariaLabel: 'X (coming soon)' },
+        { href: '#', label: 'Instagram', ariaLabel: 'Instagram (coming soon)' },
+        { href: '#', label: 'YouTube', ariaLabel: 'YouTube (coming soon)' },
     ];
 
+    // Legal page is not yet published. We list the destination so the
+    // site structure is visible, but the link is the contact page (where
+    // donors can ask for legal/compliance documents) until the legal
+    // page is reviewed and approved by the project owner.
     const legal = [
-        { href: '/terms', label: 'Terms' },
-        { href: '/privacy', label: 'Privacy' },
+        { href: '/contact', label: 'Terms & Privacy' },
     ];
 </script>
 
@@ -44,9 +52,11 @@
                     </span>
                 </div>
                 <p class="max-w-xs text-sm leading-relaxed text-muted-foreground">
-                    A trust sustained by the daily care of those in our
-                    charge, the generosity of those who call this seva
-                    their own, and the trustees who carry both forward.
+                    A charitable trust led by Sri Ram Ram Das Guruji.
+                    Approximately 300 children in need of care were housed
+                    and educated between 2007 and 2022. Now raising funds
+                    for a proposed healing and service campus near
+                    Nanjangud, outside Mysore.
                 </p>
             </div>
 
@@ -81,7 +91,7 @@
                 >
                     <p>
                         {appName}<br />
-                        Mysore, Karnataka
+                        Nanjangud, Karnataka (outside Mysore)
                     </p>
                     <p>
                         <a
@@ -110,8 +120,9 @@
                         Trust
                     </h3>
                     <ul class="space-y-2 text-sm text-foreground/80">
-                        <li>Registered charitable trust</li>
+                        <li>Charitable trust · Nanjangud, Karnataka</li>
                         <li>Secure payments via Razorpay</li>
+                        <li>Official receipt for every donation</li>
                     </ul>
                 </div>
 
@@ -126,7 +137,10 @@
                             <li>
                                 <a
                                     href={link.href}
-                                    class="text-foreground/80 transition-colors hover:text-primary"
+                                    aria-label={link.ariaLabel}
+                                    aria-disabled="true"
+                                    rel="nofollow"
+                                    class="cursor-not-allowed text-foreground/40 transition-colors hover:text-foreground/60"
                                 >
                                     {link.label}
                                 </a>
@@ -151,7 +165,7 @@
         <div
             class="mt-12 flex flex-col gap-2 border-t border-border/60 pt-6 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between"
         >
-            <span>© {year} {appName}</span>
+            <span>© {year} {appName} — A charitable trust, Nanjangud, Karnataka</span>
             <span>Secure payments via Razorpay</span>
         </div>
     </div>
