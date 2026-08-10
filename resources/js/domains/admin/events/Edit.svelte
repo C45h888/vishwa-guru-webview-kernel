@@ -32,7 +32,7 @@
         status?: string | null;
     }>;
 
-    let { appName, appUrl, authUser, razorpayMode, event, states, status }: Props = $props();
+    let { appName, appShortName, appUrl, authUser, razorpayMode, event, states, status }: Props = $props();
 
     function toLocal(iso: string | null): string {
         if (!iso) return '';
@@ -117,6 +117,7 @@
                     {initial}
                     {states}
                     {appName}
+                    {appShortName}
                     {appUrl}
                     {authUser}
                     {razorpayMode}

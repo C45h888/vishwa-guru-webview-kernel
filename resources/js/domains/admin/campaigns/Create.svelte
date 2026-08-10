@@ -20,6 +20,7 @@
 
     let {
         appName,
+        appShortName,
         appUrl,
         authUser,
         razorpayMode,
@@ -74,6 +75,7 @@
                 {initial}
                 {states}
                 {appName}
+                {appShortName}
                 {appUrl}
                 {authUser}
                 {razorpayMode}

@@ -31,7 +31,7 @@
         status?: string | null;
     }>;
 
-    let { appName, appUrl, authUser, razorpayMode, campaign, states, status }: Props = $props();
+    let { appName, appShortName, appUrl, authUser, razorpayMode, campaign, states, status }: Props = $props();
 
     // Convert datetime strings from ISO (server) to datetime-local (HTML).
     function toLocal(iso: string | null): string {
@@ -97,6 +97,7 @@
                     {initial}
                     {states}
                     {appName}
+                    {appShortName}
                     {appUrl}
                     {authUser}
                     {razorpayMode}
