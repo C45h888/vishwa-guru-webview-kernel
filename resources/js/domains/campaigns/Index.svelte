@@ -89,28 +89,28 @@
      * a short editorial block beneath. Clicking just scrolls to the grid
      * below; the user picks the campaign they want from there.
      *
-     * Until Phase 2 (image migration), the photos are served as static
-     * assets from /public/campaign-pill-images/. The copy is generic-
-     * fit-for-any-photo — the user will refine the labels and write
-     * category-specific copy once the final photo selection is locked.
+     * These canonical campaign images are staged in the public CMS media
+     * directory. They are intentionally kept full-frame; the existing
+     * square presentation handles the responsive slot without destructive
+     * source cropping.
      */
     const PILLARS = [
         {
-            src: '/campaign-pill-images/01-home.png',
+            src: '/storage/cms-media/LAND.jpg',
             alt: 'The land acquisition campaign',
             eyebrow: 'Current \u00b7 Stage 1',
             title: 'Acquire the land for the new campus',
             body: 'The trust is raising funds to acquire land near Nanjangud, outside Mysore. The land is under discussion; the acquisition requires additional capital. Until the land is secured, no construction begins.',
         },
         {
-            src: '/campaign-pill-images/02-main.jpg',
+            src: '/storage/cms-media/GAUSHALA.jpg',
             alt: 'The proposed campus vision',
             eyebrow: 'Planned \u00b7 Stage 2',
             title: 'Build the Gaushala, temple, and healing environment',
             body: 'On the secured land, the trust intends to build a Gaushala for the care and protection of cows, a simple Shiva temple with Kamadhenu and Shiva-family shrines, and a disciplined healing environment. Construction begins after land acquisition closes.',
         },
         {
-            src: '/campaign-pill-images/03-second.jpg',
+            src: '/storage/cms-media/WELFARE.jpg',
             alt: 'The long-term care of the cows',
             eyebrow: 'Planned \u00b7 Stage 3',
             title: 'Care and welfare of the cows',

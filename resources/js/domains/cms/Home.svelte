@@ -45,7 +45,7 @@
 
     const pillarFirst = $derived(content.story.image);
     const pillarSecond = $derived(
-        featuredEvents[0]?.banner_image ?? null,
+        content.programs[1]?.image ?? featuredEvents[0]?.banner_image ?? null,
     );
     const pillarThird = $derived(
         featuredGalleries[0]?.cover_image ?? null,

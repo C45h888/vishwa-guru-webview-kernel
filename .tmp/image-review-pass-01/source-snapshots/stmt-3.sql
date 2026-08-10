@@ -1,0 +1,2 @@
+INSERT INTO hero_banners (id,title,subtitle,cta_label,cta_url,image_file_id,mobile_image_file_id,state,display_order,starts_at,created_at,updated_at,created_by,updated_by) VALUES
+  ('hero_01KYSWKY6MS6EJ4HR3JSQ1G6YX','Preserving Sacred Traditions','Daily pooja, Annadanam, and the care of our temple — sustained by your seva.','See Our Campaigns','/campaigns','cms_media_01KYSWKY6M5TXVC2CRRVAH0Z1Q',NULL,'published',1,NOW(),NOW(),NOW(),'system','system');
