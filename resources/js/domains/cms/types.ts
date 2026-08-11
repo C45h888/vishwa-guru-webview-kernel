@@ -20,6 +20,9 @@ import type {
     AboutTimelineEntryProps,
     AboutTrusteeProps,
     AboutDonateCtaProps,
+    LegalPageContentProps,
+    LegalIntroProps,
+    LegalCertificateProps,
 } from '$shared/lib/inertia';
 
 export type {
@@ -39,6 +42,9 @@ export type {
     AboutTimelineEntryProps,
     AboutTrusteeProps,
     AboutDonateCtaProps,
+    LegalPageContentProps,
+    LegalIntroProps,
+    LegalCertificateProps,
 };
 
 export interface HeroBannerProps {
@@ -141,4 +147,9 @@ export interface AboutPageProps extends AppPageProps {
     heroBanners: HeroBannerProps[];
     html: string;
     resolvedAt: string;
+}
+
+export interface LegalPageProps extends AppPageProps {
+    page: StaticPageSummary;
+    legalContent: LegalPageContentProps | null;
 }

@@ -10,6 +10,7 @@ use App\Cms\Domain\StateMachines\StaticPageStateMachine;
 use App\Cms\Domain\ValueObjects\AboutPageContent;
 use App\Cms\Domain\ValueObjects\HeroBannerSlot;
 use App\Cms\Domain\ValueObjects\HomepageContent;
+use App\Cms\Domain\ValueObjects\LegalPageContent;
 use App\Cms\Domain\ValueObjects\PageBody;
 use App\Cms\Domain\ValueObjects\PageSlug;
 use App\Cms\Domain\ValueObjects\SeoMetadata;
@@ -45,6 +46,11 @@ use LogicException;
  * override. Direct callers that don't have a typed value pass null and
  * the entity treats a populated raw column as a programming error.
  *
+ * legal_page_content follows the same doctrine: parsed by
+ * LegalPageContentFactory and carried as a typed LegalPageContent.
+ * The Legal aggregate has no cms_media_assets references today, so its
+ * existence check is purely structural.
+ *
  * @see /Users/kamii/Vishwaguru-webview-kernel/vishwa-guru-webview-kernel/cms-architecture.md §3.3.1
  */
 final class StaticPage implements EntityContract
@@ -64,6 +70,7 @@ final class StaticPage implements EntityContract
         private readonly SeoMetadata $seoMetadata,
         private readonly ?HomepageContent $homepageContent,
         private readonly ?AboutPageContent $aboutPageContent,
+        private readonly ?LegalPageContent $legalPageContent,
         private readonly StaticPageState $state,
         private readonly bool $isHomepage,
         private readonly int $displayOrder,
@@ -93,6 +100,7 @@ final class StaticPage implements EntityContract
         ?EntityId $id = null,
         ?HomepageContent $homepageContent = null,
         ?AboutPageContent $aboutPageContent = null,
+        ?LegalPageContent $legalPageContent = null,
     ): self {
         if (trim($title) === '') {
             throw new InvalidArgumentException('StaticPage title cannot be empty');
@@ -113,6 +121,7 @@ final class StaticPage implements EntityContract
             seoMetadata: $seoMetadata,
             homepageContent: $homepageContent,
             aboutPageContent: $aboutPageContent,
+            legalPageContent: $legalPageContent,
             state: StaticPageState::DRAFT,
             isHomepage: $isHomepage,
             displayOrder: $displayOrder,
@@ -147,6 +156,7 @@ final class StaticPage implements EntityContract
         array $row,
         ?HomepageContent $homepageContent = null,
         ?AboutPageContent $aboutPageContent = null,
+        ?LegalPageContent $legalPageContent = null,
     ): self {
         $required = ['id', 'slug', 'title', 'state', 'created_at', 'updated_at'];
         foreach ($required as $key) {
@@ -206,6 +216,17 @@ final class StaticPage implements EntityContract
             );
         }
 
+        $rawLegalPageContent = $row['legal_page_content'] ?? null;
+        $hasRawLegalPageContent = $rawLegalPageContent !== null
+            && $rawLegalPageContent !== ''
+            && $rawLegalPageContent !== '{}';
+        if ($hasRawLegalPageContent && $legalPageContent === null) {
+            throw new LogicException(
+                'StaticPage row has populated legal_page_content; callers must supply '
+                .'the typed LegalPageContent via LegalPageContentFactory.'
+            );
+        }
+
         return new self(
             id: EntityId::fromString((string) $row['id']),
             slug: new PageSlug((string) $row['slug']),
@@ -216,6 +237,7 @@ final class StaticPage implements EntityContract
             seoMetadata: $seo,
             homepageContent: $homepageContent,
             aboutPageContent: $aboutPageContent,
+            legalPageContent: $legalPageContent,
             state: StaticPageState::from((string) $row['state']),
             isHomepage: (bool) ($row['is_homepage'] ?? false),
             displayOrder: (int) ($row['display_order'] ?? 0),
@@ -259,6 +281,9 @@ final class StaticPage implements EntityContract
             'about_page_content' => $this->aboutPageContent === null
                 ? null
                 : json_encode($this->aboutPageContent->toArray(), JSON_THROW_ON_ERROR),
+            'legal_page_content' => $this->legalPageContent === null
+                ? null
+                : json_encode($this->legalPageContent->toArray(), JSON_THROW_ON_ERROR),
             'state' => $this->state->value,
             'is_homepage' => $this->isHomepage,
             'display_order' => $this->displayOrder,
@@ -318,7 +343,7 @@ public function withChanges(array $changes): static
         $merged = array_merge($row, $changes);
         $merged['updated_at'] = (new DateTimeImmutable())->format(DATE_ATOM);
 
-        return self::fromRow($merged, $this->homepageContent, $this->aboutPageContent);
+        return self::fromRow($merged, $this->homepageContent, $this->aboutPageContent, $this->legalPageContent);
     }
 
     /**
@@ -346,7 +371,7 @@ public function withChanges(array $changes): static
         }
         $row['updated_at'] = (new DateTimeImmutable())->format(DATE_ATOM);
 
-        return self::fromRow($row, $this->homepageContent, $this->aboutPageContent);
+        return self::fromRow($row, $this->homepageContent, $this->aboutPageContent, $this->legalPageContent);
     }
 
     /**
@@ -375,7 +400,7 @@ public function withChanges(array $changes): static
         $row['is_homepage'] = true;
         $row['updated_at'] = (new DateTimeImmutable())->format(DATE_ATOM);
 
-        return self::fromRow($row, $this->homepageContent, $this->aboutPageContent);
+        return self::fromRow($row, $this->homepageContent, $this->aboutPageContent, $this->legalPageContent);
     }
 
     public function clearHomepage(): self
@@ -384,7 +409,7 @@ public function withChanges(array $changes): static
         $row['is_homepage'] = false;
         $row['updated_at'] = (new DateTimeImmutable())->format(DATE_ATOM);
 
-        return self::fromRow($row, $this->homepageContent, $this->aboutPageContent);
+        return self::fromRow($row, $this->homepageContent, $this->aboutPageContent, $this->legalPageContent);
     }
 
     public function withBody(PageBody $body, ?string $newBodyHtml = null): self
@@ -396,7 +421,7 @@ public function withChanges(array $changes): static
         }
         $row['updated_at'] = (new DateTimeImmutable())->format(DATE_ATOM);
 
-        return self::fromRow($row, $this->homepageContent, $this->aboutPageContent);
+        return self::fromRow($row, $this->homepageContent, $this->aboutPageContent, $this->legalPageContent);
     }
 
     public function withHomepageContent(?HomepageContent $homepageContent): self
@@ -407,7 +432,7 @@ public function withChanges(array $changes): static
             : json_encode($homepageContent->toArray(), JSON_THROW_ON_ERROR);
         $row['updated_at'] = (new DateTimeImmutable())->format(DATE_ATOM);
 
-        return self::fromRow($row, $homepageContent, $this->aboutPageContent);
+        return self::fromRow($row, $homepageContent, $this->aboutPageContent, $this->legalPageContent);
     }
 
     public function withAboutPageContent(?AboutPageContent $aboutPageContent): self
@@ -418,7 +443,18 @@ public function withChanges(array $changes): static
             : json_encode($aboutPageContent->toArray(), JSON_THROW_ON_ERROR);
         $row['updated_at'] = (new DateTimeImmutable())->format(DATE_ATOM);
 
-        return self::fromRow($row, $this->homepageContent, $aboutPageContent);
+        return self::fromRow($row, $this->homepageContent, $aboutPageContent, $this->legalPageContent);
+    }
+
+    public function withLegalPageContent(?LegalPageContent $legalPageContent): self
+    {
+        $row = $this->toArray();
+        $row['legal_page_content'] = $legalPageContent === null
+            ? null
+            : json_encode($legalPageContent->toArray(), JSON_THROW_ON_ERROR);
+        $row['updated_at'] = (new DateTimeImmutable())->format(DATE_ATOM);
+
+        return self::fromRow($row, $this->homepageContent, $this->aboutPageContent, $legalPageContent);
     }
 
     public function attachHeroBanner(HeroBannerSlot $slot): self
@@ -443,7 +479,7 @@ public function withChanges(array $changes): static
         );
         $row['updated_at'] = (new DateTimeImmutable())->format(DATE_ATOM);
 
-        return self::fromRow($row, $this->homepageContent, $this->aboutPageContent);
+        return self::fromRow($row, $this->homepageContent, $this->aboutPageContent, $this->legalPageContent);
     }
 
     public function detachHeroBanner(EntityId $bannerId): self
@@ -464,7 +500,7 @@ public function withChanges(array $changes): static
         );
         $row['updated_at'] = (new DateTimeImmutable())->format(DATE_ATOM);
 
-        return self::fromRow($row, $this->homepageContent, $this->aboutPageContent);
+        return self::fromRow($row, $this->homepageContent, $this->aboutPageContent, $this->legalPageContent);
     }
 
     // ─── Getters ────────────────────────────────────────────────────────
@@ -507,6 +543,11 @@ public function withChanges(array $changes): static
     public function aboutPageContent(): ?AboutPageContent
     {
         return $this->aboutPageContent;
+    }
+
+    public function legalPageContent(): ?LegalPageContent
+    {
+        return $this->legalPageContent;
     }
 
     public function state(): StaticPageState

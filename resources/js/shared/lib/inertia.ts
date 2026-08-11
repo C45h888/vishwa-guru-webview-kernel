@@ -454,3 +454,67 @@ export interface AboutPageContentProps {
     visit: AboutVisitProps;
     donate_cta: AboutDonateCtaProps;
 }
+
+/* ──────────────────────────────────────────────────────────────────────
+ * Legal-page structured aggregate
+ * ──────────────────────────────────────────────────────────────────────
+ *
+ * Mirrors `App\Cms\Domain\ValueObjects\LegalPageContent`. The payload
+ * flows from PHP into the Svelte layer as snake_case keys (matching
+ * the JSONB column convention) and the Svelte layer treats a null
+ * legalContent (LegalPageProps) as a request to use
+ * FALLBACK_LEGAL_PAGE_CONTENT from resources/js/domains/cms/legal-fallbacks.ts.
+ *
+ * The certificates array must contain exactly four entries —
+ * eighty_g (80G), twelve_a (12A), poa (Power of Attorney), tan (TAN) —
+ * matching `LegalCertificate::ALLOWED_KEYS` on the PHP side. The
+ * reference_number is nullable: a styled placeholder is rendered when
+ * the trust office has not yet confirmed the official reference.
+ *
+ * The page has no hero banner editor yet — the regulatory content is
+ * content-only and renders without a magazine hero. /legal therefore
+ * does not carry heroBanners, html, or resolvedAt.
+ */
+
+export interface LegalIntroProps {
+    eyebrow: string;
+    title: string;
+    body: string;
+}
+
+export type LegalCertificateKey =
+    | 'eighty_g'
+    | 'twelve_a'
+    | 'poa'
+    | 'tan';
+
+export interface LegalCertificateProps {
+    certificate_key: LegalCertificateKey;
+    title: string;
+    reference_number: string | null;
+    description: string;
+    icon_key: LegalCertificateKey;
+    /**
+     * Public-facing statement of the certificate's validity (e.g.
+     * "A.Y. 2011-12 onwards" for the 80G approval, or "Continuing" for
+     * documents with no expiry). Null when not yet determined.
+     */
+    validity_period: string | null;
+    /**
+     * Issuance date as printed on the certificate, in the issuer's
+     * own wording (e.g. "23.02.2012"). Null when not yet determined.
+     */
+    issued_on: string | null;
+    /**
+     * Authority that issued the certificate (e.g. "Office of the
+     * Commissioner of Income-tax, Mysore"). Null when not yet
+     * determined.
+     */
+    issuing_authority: string | null;
+}
+
+export interface LegalPageContentProps {
+    version: 1;
+    intro: LegalIntroProps;
+    certificates: LegalCertificateProps[];
+}

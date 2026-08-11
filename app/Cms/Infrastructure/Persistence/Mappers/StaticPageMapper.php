@@ -7,6 +7,7 @@ namespace App\Cms\Infrastructure\Persistence\Mappers;
 use App\Cms\Domain\Entities\StaticPage;
 use App\Cms\Domain\ValueObjects\AboutPageContent;
 use App\Cms\Domain\ValueObjects\HomepageContent;
+use App\Cms\Domain\ValueObjects\LegalPageContent;
 
 /**
  * StaticPageMapper — thin row↔entity delegator (spec §5.4).
@@ -17,7 +18,7 @@ use App\Cms\Domain\ValueObjects\HomepageContent;
  * independently testable in isolation, without booting the kernel or
  * resolving a repository via the container.
  *
- * Reuse targets: prefer `StaticPageMapper::fromRow($row, $homepageContent, $aboutPageContent)`
+ * Reuse targets: prefer `StaticPageMapper::fromRow($row, $homepageContent, $aboutPageContent, $legalPageContent)`
  * over calling `StaticPage::fromRow()` directly in test code so the test
  * name expresses intent ("mapper round-trip") rather than implementation.
  */
@@ -39,8 +40,8 @@ final class StaticPageMapper
      *
      * Pass already-validated typed VOs when the row has populated JSONB
      * columns; otherwise the factories must be invoked upstream
-     * (typically via HomepageContentFactory and AboutPageContentFactory)
-     * before reaching this mapper.
+     * (typically via HomepageContentFactory, AboutPageContentFactory,
+     * and LegalPageContentFactory) before reaching this mapper.
      *
      * @param  array<string, mixed>  $row
      */
@@ -48,7 +49,8 @@ final class StaticPageMapper
         array $row,
         ?HomepageContent $homepageContent = null,
         ?AboutPageContent $aboutPageContent = null,
+        ?LegalPageContent $legalPageContent = null,
     ): StaticPage {
-        return StaticPage::fromRow($row, $homepageContent, $aboutPageContent);
+        return StaticPage::fromRow($row, $homepageContent, $aboutPageContent, $legalPageContent);
     }
 }

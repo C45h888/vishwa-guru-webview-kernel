@@ -30,11 +30,11 @@
         { href: '#', label: 'YouTube', ariaLabel: 'YouTube (coming soon)' },
     ];
 
-    // Legal page is not yet published. We list the destination so the
-    // site structure is visible, but the link is the contact page (where
-    // donors can ask for legal/compliance documents) until the legal
-    // page is reviewed and approved by the project owner.
+    // Legal page displays the trust's regulatory certificates (80G, 12A,
+    // POA, TAN). Terms & Privacy is still a placeholder — its dedicated
+    // page will be added separately.
     const legal = [
+        { href: '/legal', label: 'Legal' },
         { href: '/contact', label: 'Terms & Privacy' },
     ];
 </script>

@@ -12,7 +12,11 @@ use Illuminate\Contracts\Cache\Repository as CacheRepository;
 /**
  * Redis-backed implementation of ResolvedPageCacheContract.
  *
- * Key shape: `cms.page.{slug}.resolved`
+ * Key shape: `cms.page.{slug}.resolved.v{N}` where N is the cache
+ * schema version. Bumping N on any DTO/entity change isolates the new
+ * serialization from old serialized blobs (the old keys naturally
+ * TTL-expire, while writes land under the new key).
+ *
  * Serialization: PHP serialize() of the full RenderedStaticPage DTO.
  * TTL: 3600s (1 hour) — safety net; invalidation events fire within
  * milliseconds of state changes.
@@ -26,6 +30,14 @@ final class RedisResolvedPageCache implements ResolvedPageCacheContract
 {
     private const KEY_PREFIX = 'cms.page.';
     private const KEY_SUFFIX = '.resolved';
+
+    /**
+     * Cache schema version. Bump when RenderedStaticPage gains or
+     * loses a typed property, or when any contained entity/VO changes
+     * its serialized shape. Old versions become unreachable and TTL
+     * out naturally.
+     */
+    private const SCHEMA_VERSION = 2;
 
     public function __construct(
         private readonly CacheRepository $cache,
@@ -76,7 +88,10 @@ final class RedisResolvedPageCache implements ResolvedPageCacheContract
                 $iterator = null;
                 do {
                     /** @var array<string, mixed>|null $batch */
-                    $batch = $conn->scan($iterator, ['match' => $prefix.self::KEY_PREFIX.'*'.self::KEY_SUFFIX, 'count' => 100]);
+                    $batch = $conn->scan($iterator, [
+                        'match' => $prefix.self::KEY_PREFIX.'*'.self::KEY_SUFFIX.'.v'.self::SCHEMA_VERSION,
+                        'count' => 100,
+                    ]);
                     if ($batch !== null && $batch !== [] && $batch !== false) {
                         $conn->del($batch);
                     }
@@ -90,6 +105,6 @@ final class RedisResolvedPageCache implements ResolvedPageCacheContract
 
     private function key(PageSlug $slug): string
     {
-        return self::KEY_PREFIX.$slug->value().self::KEY_SUFFIX;
+        return self::KEY_PREFIX.$slug->value().self::KEY_SUFFIX.'.v'.self::SCHEMA_VERSION;
     }
 }

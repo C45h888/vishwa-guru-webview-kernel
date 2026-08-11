@@ -6,6 +6,8 @@ use App\Http\Controllers\Public\AboutController;
 use App\Http\Controllers\Public\CmsPageController;
 use App\Http\Controllers\Public\ContactController;
 use App\Http\Controllers\Public\HomeController;
+use App\Http\Controllers\Public\LegalController;
+use App\Http\Controllers\Public\Legal\DocumentController as LegalDocumentController;
 use App\Http\Controllers\Public\CmsMedia\ShowController as CmsMediaShowController;
 use Illuminate\Support\Facades\Route;
 
@@ -27,13 +29,38 @@ Route::get('/about', [AboutController::class, 'index'])
     ->name('cms.about');
 
 /*
+ * Dedicated /legal route — displays the trust's legal registration,
+ * tax-exempt status (80G, 12A), POA, and TAN certificates.
+ * Mirrors the /about pattern: dedicated route, dedicated controller,
+ * dedicated Svelte component. Structured content is resolved from the
+ * legal_page_content JSONB column via LegalPageContentFactory.
+ * Must be registered BEFORE the generic {slug} fallback below.
+ */
+Route::get('/legal', [LegalController::class, 'index'])
+    ->name('cms.legal');
+
+/*
+ * Legal-document streaming route — serves the trust's compliance PDFs
+ * (80G, 12A, POA, TAN) from the private local disk. The {key} param
+ * is whitelisted inside DocumentController against
+ * LegalCertificate::ALLOWED_KEYS so unknown values 404.
+ *
+ * Registered BEFORE the generic {slug} fallback so /legal/documents/*
+ * never falls through to the CmsPageController. Also constrained to
+ * the four canonical keys at the route level for early rejection.
+ */
+Route::get('/legal/documents/{key}', LegalDocumentController::class)
+    ->where('key', '(eighty_g|twelve_a|poa|tan)')
+    ->name('cms.legal.document');
+
+/*
  * Generic CMS page resolver for /privacy, /terms, /trustee,
  * /mission, /policies. Whitelist regex prevents shadowing
- * /campaigns/{slug}, /gallery/{slug}, /events/{slug}, /about.
+ * /campaigns/{slug}, /gallery/{slug}, /events/{slug}, /about, /legal.
  *
  * Adding more public static pages: edit the regex + seed a row in the
- * static_pages table with the matching slug. /about is NOT in the
- * whitelist because it has its own dedicated route.
+ * static_pages table with the matching slug. /about and /legal are NOT
+ * in the whitelist because they have their own dedicated routes.
  */
 Route::get('/{slug}', [CmsPageController::class, 'show'])
     ->where('slug', '(privacy|terms|trustee|mission|policies)')

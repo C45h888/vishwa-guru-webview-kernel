@@ -207,6 +207,7 @@ Nanjangud, Karnataka (outside Mysore)",
         $this->seedPaymentProviders($adapter);
         $this->seedSampleCampaign($adapter);
         $this->seedAboutPage($adapter);
+        $this->seedLegalPage($adapter);
 
         $this->command->info('ProductionSeeder: complete.');
     }
@@ -423,6 +424,179 @@ Nanjangud, Karnataka (outside Mysore)",
         );
         if ($r->isFailure()) {
             $this->command->error('    ! about page: '.$r->error());
+        }
+    }
+
+    /**
+     * Canonical Legal-page row. The structured certificate content is
+     * seeded directly into `legal_page_content` JSONB so the renderer
+     * resolves a typed `LegalPageContent` value object without falling
+     * through to the Svelte-side fallback. Display order 20 places it
+     * after About (10).
+     *
+     * Reference numbers for all four certificates are intentionally
+     * null — the trust office has not yet confirmed them. The page
+     * renders a styled "To be confirmed by the trust office" line in
+     * that case.
+     */
+    private const LEGAL_PAGE = [
+        'id' => 'static_page_0001N6CAYNHGKPWRF7GDZ074RB',
+        'slug' => 'legal',
+        'title' => 'Legal & Tax-Exempt Standing',
+        'meta_description' => 'Sri Vishwaguru Sri Sri Sriram Shishyavrundham Mahasamsthanam (VSRSMS) is a charitable trust registered in Karnataka. This page presents the trust’s regulatory registrations — 80G, 12A, Power of Attorney, and TAN — and is addressed to donors and auditors who need to verify the trust’s legal standing before making a contribution.',
+        'is_homepage' => false,
+        'display_order' => 20,
+    ];
+
+    /**
+     * Canonical certificate copy for the legal_page_content JSONB column.
+     *
+     * Reference numbers, validity periods, issuance dates, and issuing
+     * authorities are sourced from the actual scanned PDFs on disk at
+     * `storage/app/legalmedia/assets/{eighty_g,twelve_a,poa,tan}.pdf`.
+     * The values were OCR-extracted and vision-verified against the
+     * rendered documents — see the agent pass log for the extraction
+     * trail. The seed is the canonical source; the Svelte-side
+     * fallback file is the placeholder of last resort when the JSONB
+     * column is null.
+     *
+     * Order matches the Svelte-side `LegalCertificate` literal-union
+     * (`eighty_g | twelve_a | poa | tan`).
+     */
+    private const LEGAL_CERTIFICATES = [
+        'intro' => [
+            'eyebrow' => 'Regulatory standing',
+            'title' => "The trust's legal and tax-exempt status",
+            'body' => "The trust's public standing rests on four registrations issued by Indian statutory authorities. The scanned certificates are linked below for donor and auditor review. Certified copies are available from the trust office on written request.",
+        ],
+        'certificates' => [
+            [
+                'certificate_key' => 'eighty_g',
+                'title' => '80G Certificate',
+                'reference_number' => 'F.No.S-504/80G/CIT/MYS/2011-12',
+                'description' => 'Enables donors to claim a tax deduction for contributions to the trust under Section 80G(5)(vi) of the Income Tax Act, 1961. Donations qualify for a 50% deduction subject to the donor’s applicable limits.',
+                'icon_key' => 'eighty_g',
+                'validity_period' => 'A.Y. 2011-12 onwards',
+                'issued_on' => '23.02.2012',
+                'issuing_authority' => 'Office of the Commissioner of Income-tax, Mysore',
+            ],
+            [
+                'certificate_key' => 'twelve_a',
+                'title' => '12A Registration',
+                'reference_number' => 'F.No.S-504/12AA/CIT/MYS/2010-11',
+                'description' => "Confirms the trust's registration as a Public Charitable Trust under Section 12A read with Section 12AA(1)(b)(i) of the Income Tax Act, 1961. Tax-exemption availability on the trust's income is considered separately by the Assessing Officer under sections 11 to 13.",
+                'icon_key' => 'twelve_a',
+                'validity_period' => 'w.e.f. A.Y. 2011-12',
+                'issued_on' => '29.10.2010',
+                'issuing_authority' => 'Office of the Commissioner of Income-tax, Mysore',
+            ],
+            [
+                'certificate_key' => 'poa',
+                'title' => 'Power of Attorney',
+                'reference_number' => 'Board Resolution dated 17.07.2021',
+                'description' => "Board Resolution of the trust authorising Sh. R. Sriram, Managing Trustee, to execute powers of attorney, open bank accounts, engage professional advisors, sign contracts, and take all steps necessary for the fulfilment of the trust's purposes.",
+                'icon_key' => 'poa',
+                'validity_period' => 'Continuing (no expiry)',
+                'issued_on' => '17.07.2021',
+                'issuing_authority' => 'Board of Trustees, VSRSMS',
+            ],
+            [
+                'certificate_key' => 'tan',
+                'title' => 'TAN',
+                'reference_number' => 'BLRS60956A',
+                'description' => 'Tax Deduction Account Number allotted to the trust for withholding-tax compliance under the Income Tax Act, 1961. Mandatory on all TDS challans, certificates, returns, and Tax Collection at Source (TCS) returns filed by the trust.',
+                'icon_key' => 'tan',
+                'validity_period' => 'Continuing (no expiry)',
+                'issued_on' => '01.03.2019',
+                'issuing_authority' => 'Income Tax Department (via NSDL e-TDS Intermediary)',
+            ],
+        ],
+    ];
+
+    /**
+     * Idempotent seed of the /legal static page.
+     *
+     * Populates `legal_page_content` with the structured certificate
+     * aggregate (intro + certificates[]). The PHP `LegalPageContent`
+     * value object validates the JSON shape; the factory's
+     * `assertStillValid()` is implicitly invoked through the
+     * repository's `update()` call.
+     */
+    private function seedLegalPage(PersistenceAdapterContract $adapter): void
+    {
+        $this->command->info('  → static_pages (legal)');
+        $now = (new \DateTimeImmutable())->format(DATE_ATOM);
+
+        $l = self::LEGAL_PAGE;
+
+        $bodyJson = json_encode(
+            ['version' => 1, 'blocks' => []],
+            JSON_THROW_ON_ERROR,
+        );
+        $seoJson = json_encode(
+            [
+                'metaTitle' => null,
+                'metaDescription' => $l['meta_description'],
+                'canonicalUrl' => null,
+                'ogImageFileId' => null,
+                'keywords' => [],
+            ],
+            JSON_THROW_ON_ERROR,
+        );
+        $legalContentJson = json_encode(
+            [
+                'version' => 1,
+                'intro' => self::LEGAL_CERTIFICATES['intro'],
+                'certificates' => self::LEGAL_CERTIFICATES['certificates'],
+            ],
+            JSON_THROW_ON_ERROR,
+        );
+
+        $r = $adapter->execute(
+            "INSERT INTO static_pages (
+                id, slug, title, meta_description,
+                body_json, body_html, seo_metadata,
+                homepage_content, about_page_content, legal_page_content,
+                state, is_homepage, display_order,
+                published_at, last_published_at,
+                created_at, updated_at, created_by, updated_by
+             ) VALUES (
+                :id, :slug, :title, :meta_description,
+                :body_json, :body_html, :seo_metadata,
+                NULL, NULL, :legal_page_content,
+                'published', :is_homepage, :display_order,
+                :now, :now,
+                :now, :now, 'system', 'system'
+             )
+             ON CONFLICT (slug) WHERE deleted_at IS NULL DO UPDATE SET
+                title              = EXCLUDED.title,
+                meta_description   = EXCLUDED.meta_description,
+                body_html          = EXCLUDED.body_html,
+                seo_metadata       = EXCLUDED.seo_metadata,
+                legal_page_content = EXCLUDED.legal_page_content,
+                state              = EXCLUDED.state,
+                is_homepage        = EXCLUDED.is_homepage,
+                display_order      = EXCLUDED.display_order,
+                published_at       = EXCLUDED.published_at,
+                last_published_at  = EXCLUDED.last_published_at,
+                updated_at         = EXCLUDED.updated_at,
+                updated_by         = EXCLUDED.updated_by",
+            [
+                'id'                  => $l['id'],
+                'slug'                => $l['slug'],
+                'title'               => $l['title'],
+                'meta_description'    => $l['meta_description'],
+                'body_json'           => $bodyJson,
+                'body_html'           => '',
+                'seo_metadata'        => $seoJson,
+                'legal_page_content'  => $legalContentJson,
+                'is_homepage'         => $l['is_homepage'] ? 'true' : 'false',
+                'display_order'       => $l['display_order'],
+                'now'                 => $now,
+            ]
+        );
+        if ($r->isFailure()) {
+            $this->command->error('    ! legal page: '.$r->error());
         }
     }
 }

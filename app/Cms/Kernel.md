@@ -5,12 +5,12 @@
 
 ## Boundaries
 
-**Owns:** public-content orchestration. Five V1 entities: `StaticPage`,
+**Owns:** public-content orchestration. Six V1 entities: `StaticPage`,
 `HeroBanner`, `StaticPageReference`, `ContactInformation`,
-`CmsMediaAsset`. Owns the rendering pipeline (block registry +
-`StaticPageBodyRenderer`) and the Redis-backed resolved-page cache. The CMS
-kernel is the only kernel the frontend (Phase 3 Svelte/Inertia UI)
-consumes directly.
+`CmsMediaAsset`, `LegalPageContent` (typed aggregate). Owns the
+rendering pipeline (block registry + `StaticPageBodyRenderer`) and
+the Redis-backed resolved-page cache. The CMS kernel is the only
+kernel the frontend (Phase 3 Svelte/Inertia UI) consumes directly.
 
 **Does NOT own:** user accounts (`Auth` — Phase 4 Admin kernel), donations
 or receipts (`Payments`), campaigns themselves (`Campaigns`). Cross-kernel
@@ -50,11 +50,11 @@ Bindings (see `register()` for axis labels A–G):
 - `BlockRendererRegistry` singleton (constructed with 5 block renderers)
 - `StaticPageRendererContract → StaticPageRendererService`
 - `ImageUrlResolverContract → PublicMediaUrlResolver`
-- 9 service singletons (`StaticPageService`, `StaticPageQueryService`,
+- 10 service singletons (`StaticPageService`, `StaticPageQueryService`,
   `HeroBannerService`, `ContactInformationService`,
   `ReferenceResolutionService`, `PublicMediaPresentationService`,
   `HomepageContentFactory`, `AboutPageContentFactory`,
-  `StaticPageRendererService`)
+  `LegalPageContentFactory`, `StaticPageRendererService`)
 
 `boot()` registers 4 entity types against `RepositoryRegistryContract`
 and subscribes `CacheInvalidationListener` to 9 Cms domain events
@@ -80,6 +80,24 @@ depend on `App\Payments\Services`, `App\Payments\Infrastructure`, or
 `App\Payments\Domain` directly — the contract surface is the only
 sanctioned cross-kernel import. See `cms-architecture.md` §7.
 
+## Surfaces
+
+The Cms kernel exposes three canonical public surfaces, each backed by a
+dedicated `App\Http\Controllers\Public\` controller, route, and Svelte
+component, plus the generic `/{slug}` whitelist for content-only pages:
+
+- `/` (homepage) — `cms.homepage` → `HomeController`
+- `/about` — `cms.about` → `AboutController` (carries `about_page_content`)
+- `/legal` — `cms.legal` → `LegalController` (carries `legal_page_content`)
+
+`/legal` is content-only: no hero banner editor surface exists, so the
+page intentionally carries no `heroBanners` payload. The structured
+certificate content lives in `static_pages.legal_page_content` (JSONB)
+and is hydrated through `LegalPageContentFactory` into a typed
+`LegalPageContent` aggregate. The Svelte layer reads the typed
+`legalContent` prop or falls back to
+`resources/js/domains/cms/legal-fallbacks.ts` when the column is null.
+
 ## Tests
 
 - `tests/Unit/Cms/Domain/` — entity + value-object unit tests (incl.
@@ -92,3 +110,8 @@ sanctioned cross-kernel import. See `cms-architecture.md` §7.
   verification that the renamed SQLite mirror
   (`2026_07_16_000005_k_cms_create_cms_tables_sqlite.php`) lands every
   expected CMS table.
+
+The `/legal` surface is verified end-to-end through the running
+application at `localhost:8000/legal` — no PHPUnit abstraction. The
+canonical reference for the public/legal pipeline is the About-page
+mirror, which carries the equivalent typed aggregate.

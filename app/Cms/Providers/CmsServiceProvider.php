@@ -41,6 +41,7 @@ use App\Cms\Services\ReferenceResolutionService;
 use App\Cms\Services\PublicMediaPresentationService;
 use App\Cms\Services\AboutPageContentFactory;
 use App\Cms\Services\HomepageContentFactory;
+use App\Cms\Services\LegalPageContentFactory;
 use App\Cms\Services\StaticPageQueryService;
 use App\Cms\Services\StaticPageRendererService;
 use App\Cms\Services\StaticPageService;
@@ -144,6 +145,7 @@ final class CmsServiceProvider extends ServiceProvider
         $app->singleton(PublicMediaPresentationService::class);
         $app->singleton(HomepageContentFactory::class);
         $app->singleton(AboutPageContentFactory::class);
+        $app->singleton(LegalPageContentFactory::class);
     }
 
     public function boot(): void
@@ -221,6 +223,7 @@ final class CmsServiceProvider extends ServiceProvider
             ReferenceResolutionService::class,
             HomepageContentFactory::class,
             AboutPageContentFactory::class,
+            LegalPageContentFactory::class,
 
             // Repository registry contract (we depend on it in boot())
             RepositoryRegistryContract::class,
