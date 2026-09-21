@@ -134,7 +134,7 @@
                         <p
                             class="text-xs font-semibold uppercase tracking-[0.25em] text-primary"
                         >
-                            Gallery
+                            {gallery.image_count} photo{gallery.image_count === 1 ? '' : 's'} · Moment
                         </p>
                         <h1
                             class="font-serif text-3xl font-semibold leading-tight lg:text-5xl"
@@ -357,8 +357,8 @@
     </article>
 
     <BottomCtaBand
-        title="Support the next chapter"
-        body="Your contributions make the proposed campus and the next chapter of the trust\u2019s work possible."
+        title="Support the schools and the campus"
+        body="Sustain daily annadanam at the schools — or move the proposed healing and service campus one step closer. Every donation is acknowledged with an official receipt."
         ctaLabel="Donate Now"
         ctaHref="/donate"
     />

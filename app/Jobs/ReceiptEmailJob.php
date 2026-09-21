@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Jobs;
 
+use App\Mail\ReceiptMailable;
 use App\Payments\Domain\Entities\Receipt;
 use App\Payments\Domain\Repositories\ReceiptRepositoryContract;
 use App\Persistence\ValueObjects\EntityId;
@@ -110,25 +111,16 @@ final class ReceiptEmailJob extends AbstractQueuedJob
             't' => $receipt->accessToken(),
         ], absolute: true);
 
-        $body = $this->renderBody(
+        // Use a Mailable class so Mail::fake() and Mail::assertSent() can
+        // track the dispatch in tests, and so future work can attach a
+        // HTML view + PDF attachment by extending build() in one place.
+        Mail::to($email)->send(new ReceiptMailable(
             donorName: $receipt->donorName(),
             amountFormatted: $this->formatAmount($receipt),
             receiptNumber: $receipt->receiptNumber(),
             campaignTitle: $receipt->campaignTitleSnapshot(),
             signedUrl: $signedUrl,
-        );
-
-        $subject = sprintf(
-            'Your donation receipt %s — %s',
-            $receipt->receiptNumber(),
-            config('app.name', 'Temple Trust'),
-        );
-
-        Mail::raw($body, function ($message) use ($email, $subject): void {
-            $message
-                ->to($email)
-                ->subject($subject);
-        });
+        ));
 
         Log::info('ReceiptEmailJob: sent', [
             'receipt_id' => $this->receiptId->value(),

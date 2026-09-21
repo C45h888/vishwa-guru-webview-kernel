@@ -1,4 +1,4 @@
-# Vishwaguru Webview Kernel — Content Knowledge Base
+¸# Vishwaguru Webview Kernel — Content Knowledge Base
 
 Status: Working editorial baseline — founder narrative confirmed, legal facts pending  
 Owner: Project team  
@@ -25,10 +25,11 @@ The current working narrative is:
 - Spiritual leader and public figure: **Sri Ram Ram Das Guruji**.
 - Guruji came from a teaching background and became a respected ritual and spiritual guide in Mysore.
 - In 2012, Guruji received Power of Attorney for the trust and began the major service endeavour described below.
-- The trust operated its children’s-care chapter from approximately 2007 to 2022.
-- Across changing batches, approximately 300 children in need of care were housed, educated, and supported over that period.
-- The children also received cultural and practical skills, including Bharatanatyam and broader life skills.
-- That residential chapter is no longer active because the children completed their education and moved forward in life.
+- The trust has schooled children in need of care since approximately 2007, and the schools run today.
+- The schools serve blind and deaf pupils, who receive free education.
+- Daily life at the schools is sustained by annadanam: food, water, and events for the children. Donations for the schools go to these daily operations.
+- Across changing batches, approximately 300 children in need of care have been housed, educated, and supported, alongside the pupils studying at the schools today.
+- The children also receive cultural and practical skills, including Bharatanatyam and broader life skills.
 - The current project is a proposed three-acre healing and service campus near Nanjangud, outside Mysore.
 - The land has been under discussion and may be reserved, but additional capital is required to complete the acquisition.
 - The planned campus includes a Gaushala, a simple Shiva temple, Kamadhenu and Shiva-family shrines, and a healing environment for people recovering from addiction or serious personal difficulty.
@@ -64,13 +65,14 @@ The core brand voice should balance spiritual depth with professional charitable
 
 ## 5. Campaign and claims guardrails
 
-- Use “approximately 300” rather than an exact number unless records support a precise figure.
+- Use “approximately 300” rather than an exact number unless records support a precise figure; state the cumulative figure alongside — not instead of — the pupils studying at the schools today.
 - Use “children in need of care”, not “orphans”, unless a legal or case-record basis is supplied.
 - Describe the land as “under discussion” or “being pursued”, not acquired or secured.
 - Describe the campus as proposed or planned until construction has begun.
 - Present addiction recovery as a planned healing and support environment. Do not claim clinical treatment, licensed rehabilitation, or guaranteed outcomes without qualified documentation.
 - Present cow products as future plans, not existing products.
-- Donation uses must be staged clearly: land acquisition and construction first; cow care and welfare after the campus becomes operational.
+- Describe the schools as running today on free education for blind and deaf pupils, sustained by daily annadanam (food, water, school events). Do not describe the schools as closed or concluded.
+- Donation uses must be staged clearly: daily school operations (annadanam) and the campus land fund are the two current asks; campus construction follows once land is secured; cow care and welfare follow once the campus becomes operational.
 - Donor certificates and complimentary cow-related products should be described as intended future benefits and must be reviewed for operational, legal, tax, and fulfilment implications.
 - A separate legal page will be commissioned by the project owner. Copy agents may reference it once approved, but must not invent compliance language.
 

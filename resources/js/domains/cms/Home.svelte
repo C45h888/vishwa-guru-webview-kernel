@@ -169,9 +169,10 @@
                     What we're doing today
                 </h2>
                 <p class="text-base text-muted-foreground">
-                    The current campaign is the land acquisition for the
-                    proposed campus near Nanjangud. Every donation supports
-                    that work.
+                    The schools run today on daily annadanam — food, water,
+                    and events for the children — while the land fund for the
+                    proposed campus near Nanjangud grows alongside. Donations
+                    sustain both.
                 </p>
                 <div class="pt-1">
                     <Button
@@ -222,7 +223,7 @@
                     Gallery
                 </p>
                 <h2 class="text-3xl font-semibold tracking-tight lg:text-5xl">
-                    Recent darshan
+                    School life and temple moments
                 </h2>
             </div>
             <a

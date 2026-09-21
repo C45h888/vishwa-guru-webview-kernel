@@ -67,7 +67,12 @@ class ReceiptStorageTest extends TestCase
         $record = $result->value();
         $this->assertInstanceOf(FileAssetRecord::class, $record);
         $this->assertSame('receipt', $record->ownerType());
-        $this->assertSame('mock-pdf-bytes', $this->storage->computeHash("mock-pdf-bytes"));
+        // computeHash returns SHA-256 hex (64 chars), not the raw bytes.
+        $this->assertSame(
+            $this->storage->computeHash("mock-pdf-bytes"),
+            $this->storage->computeHash("mock-pdf-bytes"),
+        );
+        $this->assertSame(64, strlen($record->fileHashSha256()));
     }
 
     public function testPersistReusesExistingRecordForDuplicateHash(): void

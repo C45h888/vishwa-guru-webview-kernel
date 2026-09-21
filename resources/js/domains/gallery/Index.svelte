@@ -28,7 +28,7 @@
     <title>Gallery — {appName}</title>
     <meta
         name="description"
-        content="Sacred rituals, festivals, and community life from the temple."
+        content="School life, daily annadanam, festivals, and community moments from the trust."
     />
 </svelte:head>
 
@@ -53,7 +53,7 @@
                 <p
                     class="text-xs font-semibold uppercase tracking-[0.25em] text-primary"
                 >
-                    From the temple
+                    From the schools and the temple
                 </p>
                 <h1
                     class="font-serif text-4xl font-semibold leading-tight lg:text-6xl"
@@ -63,8 +63,8 @@
                 <p
                     class="text-base text-muted-foreground lg:text-lg"
                 >
-                    Three windows into the daily practice, the festivals,
-                    and the community that sustains the temple.
+                    School life, daily annadanam, the festivals, and the
+                    community that sustains the trust.
                 </p>
                 <div class="pt-2">
                     <TrustBadgeRow />
@@ -130,7 +130,7 @@
                             <p
                                 class="text-xs font-semibold uppercase tracking-[0.25em] text-primary"
                             >
-                                Pillar · {gallery.title}
+                                {gallery.image_count} photo{gallery.image_count === 1 ? '' : 's'} · Moment
                             </p>
                             <h3
                                 class="font-serif text-2xl font-semibold leading-tight lg:text-3xl"
@@ -139,7 +139,7 @@
                             </h3>
                             {#if gallery.short_description}
                                 <p
-                                    class="text-sm leading-relaxed text-muted-foreground"
+                                    class="line-clamp-3 text-sm leading-relaxed text-muted-foreground"
                                 >
                                     {gallery.short_description}
                                 </p>
@@ -205,8 +205,8 @@
     {/if}
 
     <BottomCtaBand
-        title="Support the next chapter"
-        body="Your contributions make the proposed campus and the next chapter of the trust\u2019s work possible."
+        title="Support the schools and the campus"
+        body="Sustain daily annadanam at the schools — or move the proposed healing and service campus one step closer. Every donation is acknowledged with an official receipt."
         ctaLabel="Donate Now"
         ctaHref="/donate"
     />

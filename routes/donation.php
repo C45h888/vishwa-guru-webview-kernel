@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Payments\Http\Controllers\RazorpayCheckoutController;
+use App\Payments\Http\Controllers\RazorpayVerifyController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -30,3 +31,23 @@ Route::post(
     '/razorpay/checkout',
     [RazorpayCheckoutController::class, 'store']
 )->name('payments.razorpay.checkout');
+
+/*
+|--------------------------------------------------------------------------
+| Synchronous Razorpay Checkout Callback Verification
+|--------------------------------------------------------------------------
+|
+| Fired from the Razorpay Standard Checkout modal's `handler` callback.
+| Lets the donor see "Payment received" instantly instead of waiting for
+| the async webhook (which can take 2-5 minutes for UPI). The webhook
+| remains the canonical reconciliation source-of-truth; this endpoint
+| only flips the local Payment state to CAPTURED earlier.
+|
+| Route name: `payments.razorpay.verify`.
+| URL path:   `/api/v1/razorpay/verify`.
+*/
+
+Route::post(
+    '/razorpay/verify',
+    [RazorpayVerifyController::class, 'verify']
+)->name('payments.razorpay.verify');

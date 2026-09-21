@@ -60,7 +60,7 @@ final class HomeController
             'id' => 'fallback',
             'slug' => 'home',
             'title' => $appName,
-            'meta_description' => 'Preserving sacred traditions through daily pooja, annadanam, and the care of our temple.',
+            'meta_description' => 'Free schooling for children in need of care — including blind and deaf pupils — sustained by daily annadanam, plus the proposed healing and service campus near Nanjangud.',
             'state' => 'fallback',
             'is_homepage' => true,
         ];

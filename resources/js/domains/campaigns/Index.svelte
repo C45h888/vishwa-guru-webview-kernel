@@ -97,24 +97,24 @@
     const PILLARS = [
         {
             src: '/storage/cms-media/LAND.jpg',
-            alt: 'The land acquisition campaign',
-            eyebrow: 'Current \u00b7 Stage 1',
-            title: 'Acquire the land for the new campus',
-            body: 'The trust is raising funds to acquire land near Nanjangud, outside Mysore. The land is under discussion; the acquisition requires additional capital. Until the land is secured, no construction begins.',
+            alt: 'Daily annadanam at the schools',
+            eyebrow: 'Ongoing \u00b7 daily',
+            title: 'Sustain the schools: food, water, events',
+            body: 'Every school day the trust provides daily annadanam for children in need of care — including blind and deaf pupils on free education. Contributions sustain meals, drinking water, and school events.',
         },
         {
             src: '/storage/cms-media/GAUSHALA.jpg',
-            alt: 'The proposed campus vision',
-            eyebrow: 'Planned \u00b7 Stage 2',
-            title: 'Build the Gaushala, temple, and healing environment',
-            body: 'On the secured land, the trust intends to build a Gaushala for the care and protection of cows, a simple Shiva temple with Kamadhenu and Shiva-family shrines, and a disciplined healing environment. Construction begins after land acquisition closes.',
+            alt: 'The land fund for the proposed campus',
+            eyebrow: 'Parallel aim \u00b7 land fund',
+            title: 'Acquire the land for the new campus',
+            body: 'Alongside the schools, the trust is raising funds to acquire land near Nanjangud, outside Mysore, for the proposed healing and service campus. The land is under discussion; construction begins after it is secured.',
         },
         {
             src: '/storage/cms-media/WELFARE.jpg',
-            alt: 'The long-term care of the cows',
-            eyebrow: 'Planned \u00b7 Stage 3',
-            title: 'Care and welfare of the cows',
-            body: 'Once the campus is operational, the trust will focus on the long-term care and welfare of the cows resident at the Gaushala, with future plans for cow-related farming and products for devotees in accordance with the project\u2019s operating and legal framework.',
+            alt: 'The planned Gaushala, temple, and cow care',
+            eyebrow: 'Planned \u00b7 Stage 2+',
+            title: 'Build the Gaushala, temple, and cow care',
+            body: 'On the secured land, the trust intends to build a Gaushala, a simple Shiva temple, and a disciplined healing environment — then the long-term care of the resident cows. This stage opens after the land fund closes.',
         },
     ];
 </script>
@@ -241,12 +241,13 @@
                     class="space-y-4 text-base leading-relaxed text-muted-foreground lg:text-lg"
                 >
                     <p>
-                        Every campaign at {appName} names a specific stage of
-                        the trust\u2019s work \u2014 the land acquisition, the
-                        construction of the proposed campus, or the long-term
-                        care of the cows. The current campaign is the land
-                        acquisition. Each campaign has a clear goal, a clear
-                        timeline, and a clear use for every rupee given.
+                        Every campaign at {appName} names a specific cause —
+                        daily annadanam at the schools, the land fund for the
+                        proposed campus, its construction, or the long-term
+                        care of the cows. The two current causes are the
+                        schools\u2019 daily operations and the land fund. Each
+                        campaign has a clear goal, a clear timeline, and a
+                        clear use for every rupee given.
                     </p>
                     <p>
                         Your offering goes to the campaign you choose, not to
@@ -451,8 +452,8 @@
     {/if}
 
     <BottomCtaBand
-        title="Support the land acquisition campaign"
-        body="Every contribution moves the proposed healing and service campus one step closer to breaking ground."
+        title="Support the schools and the campus"
+        body="Sustain daily annadanam at the schools — or move the proposed healing and service campus one step closer. Every donation is acknowledged with an official receipt."
         ctaLabel="Donate Now"
         ctaHref="/donate"
     />

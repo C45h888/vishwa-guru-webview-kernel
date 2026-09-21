@@ -175,36 +175,49 @@ class ReceiptFormatterTest extends TestCase
 
     private function makePayment(): Payment
     {
-        return Payment::initialize(
+        $payment = Payment::initialize(
             donationId: EntityId::generate('donation'),
             providerCode: PaymentProvider::RAZORPAY,
             amountMinor: 1_23_456_00,
             currency: Currency::INR,
             idempotencyKey: 'txn_123',
             metadata: [],
-        )->withChanges(['status' => TransactionStatus::CAPTURED->value]);
+        );
+
+        // Walk FSM: INITIALIZED → PENDING → AUTHORIZED → CAPTURED
+        $machine = new \App\Payments\Domain\StateMachines\PaymentStateMachine();
+        $payment = $payment->transitionTo($machine, TransactionStatus::PENDING);
+        $payment = $payment->transitionTo($machine, TransactionStatus::AUTHORIZED);
+        $payment = $payment->transitionTo($machine, TransactionStatus::CAPTURED, [
+            'amount_minor' => 1_23_456_00,
+        ]);
+
+        return $payment;
     }
 
     private function makeDonation(): Donation
     {
-        return Donation::create(
-            donorId: EntityId::generate('donor'),
-            campaignId: EntityId::generate('campaign'),
-            amountMinor: 1_23_456_00,
-            currency: Currency::INR,
-            donorNameSnapshot: 'R',
-            donorEmailSnapshot: 'donor@example.com',
-            donorPhoneSnapshot: null,
-            donorPanSnapshot: 'ABCPY1234D',
-            donorAddressSnapshot: [
+        // DonorIdentity::anonymous() when donor is anonymous;
+        // DonorIdentity::identified() when named. Use the named form so
+        // snapshots are populated for the formatter tests.
+        $donor = \App\Payments\Domain\ValueObjects\DonorIdentity::identified(
+            name: 'R',
+            email: 'donor@example.com',
+            phone: null,
+            pan: 'ABCPY1234D',
+            address: [
                 'line1' => '123 Main St',
                 'city' => 'Mumbai',
                 'state' => 'MH',
                 'pincode' => '400001',
             ],
-            dedication: null,
-            donorMessage: null,
-            metadata: [],
+        );
+
+        return Donation::draft(
+            campaignId: EntityId::generate('campaign'),
+            donor: $donor,
+            amountMinor: 1_23_456_00,
+            currency: Currency::INR,
         );
     }
 }

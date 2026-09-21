@@ -26,33 +26,44 @@ use Tests\Feature\Payments\Infrastructure\InfrastructureTestCase;
  */
 final class ReceiptTest extends InfrastructureTestCase
 {
+    /** @var array<string, string> Map of short test id → persisted EntityId */
+    private array $donationIdMap = [];
+    /** @var array<string, string> Map of short test id → persisted EntityId */
+    private array $paymentIdMap = [];
+    /** @var array<string, string> Map of short test id → persisted EntityId */
+    private array $campaignIdMap = [];
+
     public function testShowRendersReceiptDetail(): void
     {
         $this->seedCampaign(id: 'cmp_rcpt_1', state: 'active', title: 'Receipt Test Campaign');
         $this->seedDonation(id: 'don_rcpt_1', campaignId: 'cmp_rcpt_1', amountMinor: 1000_00);
         $this->seedPayment(id: 'pay_rcpt_1', donationId: 'don_rcpt_1', amountMinor: 1000_00, status: 'captured');
         $this->seedReceipt(
-            receiptNumber: 'TR-2026-ABCD12345678',
+            receiptNumber: 'TR-2026-000001-A7c3ZpQ9',
             donationId: 'don_rcpt_1',
             paymentId: 'pay_rcpt_1',
             campaignId: 'cmp_rcpt_1',
             amountMinor: 1000_00,
         );
 
-        $response = $this->get('/receipts/TR-2026-ABCD12345678');
+        $accessToken = \App\Payments\Domain\Entities\Receipt::mintAccessToken();
+        $this->updateReceiptAccessToken('TR-2026-000001-A7c3ZpQ9', $accessToken);
+
+        $response = $this->get('/receipts/TR-2026-000001-A7c3ZpQ9?t=' . $accessToken);
 
         $response->assertOk();
         $response->assertInertia(fn (AssertableInertia $page) => $page
             ->component('payments/Receipt')
-            ->where('receipt_number', 'TR-2026-ABCD12345678')
-            ->where('amount_in_words', 'Rupees One Thousand Only')
+            ->has('receipt')
+            ->where('receipt.receipt_number', 'TR-2026-000001-A7c3ZpQ9')
             ->etc()
         );
     }
 
     public function testShowReturns404ForUnknownReceiptNumber(): void
     {
-        $response = $this->get('/receipts/TR-2026-DOESNOTEXIST');
+        // Use a valid pattern that doesn't match any seeded receipt
+        $response = $this->get('/receipts/TR-2026-999999-Z9z9Z9z9');
 
         $response->assertNotFound();
     }
@@ -63,6 +74,8 @@ final class ReceiptTest extends InfrastructureTestCase
         string $title,
     ): void {
         $now = (new DateTimeImmutable())->format(DATE_ATOM);
+        $ulid = \App\Shared\Support\UlidGenerator::generate();
+        $entityId = "campaign_{$ulid}";
         $this->adapter->execute(
             'INSERT INTO campaigns (
                 id, slug, title, category, currency_code, state,
@@ -74,7 +87,7 @@ final class ReceiptTest extends InfrastructureTestCase
                 :created, :updated, NULL
             )',
             [
-                'id' => $id,
+                'id' => $entityId,
                 'slug' => strtolower($id),
                 'title' => $title,
                 'cat' => 'general',
@@ -84,6 +97,8 @@ final class ReceiptTest extends InfrastructureTestCase
                 'updated' => $now,
             ],
         );
+
+        $this->campaignIdMap[$id] = $entityId;
     }
 
     private function seedDonation(
@@ -92,6 +107,10 @@ final class ReceiptTest extends InfrastructureTestCase
         int $amountMinor,
     ): void {
         $now = (new DateTimeImmutable())->format(DATE_ATOM);
+        // Wrap the short test id into a valid EntityId format <type>_<ULID>
+        $ulid = \App\Shared\Support\UlidGenerator::generate();
+        $entityId = "donation_{$ulid}";
+        $resolvedCampaignId = $this->campaignIdMap[$campaignId] ?? $campaignId;
         $this->adapter->execute(
             'INSERT INTO donations (
                 id, campaign_id, amount_minor, currency_code, state,
@@ -103,8 +122,8 @@ final class ReceiptTest extends InfrastructureTestCase
                 \'{}\', :created, :updated, NULL
             )',
             [
-                'id' => $id,
-                'cid' => $campaignId,
+                'id' => $entityId,
+                'cid' => $resolvedCampaignId,
                 'amt' => $amountMinor,
                 'ccy' => 'INR',
                 'state' => 'completed',
@@ -114,6 +133,8 @@ final class ReceiptTest extends InfrastructureTestCase
                 'updated' => $now,
             ],
         );
+
+        $this->donationIdMap[$id] = $entityId;
     }
 
     private function seedPayment(
@@ -123,6 +144,9 @@ final class ReceiptTest extends InfrastructureTestCase
         string $status,
     ): void {
         $now = (new DateTimeImmutable())->format(DATE_ATOM);
+        $ulid = \App\Shared\Support\UlidGenerator::generate();
+        $entityId = "payment_{$ulid}";
+        $resolvedDonationId = $this->donationIdMap[$donationId] ?? $donationId;
         $this->adapter->execute(
             'INSERT INTO payments (
                 id, donation_id, provider_code, amount_minor, currency_code,
@@ -138,8 +162,8 @@ final class ReceiptTest extends InfrastructureTestCase
                 :created, :updated, NULL
             )',
             [
-                'id' => $id,
-                'did' => $donationId,
+                'id' => $entityId,
+                'did' => $resolvedDonationId,
                 'pc' => 'razorpay',
                 'amt' => $amountMinor,
                 'ccy' => 'INR',
@@ -151,6 +175,8 @@ final class ReceiptTest extends InfrastructureTestCase
                 'updated' => $now,
             ],
         );
+
+        $this->paymentIdMap[$id] = $entityId;
     }
 
     private function seedReceipt(
@@ -161,6 +187,9 @@ final class ReceiptTest extends InfrastructureTestCase
         int $amountMinor,
     ): void {
         $now = (new DateTimeImmutable())->format(DATE_ATOM);
+        $resolvedDonationId = $this->donationIdMap[$donationId] ?? $donationId;
+        $resolvedPaymentId = $this->paymentIdMap[$paymentId] ?? $paymentId;
+        $resolvedCampaignId = $this->campaignIdMap[$campaignId] ?? $campaignId;
         $this->adapter->execute(
             'INSERT INTO receipts (
                 id, receipt_number, donation_id, payment_id, campaign_id,
@@ -180,11 +209,11 @@ final class ReceiptTest extends InfrastructureTestCase
                 :created, :updated, NULL
             )',
             [
-                'id' => 'rcpt_'.bin2hex(random_bytes(8)),
+                'id' => 'rcpt_'.strtoupper(\App\Shared\Support\UlidGenerator::generate()),
                 'num' => $receiptNumber,
-                'did' => $donationId,
-                'pid' => $paymentId,
-                'cid' => $campaignId,
+                'did' => $resolvedDonationId,
+                'pid' => $resolvedPaymentId,
+                'cid' => $resolvedCampaignId,
                 'title' => 'Receipt Test Campaign',
                 'donor_name' => 'Test Donor',
                 'donor_email' => 'donor@example.com',
@@ -196,6 +225,17 @@ final class ReceiptTest extends InfrastructureTestCase
                 'generated' => $now,
                 'created' => $now,
                 'updated' => $now,
+            ],
+        );
+    }
+
+    private function updateReceiptAccessToken(string $receiptNumber, string $token): void
+    {
+        $this->adapter->execute(
+            'UPDATE receipts SET access_token = :token WHERE receipt_number = :num',
+            [
+                'token' => $token,
+                'num' => $receiptNumber,
             ],
         );
     }

@@ -391,6 +391,116 @@ class PaymentOrchestrator
     }
 
     /**
+     * Synchronous Razorpay Standard Checkout callback verification.
+     *
+     * Verifies the HMAC signature issued by Razorpay's checkout.js modal,
+     * then advances the matching Payment to CAPTURED so the donor sees
+     * "Payment received" without waiting for the async webhook.
+     *
+     * The webhook remains the canonical reconciliation source-of-truth;
+     * this path is an early-flip for UX. If the webhook arrives later for
+     * the same order, it sees a terminal-success Payment and short-circuits
+     * via the Stage 4 idempotency check in PaymentVerificationService.
+     *
+     * Steps:
+     *   1. Verify HMAC-SHA256 signature "{order_id}|{payment_id}" using key_secret.
+     *   2. Look up local Payment by gateway_order_id (locked for update).
+     *   3. Short-circuit if already in a terminal-success state.
+     *   4. Transition Payment → CAPTURED via PaymentStateMachine.
+     *   5. Transition Donation → PAYMENT_VERIFIED.
+     *   6. Issue receipt (best-effort, same non-fatal policy as webhook path).
+     *
+     * @return Result<TransactionStatus>
+     *
+     * @phpstan-return Result<TransactionStatus>|Result<null>
+     */
+    public function verifyCheckoutCallback(
+        string $razorpayOrderId,
+        string $razorpayPaymentId,
+        string $razorpaySignature,
+    ): Result {
+        // Step 1: HMAC signature verification (pure, no DB).
+        // Signature = HMAC-SHA256(key_secret, "{order_id}|{payment_id}").
+        $keySecret = (string) config('payments.providers.razorpay.key_secret', '');
+        if ($keySecret === '') {
+            return Result::failure('verify_signature_missing_key_secret');
+        }
+
+        $expected = hash_hmac('sha256', $razorpayOrderId.'|'.$razorpayPaymentId, $keySecret);
+        if (! hash_equals($expected, $razorpaySignature)) {
+            return Result::failure('verify_signature_mismatch');
+        }
+
+        // Step 2: Look up + lock the local Payment row.
+        $commit = $this->coordinator->execute(function () use ($razorpayOrderId, $razorpayPaymentId): Result {
+            $local = $this->payments->lockByGatewayOrderIdForUpdate($razorpayOrderId);
+            if ($local === null) {
+                return Result::failure(
+                    'verify_unknown_order: no local Payment with gateway_order_id='.$razorpayOrderId,
+                );
+            }
+
+            // Step 3: Idempotency — already terminal-success? Return as-is.
+            if ($local->status()->isSuccessful()) {
+                return Result::success($local->status());
+            }
+
+            // Step 4: Transition Payment → CAPTURED via FSM.
+            $transitioned = $local->transitionTo(
+                machine: $this->paymentStateMachine,
+                to: TransactionStatus::CAPTURED,
+                context: [
+                    'method' => 'checkout_callback',
+                    'gateway_payment_id' => $razorpayPaymentId,
+                    'verified_at' => $this->clock->now()->format(DATE_ATOM),
+                ],
+            );
+            $this->payments->update($transitioned);
+
+            // Step 5: Transition Donation → PAYMENT_VERIFIED.
+            $donation = $this->donations->findById($local->donationId());
+            if ($donation !== null) {
+                $donationTransitioned = $donation->transitionTo(
+                    machine: $this->donationStateMachine,
+                    to: DonationState::PAYMENT_VERIFIED,
+                    context: [
+                        'verified_at' => $this->clock->now()->format(DATE_ATOM),
+                    ],
+                );
+                $this->donations->update($donationTransitioned);
+            }
+
+            return Result::success($transitioned->status());
+        });
+
+        if ($commit->isFailure()) {
+            return $commit;
+        }
+
+        $status = $commit->value();
+
+        // Step 6: Issue receipt (best-effort, non-fatal).
+        if ($status === TransactionStatus::CAPTURED) {
+            $receiptResult = $this->receiptService->issue(
+                new Identifier($razorpayOrderId),
+            );
+            if ($receiptResult->isFailure()) {
+                $this->auditLog->append(
+                    eventType: 'payment.receipt.deferred',
+                    entityType: Payment::ENTITY_TYPE,
+                    entityId: $razorpayOrderId,
+                    previousState: $status->value,
+                    newState: $status->value,
+                    context: ['receipt_error' => $receiptResult->error()],
+                    occurredAt: $this->clock->now(),
+                );
+            }
+        }
+
+        return Result::success($status);
+    }
+
+    /**
      * Refund a payment in full or partially.
      *
      * @return Result<Payment>

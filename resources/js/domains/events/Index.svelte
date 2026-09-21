@@ -77,10 +77,10 @@ const isAdmin = $derived($page.props.authUser?.role === 'admin');
                     <p
                         class="text-xs font-semibold uppercase tracking-[0.25em] text-primary"
                     >
-                        Current events
+                        School and temple gatherings
                     </p>
                     <h2 class="font-serif text-3xl font-semibold lg:text-4xl">
-                        Featured at the temple
+                        Moments across the year
                     </h2>
                 </div>
                 <a

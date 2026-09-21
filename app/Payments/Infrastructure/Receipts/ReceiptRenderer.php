@@ -81,6 +81,7 @@ final class ReceiptRenderer implements ReceiptGenerationContract
         ]);
     }
 
+
     /**
      * Pass 1.7 rich surface.
      *
@@ -88,8 +89,16 @@ final class ReceiptRenderer implements ReceiptGenerationContract
      */
     public function draft(Identifier $transactionId): Result
     {
+        // Identifier wraps a bare ULID; the renderer needs the canonical
+        // "<type>_<ULID>" form to resolve a Payment row. Derive the
+        // prefixed EntityId from the Identifier value by assuming the
+        // "payment" namespace — the only caller (PaymentOrchestrator) only
+        // ever passes payment identifiers here.
+        $paymentEntityId = EntityId::fromString(
+            'payment_'.$transactionId->value(),
+        );
+
         // Step 1: Load Payment
-        $paymentEntityId = EntityId::fromString($transactionId->value());
         $payment = $this->payments->findById($paymentEntityId);
 
         if ($payment === null) {
@@ -184,9 +193,13 @@ final class ReceiptRenderer implements ReceiptGenerationContract
 
         $draft = ReceiptDraft::fromRenderer(
             transactionId: $transactionId,
-            donationId: $payment->donationId()->identifier(),
+            donationId: new Identifier($payment->donationId()->ulid()),
             receiptNumber: $receiptNumber,
-            fileAssetId: new Identifier($fileAsset->id()),
+            // FileAssetRecord::id() returns "<prefix>_<ULID>"; strip the
+            // full prefix so Identifier::new sees a bare ULID.
+            fileAssetId: new Identifier(
+                preg_replace('/^[a-z][a-z0-9_]*_/', '', $fileAsset->id()),
+            ),
             issuedAt: $issuedAt,
             contentHash: $fileAsset->fileHashSha256(),
             amountInWords: $amountInWords,
@@ -265,10 +278,10 @@ final class ReceiptRenderer implements ReceiptGenerationContract
         }
 
         return ReceiptDraft::fromRenderer(
-            transactionId: $existing->paymentId()->identifier(),
-            donationId: $existing->donationId()->identifier(),
+            transactionId: new Identifier($existing->paymentId()->ulid()),
+            donationId: new Identifier($existing->donationId()->ulid()),
             receiptNumber: $existing->receiptNumber(),
-            fileAssetId: $receiptFileId->identifier(),
+            fileAssetId: new Identifier($receiptFileId->ulid()),
             issuedAt: $existing->generatedAt(),
             contentHash: $existing->contentHash(),
             amountInWords: $existing->amountInWords(),

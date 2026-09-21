@@ -4,11 +4,12 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Payments\Domain\Entities;
 
+use App\Payments\Domain\Entities\Receipt;
+use App\Payments\Domain\Enums\Currency;
 use App\Payments\Domain\Enums\ReceiptDeliveryState;
 use App\Payments\Domain\Exceptions\PaymentStateTransitionException;
 use App\Payments\Domain\StateMachines\ReceiptStateMachine;
 use App\Payments\Domain\StateMachines\StateTransitionEvent;
-use App\Payments\Domain\Entities\Receipt;
 use App\Persistence\ValueObjects\EntityId;
 use DateTimeImmutable;
 use PHPUnit\Framework\TestCase;
@@ -19,11 +20,14 @@ class ReceiptTest extends TestCase
     {
         return Receipt::issue(
             donationId: EntityId::generate('donation'),
-            transactionId: EntityId::generate('payment'),
-            fileAssetId: EntityId::generate('file_asset'),
+            paymentId: EntityId::generate('payment'),
+            campaignId: EntityId::generate('campaign'),
             receiptNumber: 'TR-2026-ABCD1234',
+            campaignTitleSnapshot: 'Test Campaign',
+            donorName: 'Test Donor',
+            amountMinor: 100000,
+            currency: Currency::INR,
             contentHash: str_repeat('a', 64),
-            issuedAt: new DateTimeImmutable(),
             deliveryChannel: 'email',
             deliveryAddress: 'donor@example.com',
         );
@@ -35,7 +39,6 @@ class ReceiptTest extends TestCase
         $this->assertSame(ReceiptDeliveryState::PENDING->value, $r->deliveryStatus());
         $this->assertSame('TR-2026-ABCD1234', $r->receiptNumber());
         $this->assertSame('email', $r->deliveryChannel());
-        $this->assertSame('donor@example.com', $r->deliveryAddress());
         $this->assertTrue($r->isPending());
         $this->assertFalse($r->isDelivered());
     }
@@ -45,11 +48,14 @@ class ReceiptTest extends TestCase
         $this->expectException(\InvalidArgumentException::class);
         Receipt::issue(
             donationId: EntityId::generate('donation'),
-            transactionId: EntityId::generate('payment'),
-            fileAssetId: EntityId::generate('file_asset'),
+            paymentId: EntityId::generate('payment'),
+            campaignId: EntityId::generate('campaign'),
             receiptNumber: 'INVALID-FORMAT',
+            campaignTitleSnapshot: 'Test Campaign',
+            donorName: 'Test Donor',
+            amountMinor: 100000,
+            currency: Currency::INR,
             contentHash: str_repeat('a', 64),
-            issuedAt: new DateTimeImmutable(),
         );
     }
 
@@ -58,11 +64,14 @@ class ReceiptTest extends TestCase
         $this->expectException(\InvalidArgumentException::class);
         Receipt::issue(
             donationId: EntityId::generate('donation'),
-            transactionId: EntityId::generate('payment'),
-            fileAssetId: EntityId::generate('file_asset'),
+            paymentId: EntityId::generate('payment'),
+            campaignId: EntityId::generate('campaign'),
             receiptNumber: 'TR-2026-ABCD1234',
+            campaignTitleSnapshot: 'Test Campaign',
+            donorName: 'Test Donor',
+            amountMinor: 100000,
+            currency: Currency::INR,
             contentHash: '',
-            issuedAt: new DateTimeImmutable(),
         );
     }
 

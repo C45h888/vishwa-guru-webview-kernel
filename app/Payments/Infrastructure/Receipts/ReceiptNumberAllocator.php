@@ -26,7 +26,7 @@ use InvalidArgumentException;
  * The sequence is scoped per FY — a new sequence starts each April 1.
  * Timezone is pinned to Asia/Kolkata (IST) so FY boundary tests are deterministic.
  */
-final class ReceiptNumberAllocator
+class ReceiptNumberAllocator
 {
     /**
      * Canonical regex (pattern body, no delimiters) for the receipt-number

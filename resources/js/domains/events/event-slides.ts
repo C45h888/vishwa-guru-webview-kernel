@@ -21,10 +21,10 @@ export interface EventSlide {
 export const EVENT_SLIDES: EventSlide[] = [
     {
         src: '/storage/cms-media/events-slide-2-varalakshmi.webp',
-        alt: 'From the children\u2019s-care chapter',
-        eyebrow: 'First chapter \u00b7 2007\u20132022',
-        title: 'A chapter that concluded',
-        body: 'Approximately 300 children in need of care were housed, educated, and supported. They have completed their education and moved forward in life.',
+        alt: 'Daily life at the trust\u2019s schools',
+        eyebrow: 'Ongoing \u00b7 schools',
+        title: 'The schools run today',
+        body: 'Children in need of care — including blind and deaf pupils on free education — study, eat, and gather daily. Annadanam covers food, water, and school events; donations sustain these daily operations.',
     },
     {
         src: '/storage/cms-media/events-slide-7-cultural-evenings.webp',

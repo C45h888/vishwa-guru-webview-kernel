@@ -15,8 +15,11 @@ use RuntimeException;
  * This is the ONLY file in app/Payments/ that may reference
  * \Barryvdh\DomPDF\ or the PDF facade. All other receipt infrastructure
  * code depends only on the PdfWrapper interface.
+ *
+ * Non-final so unit tests can substitute a recording stub via inheritance;
+ * production code resolves through DI and never sees a subclass.
  */
-final class DomPdfWrapper implements PdfWrapper
+class DomPdfWrapper implements PdfWrapper
 {
     /**
      * Render HTML to PDF bytes using barryvdh/laravel-dompdf.

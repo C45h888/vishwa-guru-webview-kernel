@@ -53,10 +53,12 @@
                 </div>
                 <p class="max-w-xs text-sm leading-relaxed text-muted-foreground">
                     A charitable trust led by Sri Ram Ram Das Guruji.
-                    Approximately 300 children in need of care were housed
-                    and educated between 2007 and 2022. Now raising funds
-                    for a proposed healing and service campus near
-                    Nanjangud, outside Mysore.
+                    Since 2007 the trust has schooled children in need of
+                    care — including blind and deaf pupils receiving free
+                    education — with daily annadanam of food, water, and
+                    school events. Donations also support the proposed
+                    healing and service campus near Nanjangud, outside
+                    Mysore.
                 </p>
             </div>
 

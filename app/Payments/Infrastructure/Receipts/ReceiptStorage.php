@@ -18,7 +18,7 @@ use RuntimeException;
  * Returns Result<FileAssetRecord> so the caller (ReceiptRenderer) can
  * compose the ReceiptDraft without depending on Storage::disk directly.
  */
-final class ReceiptStorage
+class ReceiptStorage
 {
     public function __construct(
         private readonly \App\Payments\Infrastructure\Receipts\Pdf\PdfWrapper $pdf,
@@ -49,16 +49,18 @@ final class ReceiptStorage
             $path = $this->storagePath($transactionId, $ownerId);
             $hash = $this->computeHash($pdfBytes);
 
-            // Write bytes to disk
-            $this->pdf->writeToDisk($pdfBytes, $disk, $path);
-
-            // Check for duplicate by hash
+            // Check for duplicate by hash BEFORE writing to disk.
+            // Doctrine: deduplication is the whole point — writing a duplicate
+            // to disk wastes storage and breaks the immutable-file invariant.
             $existing = $this->fileAssets->findByHash($hash);
             if ($existing !== null) {
                 // Already stored — reuse the existing record
                 $this->paymentDocuments?->ensureReceiptDocument($existing->id());
                 return Result::success($existing);
             }
+
+            // Write bytes to disk
+            $this->pdf->writeToDisk($pdfBytes, $disk, $path);
 
             // Create and persist the file asset record
             $record = FileAssetRecord::create(

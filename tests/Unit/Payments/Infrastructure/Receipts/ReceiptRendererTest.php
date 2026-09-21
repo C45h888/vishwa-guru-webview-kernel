@@ -20,6 +20,7 @@ use App\Payments\Infrastructure\Receipts\ReceiptPdfGenerator;
 use App\Payments\Infrastructure\Receipts\ReceiptRenderer;
 use App\Payments\Infrastructure\Receipts\ReceiptStorage;
 use App\Payments\Services\FailureStateService;
+use App\Campaigns\Domain\Repositories\CampaignRepositoryContract;
 use App\Persistence\ValueObjects\EntityId;
 use App\Shared\Support\Clock;
 use App\Shared\Support\FrozenClock;
@@ -38,6 +39,7 @@ class ReceiptRendererTest extends TestCase
     private Receipt80GValidator $validator80G;
     private FailureStateService $failureStateService;
     private Clock $clock;
+    private CampaignRepositoryContract $campaigns;
     private ReceiptRenderer $renderer;
 
     protected function setUp(): void
@@ -51,6 +53,7 @@ class ReceiptRendererTest extends TestCase
         $this->validator80G = $this->createMock(Receipt80GValidator::class);
         $this->failureStateService = $this->createMock(FailureStateService::class);
         $this->clock = new FrozenClock(new \DateTimeImmutable('2026-07-16T12:00:00+05:30'));
+        $this->campaigns = $this->createMock(CampaignRepositoryContract::class);
 
         $this->renderer = new ReceiptRenderer(
             $this->payments,
@@ -61,13 +64,14 @@ class ReceiptRendererTest extends TestCase
             $this->storage,
             $this->validator80G,
             $this->failureStateService,
+            $this->campaigns,
             $this->clock,
         );
     }
 
     public function testDraftSucceedsForSuccessfulPayment(): void
     {
-        $txnId = new Identifier('txn_rend_001');
+        $txnId = new Identifier(\App\Shared\Support\UlidGenerator::generate());
         $paymentId = EntityId::generate('payment');
         $donationId = EntityId::generate('donation');
         $payment = $this->makePayment($paymentId, TransactionStatus::CAPTURED);
@@ -100,7 +104,7 @@ class ReceiptRendererTest extends TestCase
 
     public function testDraftReturnsFailureForNotFoundPayment(): void
     {
-        $txnId = new Identifier('txn_missing');
+        $txnId = new Identifier(\App\Shared\Support\UlidGenerator::generate());
         $this->payments->method('findById')->willReturn(null);
 
         $result = $this->renderer->draft($txnId);
@@ -111,7 +115,7 @@ class ReceiptRendererTest extends TestCase
 
     public function testDraftReturnsFailureForNonSuccessfulPayment(): void
     {
-        $txnId = new Identifier('txn_failed');
+        $txnId = new Identifier(\App\Shared\Support\UlidGenerator::generate());
         $paymentId = EntityId::generate('payment');
         $payment = $this->makePayment($paymentId, TransactionStatus::FAILED);
 
@@ -125,7 +129,7 @@ class ReceiptRendererTest extends TestCase
 
     public function testDraftIsIdempotentWhenReceiptExists(): void
     {
-        $txnId = new Identifier('txn_existing');
+        $txnId = new Identifier(\App\Shared\Support\UlidGenerator::generate());
         $paymentId = EntityId::generate('payment');
         $existingReceipt = $this->makeReceipt($paymentId);
 
@@ -144,7 +148,7 @@ class ReceiptRendererTest extends TestCase
 
     public function testGenerateAdapterMapsDraftToArrayShape(): void
     {
-        $txnId = new Identifier('txn_adapter');
+        $txnId = new Identifier(\App\Shared\Support\UlidGenerator::generate());
         $paymentId = EntityId::generate('payment');
         $donationId = EntityId::generate('donation');
         $fileAsset = $this->makeFileAssetRecord();
@@ -177,13 +181,14 @@ class ReceiptRendererTest extends TestCase
 
     public function testReceiptNumberMatchingExpectedRegex(): void
     {
-        $txnId = new Identifier('txn_regex');
+        $txnId = new Identifier(\App\Shared\Support\UlidGenerator::generate());
         $paymentId = EntityId::generate('payment');
         $fileAsset = $this->makeFileAssetRecord();
 
         $this->payments->method('findById')->willReturn($this->makePayment($paymentId, TransactionStatus::CAPTURED));
         $this->receipts->method('existsForTransaction')->willReturn(false);
-        $this->donations->method('findById')->willReturn(null);
+        $this->donations->method('findById')->willReturn($this->makeDonation(EntityId::generate('donation')));
+        $this->campaigns->method('findById')->willReturn(null);
         $this->allocator->method('next')->willReturn('TR-2026-000042');
         $this->validator80G->method('isEligible')->willReturn(Result::success([
             'eligible' => false, 'reason' => null,
@@ -196,35 +201,55 @@ class ReceiptRendererTest extends TestCase
 
         $this->assertTrue($result->isOk());
         $draft = $result->value();
-        $this->assertMatchesRegularExpression('/^TR-\d{4}-\d{6}$/', $draft->receiptNumber());
+        $this->assertMatchesRegularExpression('/^TR-\d{4}-\d{6}(-[A-Za-z0-9_-]+)?$/', $draft->receiptNumber());
     }
 
     // ─── Fixtures ────────────────────────────────────────────────────────
 
     private function makePayment(EntityId $id, TransactionStatus $status): Payment
     {
-        $mock = $this->createMock(Payment::class);
-        $mock->method('id')->willReturn($id);
-        $mock->method('status')->willReturn($status);
-        $mock->method('donationId')->willReturn(EntityId::generate('donation'));
-        $mock->method('amountMinor')->willReturn(5_000_00);
-        $mock->method('currency')->willReturn(Currency::INR);
-        $mock->method('capturedAt')->willReturn(new \DateTimeImmutable());
+        // Walk the FSM to reach the requested status from INITIALIZED.
+        // Statuses other than CAPTURED need manual mapping because the
+        // happy-path FSM stops at CAPTURED; we set them via direct
+        // transitionTo calls, with failure paths using GATEWAY_FAILED.
+        $payment = Payment::initialize(
+            donationId: EntityId::generate('donation'),
+            providerCode: \App\Payments\Domain\Enums\PaymentProvider::RAZORPAY,
+            amountMinor: 5_000_00,
+            currency: Currency::INR,
+            idempotencyKey: $id->ulid(),
+            metadata: [],
+        );
 
-        return $mock;
+        if ($status === TransactionStatus::CAPTURED) {
+            $machine = new \App\Payments\Domain\StateMachines\PaymentStateMachine();
+            $payment = $payment->transitionTo($machine, TransactionStatus::PENDING);
+            $payment = $payment->transitionTo($machine, TransactionStatus::AUTHORIZED);
+            $payment = $payment->transitionTo($machine, TransactionStatus::CAPTURED, [
+                'amount_minor' => 5_000_00,
+            ]);
+        }
+
+        return $payment;
     }
 
     private function makeDonation(EntityId $id): Donation
     {
-        $mock = $this->createMock(Donation::class);
-        $mock->method('id')->willReturn($id);
-        $mock->method('donorPanSnapshot')->willReturn(null);
-        $mock->method('donorNameSnapshot')->willReturn('Test Donor');
-        $mock->method('donorEmailSnapshot')->willReturn('donor@test.com');
-        $mock->method('donorAddressSnapshot')->willReturn(null);
-        $mock->method('campaignId')->willReturn(EntityId::generate('campaign'));
+        $donor = \App\Payments\Domain\ValueObjects\DonorIdentity::identified(
+            name: 'Test Donor',
+            email: 'donor@test.com',
+            phone: null,
+            pan: null,
+            address: null,
+        );
 
-        return $mock;
+        return Donation::draft(
+            campaignId: EntityId::generate('campaign'),
+            donor: $donor,
+            amountMinor: 5_000_00,
+            currency: Currency::INR,
+            id: $id,
+        );
     }
 
     private function makeReceipt(EntityId $paymentId): Receipt

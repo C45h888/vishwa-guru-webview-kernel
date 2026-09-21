@@ -18,9 +18,9 @@ use Throwable;
  * GallerySeeder — seeds the 3 published galleries and their images.
  *
  * Three galleries segmented by commonality:
- *   1. Sacred Rituals        (5 photos) — daily pooja and worship
- *   2. Sacred Festivals      (14 photos) — major festivals, kalyanam, kumbhabhishekam
- *   3. Community & Cultural  (17 photos) — honours, community life, cultural offerings
+ *   1. Sacred Rituals        (5 photos) — school life, daily annadanam, daily rhythm
+ *   2. Sacred Festivals      (14 photos) — school celebrations, festivals, kalyanam, kumbhabhishekam
+ *   3. Community & Cultural  (17 photos) — pupils, teachers, devotees, cultural offerings, seva
  *
  * Doctrine alignment:
  *   - Idempotent: every INSERT uses ON CONFLICT … DO NOTHING so re-runs are safe.
@@ -339,7 +339,7 @@ final class GallerySeeder extends Seeder
     private const GALLERIES = [
         'sacred-rituals' => [
             'title' => 'Sacred Rituals',
-            'description' => 'The daily rhythm of worship at the temple — sandhyavandanam at dawn, nivedanam, the procession of the deities, and the sacred posts that mark the temple grounds. These are the rituals performed without break, in the same form, in the same place, every day of the year.',
+            'description' => 'School life and daily rhythm at the trust — morning study, classroom moments, daily annadanam of meals and water, school events and gatherings, and the quiet devotional practices that hold the day together. These photos witness what donors sustain every school day.',
             'cover' => 'journal-pooja-01-sandhyavandanam.webp',
             'is_featured' => true,
             'display_order' => 10,
@@ -353,7 +353,7 @@ final class GallerySeeder extends Seeder
         ],
         'sacred-festivals' => [
             'title' => 'Sacred Festivals',
-            'description' => 'The major festivals that draw the community together through the year — Ganesh Chaturthi, Varalakshmi, Kumbhabhishekam, Brahmotsavam, Kalyanam, and the rest of the festival calendar. Each occasion carries its own rituals, its own preparations, and its own particular joy.',
+            'description' => 'Festivals and milestones across the year — school celebrations, children’s cultural performances including Bharatanatyam, community feasts under annadanam, and the temple occasions that gather devotees together. Each event is sustained by the same daily discipline as the schools.',
             'cover' => 'journal-festivals-01-girija-kalyana.webp',
             'is_featured' => true,
             'display_order' => 20,
@@ -376,7 +376,7 @@ final class GallerySeeder extends Seeder
         ],
         'community-cultural' => [
             'title' => 'Community & Cultural',
-            'description' => 'The people and offerings that surround the temple — visitors, scholars, devotees, and performers who come to honour the lineage. Bharatanatyam recitals, literary tributes, village gatherings, and the small ceremonies that hold the community together.',
+            'description' => 'The people and the work around the trust — pupils and teachers at the schools, scholars and devotees, Bharatanatyam recitals, literary tributes, village gatherings, and the volunteers whose seva keeps daily annadanam running.',
             'cover' => 'journal-awards-01-chaganti.webp',
             'is_featured' => true,
             'display_order' => 30,

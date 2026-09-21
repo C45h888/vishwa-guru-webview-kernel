@@ -88,9 +88,9 @@
                     Contact the trust
                 </h1>
                 <p class="text-base text-muted-foreground lg:text-lg">
-                    Reach the trust office for donations, events, CSR
-                    enquiries, project updates, and future volunteering
-                    or support.
+                    Reach the trust office for school support and annadanam
+                    enquiries, donations, events, CSR enquiries, project
+                    updates, and future volunteering or support.
                 </p>
                 <div class="pt-2">
                     <TrustBadgeRow />

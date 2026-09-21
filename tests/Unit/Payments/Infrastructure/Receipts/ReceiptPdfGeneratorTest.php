@@ -137,31 +137,51 @@ class ReceiptPdfGeneratorTest extends TestCase
 
     private function makePayment(): Payment
     {
-        return Payment::initialize(
+        $payment = Payment::initialize(
             donationId: \App\Persistence\ValueObjects\EntityId::generate('donation'),
             providerCode: \App\Payments\Domain\Enums\PaymentProvider::RAZORPAY,
             amountMinor: 5_000_00,
             currency: Currency::INR,
             idempotencyKey: 'txn_test',
             metadata: [],
-        )->withChanges(['status' => TransactionStatus::CAPTURED->value]);
+        );
+
+        // Walk the FSM: INITIALIZED → PENDING → AUTHORIZED → CAPTURED
+        $machine = new \App\Payments\Domain\StateMachines\PaymentStateMachine();
+        $payment = $payment->transitionTo(
+            machine: $machine,
+            to: TransactionStatus::PENDING,
+            context: ['gateway_order_id' => 'order_test_001'],
+        );
+        $payment = $payment->transitionTo(
+            machine: $machine,
+            to: TransactionStatus::AUTHORIZED,
+            context: ['gateway_payment_id' => 'pay_test_001'],
+        );
+        $payment = $payment->transitionTo(
+            machine: $machine,
+            to: TransactionStatus::CAPTURED,
+            context: ['amount_minor' => 5_000_00],
+        );
+
+        return $payment;
     }
 
     private function makeDonation(): Donation
     {
-        return Donation::create(
-            donorId: \App\Persistence\ValueObjects\EntityId::generate('donor'),
+        $donor = \App\Payments\Domain\ValueObjects\DonorIdentity::identified(
+            name: 'Test Donor',
+            email: 'donor@test.com',
+            phone: null,
+            pan: null,
+            address: null,
+        );
+
+        return Donation::draft(
             campaignId: \App\Persistence\ValueObjects\EntityId::generate('campaign'),
+            donor: $donor,
             amountMinor: 5_000_00,
             currency: Currency::INR,
-            donorNameSnapshot: 'Test Donor',
-            donorEmailSnapshot: 'donor@test.com',
-            donorPhoneSnapshot: null,
-            donorPanSnapshot: null,
-            donorAddressSnapshot: null,
-            dedication: null,
-            donorMessage: null,
-            metadata: [],
         );
     }
 }

@@ -297,10 +297,10 @@
 </script>
 
 <svelte:head>
-<title>Support the Land Acquisition Campaign — {appName}</title>
+<title>Support the Schools and Campus Fund — {appName}</title>
 <meta
     name="description"
-    content="Support the trust\u2019s land acquisition campaign for the proposed healing and service campus near Nanjangud, outside Mysore. Secure payments via Razorpay."
+    content="Sustain daily annadanam at the trust\u2019s schools — food, water, and events for children in need of care — and support the land fund for the proposed healing and service campus near Nanjangud. Secure payments via Razorpay."
 />
 </svelte:head>
 
@@ -327,21 +327,22 @@
                     <p
                         class="text-xs font-semibold uppercase tracking-[0.25em] text-primary"
                     >
-                        Support the land acquisition
+                        Support the schools and the campus
                     </p>
                     <h1
                         class="font-serif text-3xl font-semibold leading-tight lg:text-5xl"
                     >
-                        Donate to the land acquisition campaign
+                        Donate to daily annadanam and the campus fund
                     </h1>
                     <p
                         class="max-w-md text-base leading-relaxed text-muted-foreground lg:text-lg"
                     >
-                        The current campaign is the land acquisition for the
-                        proposed three-acre healing and service campus near
-                        Nanjangud, outside Mysore. The land is under
-                        discussion; the acquisition requires additional
-                        capital. Every donation supports this stage.
+                        The schools run today on daily annadanam — food,
+                        water, and events for children in need of care,
+                        including blind and deaf pupils on free education.
+                        Alongside, the land fund for the proposed three-acre
+                        healing and service campus near Nanjangud grows. Pick
+                        a campaign below to direct your offering.
                     </p>
                     <div
                         class="flex items-center gap-2 pt-2 text-xs text-muted-foreground"

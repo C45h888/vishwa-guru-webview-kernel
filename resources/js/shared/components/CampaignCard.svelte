@@ -63,10 +63,23 @@
         campaign.state.charAt(0).toUpperCase() + campaign.state.slice(1),
     );
 
+    const CATEGORY_LABELS: Record<string, string> = {
+        general: 'Schools + Campus Fund',
+        school_annadanam: 'Schools · Daily Annadanam',
+        land_acquisition: 'Campus · Land Fund',
+        construction: 'Campus · Planned Build',
+        gaushala_build: 'Campus · Planned Build',
+        operations: 'Campus · Planned Cow Care',
+        cow_care_future: 'Campus · Planned Cow Care',
+        maintenance: 'General Fund',
+        diwali: 'Seasonal Appeal',
+    };
+
     const categoryLabel = $derived(
-        campaign.category
-            .replace(/_/g, ' ')
-            .replace(/\b\w/g, (c) => c.toUpperCase()),
+        CATEGORY_LABELS[campaign.category] ??
+            campaign.category
+                .replace(/_/g, ' ')
+                .replace(/\b\w/g, (c) => c.toUpperCase()),
     );
 
     const daysRemaining = $derived.by(() => {

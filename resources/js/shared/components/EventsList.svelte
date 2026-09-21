@@ -67,10 +67,10 @@
                 <p
                     class="text-xs font-semibold uppercase tracking-[0.2em] text-primary"
                 >
-                    Events
+                    School moments and gatherings
                 </p>
                 <h2 class="font-serif text-3xl font-semibold lg:text-4xl">
-                    Upcoming at the temple
+                    From the schools and the temple
                 </h2>
             </div>
             <a

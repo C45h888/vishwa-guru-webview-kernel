@@ -19,7 +19,7 @@ use DateTimeImmutable;
  *
  * No I/O — all inputs are passed as method arguments.
  */
-final class Receipt80GValidator
+class Receipt80GValidator
 {
     private const array VALID_PAN_PATTERN = [
         '/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/i', // Standard Indian PAN

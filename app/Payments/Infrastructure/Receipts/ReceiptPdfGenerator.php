@@ -23,7 +23,7 @@ use RuntimeException;
  *
  * No I/O beyond the PdfWrapper (which handles storage). No direct Storage:: calls.
  */
-final class ReceiptPdfGenerator
+class ReceiptPdfGenerator
 {
     public function __construct(
         private readonly PdfWrapper $pdf,

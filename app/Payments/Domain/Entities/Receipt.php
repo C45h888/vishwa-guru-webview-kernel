@@ -143,9 +143,12 @@ final class Receipt implements EntityContract
         if (empty($receiptNumber)) {
             throw new InvalidArgumentException('Receipt receiptNumber cannot be empty');
         }
-        if (! preg_match('/^TR-\d{4}-[A-Z0-9]{4,32}$/', $receiptNumber)) {
+        // Canonical format from ReceiptNumberAllocator:
+        //   TR-{FY_start_year}-{6_digit_sequence}-{8_char_url_safe_salt}
+        // Matches the canonical PATTERN constant on ReceiptNumberAllocator.
+        if (! preg_match('/^TR-\d{4}-\d{6}(-[A-Za-z0-9_-]+)?$/', $receiptNumber)) {
             throw new InvalidArgumentException(
-                "Receipt receiptNumber must match TR-YYYY-{shortId}: got {$receiptNumber}"
+                "Receipt receiptNumber must match TR-YYYY-NNNNNN[-salt]: got {$receiptNumber}"
             );
         }
         if ($accessToken !== null && ! preg_match('/^[A-Za-z0-9_-]{32,128}$/', $accessToken)) {
@@ -542,6 +545,11 @@ final class Receipt implements EntityContract
     public function deliveryChannel(): ?string
     {
         return $this->deliveryChannel;
+    }
+
+    public function deliveryAddress(): ?string
+    {
+        return $this->deliveryAddress;
     }
 
     /**

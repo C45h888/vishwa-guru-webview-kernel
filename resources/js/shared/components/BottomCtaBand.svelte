@@ -9,8 +9,8 @@
     }
 
     let {
-        title = 'Support the land acquisition campaign',
-        body = 'Your contribution moves the proposed healing and service campus one step closer. Every donation is acknowledged with an official receipt.',
+        title = 'Support the schools and the campus',
+        body = 'Your contribution sustains daily annadanam — food, water, and school events for the children in our care — and moves the proposed healing and service campus one step closer. Every donation is acknowledged with an official receipt.',
         ctaLabel = 'Donate Now',
         ctaHref = '/donate',
     }: Props = $props();

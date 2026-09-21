@@ -11,6 +11,7 @@ use App\Payments\Domain\ValueObjects\Identifier;
 use App\Payments\Domain\ValueObjects\PaymentRequest;
 use App\Payments\Infrastructure\Adapters\Razorpay\RazorpayAdapter;
 use App\Payments\Infrastructure\Adapters\Razorpay\RazorpayClient;
+use App\Shared\Support\UlidGenerator;
 use App\Shared\ValueObjects\Identifier as IdentifierVO;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
@@ -87,21 +88,42 @@ class RazorpayAdapterTest extends TestCase
                 $this->payment = new class {
                     public function fetch(string $paymentId): object
                     {
-                        return (object) [
-                            'id' => $paymentId,
-                            'amount' => 10000,
-                            'currency' => 'INR',
-                            'status' => 'captured',
-                        ];
-                    }
+                        $refundable = new class($paymentId) {
+                            public function __construct(private string $paymentId) {}
 
-                    public function refund(array $body = []): object
-                    {
-                        return (object) [
-                            'id' => 're_' . uniqid(),
-                            'status' => 'processed',
-                            'amount' => $body['amount'] ?? 10000,
-                        ];
+                            public function refund(array $body = []): object
+                            {
+                                return (object) [
+                                    'id' => 're_' . uniqid(),
+                                    'status' => 'processed',
+                                    'amount' => $body['amount'] ?? 10000,
+                                ];
+                            }
+                        };
+
+                        // Mock payment entity: needs toArray() for RazorpayClient::toArray(),
+                        // and refund() for RazorpayClient::refundPayment().
+                        return new class($paymentId, $refundable) {
+                            public function __construct(
+                                private string $paymentId,
+                                private object $refundable,
+                            ) {}
+
+                            public function refund(array $body = []): object
+                            {
+                                return $this->refundable->refund($body);
+                            }
+
+                            public function toArray(): array
+                            {
+                                return [
+                                    'id' => $this->paymentId,
+                                    'amount' => 10000,
+                                    'currency' => 'INR',
+                                    'status' => 'captured',
+                                ];
+                            }
+                        };
                     }
                 };
             }
@@ -147,7 +169,7 @@ class RazorpayAdapterTest extends TestCase
     public function testInitializeSuccess(): void
     {
         $request = new PaymentRequest(
-            donorIdentifier: new IdentifierVO('donor_001'),
+            donorIdentifier: new IdentifierVO(UlidGenerator::generate()),
             amount: 10000,
             currency: Currency::INR,
             purpose: 'General Donation',
@@ -172,7 +194,7 @@ class RazorpayAdapterTest extends TestCase
     public function testInitializeTranslatesRequestToRazorpayPayload(): void
     {
         $request = new PaymentRequest(
-            donorIdentifier: new IdentifierVO('donor_xyz'),
+            donorIdentifier: new IdentifierVO(UlidGenerator::generate()),
             amount: 50000,
             currency: Currency::INR,
             purpose: 'Temple Construction Fund',
@@ -206,7 +228,7 @@ class RazorpayAdapterTest extends TestCase
 
     public function testCaptureReturnsCapturedStatus(): void
     {
-        $txnId = new IdentifierVO('txn_abc');
+        $txnId = new IdentifierVO(UlidGenerator::generate());
 
         $result = $this->adapter->capture($txnId, 10000);
 
@@ -218,7 +240,7 @@ class RazorpayAdapterTest extends TestCase
 
     public function testRefundSuccess(): void
     {
-        $txnId = new IdentifierVO('pay_test_456');
+        $txnId = new IdentifierVO(UlidGenerator::generate());
 
         $result = $this->adapter->refund($txnId, 5000);
 
@@ -345,14 +367,17 @@ class RazorpayAdapterTest extends TestCase
         $mockApi->order = $mockOrder;
         $apiProp->setValue($this->client, $mockApi);
 
+        $donationId = UlidGenerator::generate();
+        $campaignId = UlidGenerator::generate();
+
         $request = new PaymentRequest(
-            donorIdentifier: new IdentifierVO('don_shape_1'),
+            donorIdentifier: new IdentifierVO($donationId),
             amount: 50000,
             currency: Currency::INR,
             purpose: 'General Donation',
             metadata: [
-                'donation_id' => 'don_shape_1',
-                'campaign_id' => 'cmp_shape_1',
+                'donation_id' => $donationId,
+                'campaign_id' => $campaignId,
             ],
             idempotencyKey: 'idem_shape_1',
         );
@@ -375,7 +400,7 @@ class RazorpayAdapterTest extends TestCase
         $this->assertArrayHasKey('notes', $payload);
         $this->assertIsArray($payload['notes']);
         $this->assertArrayHasKey('donation_id', $payload['notes']);
-        $this->assertSame('don_shape_1', $payload['notes']['donation_id']);
+        $this->assertSame($donationId, $payload['notes']['donation_id']);
         $this->assertArrayHasKey('purpose', $payload['notes']);
         $this->assertSame('General Donation', $payload['notes']['purpose']);
         // Razorpay auto-captures iff payment_capture=1; auto-capture is

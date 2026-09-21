@@ -68,17 +68,65 @@
 
     const fallback = $derived(campaignFallbackFor(campaign.category));
 
+    /**
+     * Human cause labels for the raw category keys. The DB carries
+     * operational keys (general / construction / operations); visitors
+     * see causes. Unknown keys fall back to title-cased raw text.
+     */
+    const CATEGORY_LABELS: Record<string, string> = {
+        general: 'Schools + Campus Fund',
+        school_annadanam: 'Schools · Daily Annadanam',
+        land_acquisition: 'Campus · Land Fund',
+        construction: 'Campus · Planned Build',
+        gaushala_build: 'Campus · Planned Build',
+        operations: 'Campus · Planned Cow Care',
+        cow_care_future: 'Campus · Planned Cow Care',
+        maintenance: 'General Fund',
+        diwali: 'Seasonal Appeal',
+    };
+
     const categoryLabel = $derived(
-        campaign.category
-            .replace(/_/g, ' ')
-            .replace(/\b\w/g, (c) => c.toUpperCase()),
+        CATEGORY_LABELS[campaign.category] ??
+            campaign.category
+                .replace(/_/g, ' ')
+                .replace(/\b\w/g, (c) => c.toUpperCase()),
+    );
+
+    /**
+     * Cause eyebrow + designate hint for the hero. Current causes invite
+     * a direct offering; planned stages say when they open so a donor
+     * never mistakes a future building for today's ask.
+     */
+    const causeEyebrow = $derived.by(() => {
+        switch (campaign.category) {
+            case 'general':
+            case 'school_annadanam':
+            case 'land_acquisition':
+                return 'Current cause · accepting offerings';
+            case 'construction':
+            case 'gaushala_build':
+            case 'operations':
+            case 'cow_care_future':
+                return 'Planned stage · opens after the land fund';
+            default:
+                return 'Campaign · open now';
+        }
+    });
+
+    // About copy prefers the campaign row's own description (the named,
+    // per-cause prose); the category fallback covers rows with no
+    // description so the page never collapses.
+    const aboutSource = $derived(
+        campaign.description && campaign.description.trim() !== ''
+            ? campaign.description
+            : fallback.about,
     );
 
     // Multi-paragraph rendering of the About copy. The config string
     // contains 4 sentences; split on full-stops so each becomes its own
     // paragraph instead of one block.
     const aboutParagraphs = $derived(
-        fallback.about
+        aboutSource
             .split(/(?<=[.!?])\s+/)
             .map((p) => p.trim())
             .filter((p) => p.length > 0),
@@ -190,7 +238,7 @@
 
 <PublicLayout>
     <article>
-        <!-- ═══ 1. HERO ═══ -->
+        <!-- ═══ 1. HERO — image left, cause text right (editorial order) ═══ -->
         <section class="relative overflow-hidden bg-background">
             <div
                 class="pointer-events-none absolute -right-20 top-0 opacity-[0.08]"
@@ -201,7 +249,44 @@
 
             <div class="container relative py-12 lg:py-20">
                 <div class="grid grid-cols-1 items-center gap-10 lg:grid-cols-12 lg:gap-16">
-                    <div class="space-y-5 lg:col-span-7">
+                    <div class="relative order-1 lg:col-span-5">
+                        {#if $page.props.authUser?.role === 'admin'}
+                            <AdminEditOverlay
+                                href={`/admin/campaigns/${campaign.id}/edit`}
+                                srLabel={`Edit campaign: ${campaign.title}`}
+                            />
+                        {/if}
+                        {#if hasImage}
+                            <div
+                                class="overflow-hidden rounded-md border border-border/40 shadow-sm"
+                            >
+                                <PublicMediaImage
+                                    media={heroImage!}
+                                    alt={campaign.title}
+                                    class="aspect-[4/5] w-full object-cover"
+                                />
+                            </div>
+                        {:else}
+                            <div
+                                class="overflow-hidden rounded-md border border-border/40 shadow-sm"
+                            >
+                                <img
+                                    src={DEFAULT_HERO_IMAGE}
+                                    alt={campaign.title}
+                                    class="aspect-[4/5] w-full object-cover"
+                                    loading="eager"
+                                    decoding="async"
+                                />
+                            </div>
+                        {/if}
+                    </div>
+
+                    <div class="order-2 space-y-5 lg:col-span-7">
+                        <p
+                            class="text-xs font-semibold uppercase tracking-[0.25em] text-primary"
+                        >
+                            {causeEyebrow}
+                        </p>
                         <div
                             class="flex flex-wrap items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.2em]"
                         >
@@ -246,41 +331,32 @@
                             </span>
                         </div>
 
+                        <div class="flex flex-wrap items-center gap-3 pt-2">
+                            <a
+                                href={donateHref}
+                                class="inline-flex h-11 items-center justify-center whitespace-nowrap rounded-sm bg-primary px-6 text-xs font-semibold uppercase tracking-[0.2em] text-primary-foreground transition-colors hover:bg-accent"
+                            >
+                                <Heart
+                                    class="mr-2 h-4 w-4"
+                                    aria-hidden="true"
+                                />
+                                Donate to this cause
+                                <ArrowRight
+                                    class="ml-2 h-4 w-4"
+                                    aria-hidden="true"
+                                />
+                            </a>
+                            <a
+                                href="/campaigns"
+                                class="inline-flex h-11 items-center justify-center whitespace-nowrap rounded-sm border border-border bg-background px-5 text-xs font-semibold uppercase tracking-[0.2em] text-foreground/80 transition-colors hover:border-primary/40 hover:text-primary"
+                            >
+                                All causes
+                            </a>
+                        </div>
+
                         <div class="pt-1">
                             <TrustBadgeRow />
                         </div>
-                    </div>
-
-                    <div class="relative lg:col-span-5">
-                        {#if $page.props.authUser?.role === 'admin'}
-                            <AdminEditOverlay
-                                href={`/admin/campaigns/${campaign.id}/edit`}
-                                srLabel={`Edit campaign: ${campaign.title}`}
-                            />
-                        {/if}
-                        {#if hasImage}
-                            <div
-                                class="overflow-hidden rounded-md border border-border/40"
-                            >
-                                <PublicMediaImage
-                                    media={heroImage!}
-                                    alt={campaign.title}
-                                    class="aspect-[4/5] w-full object-cover"
-                                />
-                            </div>
-                        {:else}
-                            <div
-                                class="overflow-hidden rounded-md border border-border/40"
-                            >
-                                <img
-                                    src={DEFAULT_HERO_IMAGE}
-                                    alt={campaign.title}
-                                    class="aspect-[4/5] w-full object-cover"
-                                    loading="eager"
-                                    decoding="async"
-                                />
-                            </div>
-                        {/if}
                     </div>
                 </div>
             </div>
@@ -374,11 +450,11 @@
             </div>
         </section>
 
-        <!-- ═══ 3. ABOUT THIS CAMPAIGN — expanded multi-paragraph, with feature photo ═══ -->
+        <!-- ═══ 3. ABOUT THIS CAMPAIGN — text left, supporting cards right ═══ -->
         <section class="bg-background py-14 lg:py-20">
             <div class="container">
                 <div class="grid grid-cols-1 items-start gap-10 lg:grid-cols-12 lg:gap-14">
-                    <div class="space-y-5 lg:col-span-7">
+                    <div class="order-1 space-y-5 lg:col-span-7">
                         <p
                             class="text-xs font-semibold uppercase tracking-[0.25em] text-primary"
                         >
@@ -396,9 +472,21 @@
                                 <p>{para}</p>
                             {/each}
                         </div>
+                        <div class="pt-2">
+                            <a
+                                href={donateHref}
+                                class="inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:underline"
+                            >
+                                Donate to {campaign.title}
+                                <ArrowRight
+                                    class="h-4 w-4"
+                                    aria-hidden="true"
+                                />
+                            </a>
+                        </div>
                     </div>
 
-                    <div class="relative lg:col-span-5">
+                    <div class="order-2 space-y-4 lg:col-span-5">
                         <div
                             class="overflow-hidden rounded-md border border-border/40 shadow-sm"
                         >
@@ -410,10 +498,28 @@
                                 decoding="async"
                             />
                         </div>
-                        <div
-                            class="pointer-events-none absolute -bottom-4 -right-4 hidden h-24 w-24 rounded-full border border-primary/15 bg-ivory/80 backdrop-blur sm:block"
-                            aria-hidden="true"
-                        ></div>
+                        <ul class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                            {#each fallback.whatItSupports as item, i (i)}
+                                {@const Icon = SUPPORT_ICONS[i % SUPPORT_ICONS.length]}
+                                <li
+                                    class="group flex items-start gap-3 rounded-md border border-border/40 bg-ivory p-4 transition-all hover:border-primary/40 hover:shadow-sm"
+                                >
+                                    <div
+                                        class="flex h-9 w-9 shrink-0 items-center justify-center rounded-sm bg-primary/10 text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground"
+                                    >
+                                        <Icon
+                                            class="h-4 w-4"
+                                            aria-hidden="true"
+                                        />
+                                    </div>
+                                    <p
+                                        class="text-sm font-medium leading-snug text-foreground/90"
+                                    >
+                                        {item}
+                                    </p>
+                                </li>
+                            {/each}
+                        </ul>
                     </div>
                 </div>
             </div>
@@ -542,10 +648,10 @@
             </div>
         </section>
 
-        <!-- ═══ 5. WHAT YOUR OFFERING SUPPORTS — banner image + 4 icon cards ═══ -->
+        <!-- ═══ 5. WHERE EVERY RUPEE GOES — banner + accountability note (cards now live beside About) ═══ -->
         <section class="bg-ivory py-16 lg:py-24">
             <div class="container">
-                <div class="mx-auto max-w-5xl space-y-10">
+                <div class="mx-auto max-w-5xl space-y-8">
                     <div
                         class="relative overflow-hidden rounded-md border border-border/40"
                     >
@@ -561,7 +667,7 @@
                             aria-hidden="true"
                         ></div>
                         <div
-                            class="absolute inset-0 flex items-end p-6 lg:p-10"
+                            class="absolute inset-0 flex items-end justify-between gap-4 p-6 lg:p-10"
                         >
                             <div class="space-y-2">
                                 <p
@@ -575,36 +681,23 @@
                                     Where every rupee goes
                                 </h3>
                             </div>
+                            <a
+                                href={donateHref}
+                                class="hidden shrink-0 items-center gap-2 rounded-sm bg-white/95 px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.2em] text-primary transition-colors hover:bg-white sm:inline-flex"
+                            >
+                                Donate
+                                <ArrowRight
+                                    class="h-4 w-4"
+                                    aria-hidden="true"
+                                />
+                            </a>
                         </div>
                     </div>
-
-                    <ul class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                        {#each fallback.whatItSupports as item, i (i)}
-                            {@const Icon = SUPPORT_ICONS[i % SUPPORT_ICONS.length]}
-                            <li
-                                class="group flex flex-col gap-3 rounded-md border border-border/40 bg-background p-5 transition-all hover:border-primary/40 hover:shadow-sm"
-                            >
-                                <div
-                                    class="flex h-10 w-10 items-center justify-center rounded-sm bg-primary/10 text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground"
-                                >
-                                    <Icon
-                                        class="h-5 w-5"
-                                        aria-hidden="true"
-                                    />
-                                </div>
-                                <p
-                                    class="text-sm font-medium text-foreground/90"
-                                >
-                                    {item}
-                                </p>
-                            </li>
-                        {/each}
-                    </ul>
 
                     <p
                         class="mx-auto max-w-2xl text-center text-sm leading-relaxed text-muted-foreground"
                     >
-                        Every offering supports the categories above. The trust
+                        Every offering supports {campaign.title}. The trust
                         publishes how each campaign's funds were spent when
                         the campaign closes — so the giving stays accountable
                         to every devotee who contributes.
@@ -660,11 +753,11 @@
                             <h3
                                 class="font-serif text-2xl font-semibold lg:text-3xl"
                             >
-                                Offer your seva
+                                Offer your seva to {campaign.title}
                             </h3>
                             <p class="text-sm text-muted-foreground">
-                                Every contribution, of any size, sustains this
-                                cause.
+                                Every contribution, of any size, sustains
+                                {categoryLabel} — {causeEyebrow.toLowerCase()}.
                             </p>
                         </div>
                         <a

@@ -94,8 +94,9 @@ final class ReceiptServiceTest extends TestCase
             failureStates: $failureStates,
         );
 
-        $this->expectException(\App\Payments\Domain\Exceptions\ReceiptGenerationFailedException::class);
-        $service->issue(new Identifier($payment->id()->ulid()));
+        $result = $service->issue(new Identifier($payment->id()->ulid()));
+        $this->assertTrue($result->isFailure(), 'Expected failure result');
+        $this->assertStringContainsString('receipt.issue', (string) $result->error());
         $this->assertSame(1, $failureStates->recordCallCount);
     }
 
@@ -123,8 +124,9 @@ final class ReceiptServiceTest extends TestCase
             failureStates: $failureStates,
         );
 
-        $this->expectException(\App\Payments\Domain\Exceptions\ReceiptGenerationFailedException::class);
-        $service->issue(new Identifier($payment->id()->ulid()));
+        $result = $service->issue(new Identifier($payment->id()->ulid()));
+        $this->assertTrue($result->isFailure(), 'Expected failure result');
+        $this->assertStringContainsString('receipt.issue', (string) $result->error());
         $this->assertSame(1, $failureStates->recordCallCount);
     }
 
@@ -245,6 +247,7 @@ final class ReceiptServiceTest extends TestCase
             receipts: $receipts ?? $this->createMock(ReceiptRepositoryContract::class),
             payments: $payments ?? $this->createMock(PaymentRepositoryContract::class),
             donations: $donations ?? $this->createMock(DonationRepositoryContract::class),
+            campaigns: $this->createMock(\App\Campaigns\Domain\Repositories\CampaignRepositoryContract::class),
             failureStateService: $failureStates ?? new RecordingFailureStateService(),
             receiptGenerator: $generator ?? $this->makeGenerator('TR-2026-DEFAULT12', 'h'),
             receiptStateMachine: new ReceiptStateMachine(),

@@ -38,11 +38,11 @@
                     Gallery
                 </p>
                 <h2 class="font-serif text-3xl font-semibold lg:text-4xl">
-                    From the temple, in moments
+                    From the schools and the temple, in moments
                 </h2>
                 <p class="max-w-xl text-sm text-muted-foreground lg:text-base">
-                    A glimpse into the rhythms of daily pooja, the Annadanam
-                    kitchen, and the life of the temple.
+                    A glimpse into school life, daily annadanam, and the
+                    community that sustains the trust.
                 </p>
             </div>
             <a

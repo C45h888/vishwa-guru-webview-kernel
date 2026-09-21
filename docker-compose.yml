@@ -58,7 +58,13 @@ services:
       - --maxmemory-policy
       - allkeys-lru
     ports:
-      - "${REDIS_PORT:-6379}:6379"
+      # 6380 on host → 6379 in-container. Host port is decoupled from the
+      # internal 6379 because an unrelated `crypto-ai-anal-*` redis already
+      # publishes 127.0.0.1:6379. The app/worker reach this redis via the
+      # `redis` service hostname on the shared compose network (port 6379
+      # in-container), so REDIS_PORT stays 6379 in config and only this
+      # public host mapping shifts to 6380.
+      - "${REDIS_HOST_PORT:-6380}:6379"
     volumes:
       - redis-data:/data
     healthcheck:

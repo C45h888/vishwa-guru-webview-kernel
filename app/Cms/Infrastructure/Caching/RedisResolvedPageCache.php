@@ -24,6 +24,15 @@ use Illuminate\Contracts\Cache\Repository as CacheRepository;
  * Doctrine: when Redis evicts a key (memory pressure), the next request
  * re-assembles. No application-level reaction needed.
  *
+ * Redis is a substrate, never a source of truth and never a request
+ * failure point. Every public method degrades to best-effort when the
+ * connection is unavailable:
+ *   - get()        → returns null (page re-assembled live)
+ *   - put()        → no-op (write lost; next request re-assembles)
+ *   - invalidate() → no-op (stale key TTLs out within the 1h window)
+ * This mirrors the CacheInvalidationListener contract: the cache must
+ * NEVER fail a business operation.
+ *
  * @see /Users/kamii/Vishwaguru-webview-kernel/vishwa-guru-webview-kernel/cms-architecture.md §5.3.2
  */
 final class RedisResolvedPageCache implements ResolvedPageCacheContract
@@ -47,7 +56,19 @@ final class RedisResolvedPageCache implements ResolvedPageCacheContract
     public function get(PageSlug $slug): ?RenderedStaticPage
     {
         $key = $this->key($slug);
-        $value = $this->cache->get($key);
+
+        // Redis is a substrate that must NEVER fail the request path.
+        // Doctrine: a disconnection / eviction degrades to a cache miss and
+        // the page is re-assembled live (same best-effort policy as
+        // invalidateAll and the CacheInvalidationListener). Propagating a
+        // RedisException here would turn an infrastructure blip into a
+        // public HTTP 500.
+        try {
+            $value = $this->cache->get($key);
+        } catch (\Throwable) {
+            return null;
+        }
+
         if ($value === null) {
             return null;
         }
@@ -63,16 +84,26 @@ final class RedisResolvedPageCache implements ResolvedPageCacheContract
 
     public function put(PageSlug $slug, RenderedStaticPage $page, int $ttlSeconds = 3600): void
     {
-        $this->cache->put(
-            $this->key($slug),
-            serialize($page),
-            $ttlSeconds,
-        );
+        try {
+            $this->cache->put(
+                $this->key($slug),
+                serialize($page),
+                $ttlSeconds,
+            );
+        } catch (\Throwable) {
+            // Best-effort: a lost write is not a failure. The next request
+            // re-assembles (get() returned null) and re-tries the write.
+        }
     }
 
     public function invalidate(PageSlug $slug): void
     {
-        $this->cache->forget($this->key($slug));
+        try {
+            $this->cache->forget($this->key($slug));
+        } catch (\Throwable) {
+            // Best-effort: a stale key is harmless; it TTLs out within the
+            // 1h window. Invalidation must never fail a business operation.
+        }
     }
 
     public function invalidateAll(): void

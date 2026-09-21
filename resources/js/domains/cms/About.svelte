@@ -47,6 +47,7 @@
     const programIcons: Record<string, typeof Flame> = {
         children_education: GraduationCap,
         children_housing: Heart,
+        land_acquisition: MapPin,
         gaushala: Sparkles,
         shiva_temple: Flame,
     };
@@ -197,7 +198,7 @@
                 </h2>
                 <p class="text-base text-muted-foreground">
                     Numbers the trust has tracked and reported \u2014 the
-                    children\u2019s-care chapter, the fundraising sequence, and
+                    schools, the daily annadanam, and
                     the proposed campus. Approximate figures are stated as
                     approximate; verified figures are stated as they are.
                 </p>
@@ -284,13 +285,13 @@
                 What we do
             </p>
             <h2 class="font-serif text-3xl font-semibold lg:text-4xl">
-                Four stages, told honestly
+                Ongoing work and planned stages, told honestly
             </h2>
             <p class="text-base text-muted-foreground">
                 Each stage has its own scope, its own people, and its own
-                ledger. The first chapter is concluded, the current
-                stage is the land acquisition, and the planned stages are
-                the campus construction and the cow care.
+                ledger. The schools run today on daily annadanam, the land
+                fund grows alongside, and the planned stages are the campus
+                construction and the cow care.
             </p>
         </div>
 
@@ -341,9 +342,9 @@
                     Milestones in the trust\u2019s work
                 </h2>
                 <p class="text-base text-muted-foreground">
-                    The arc of the trust\u2019s work \u2014 from the beginning
-                    of the children\u2019s-care chapter to the launch of the land
-                    acquisition campaign.
+                    The arc of the trust\u2019s work \u2014 from the first
+                    school cohorts to the schools running today and the land
+                    fund for the campus.
                 </p>
             </div>
 
@@ -489,7 +490,7 @@
 
             <div class="mx-auto mt-12 grid max-w-5xl grid-cols-1 gap-6 sm:grid-cols-3">
                 {#each [
-                    { slug: 'sacred-rituals', title: 'Sacred Rituals', subtitle: 'From the children\u2019s-care chapter' },
+                    { slug: 'sacred-rituals', title: 'Sacred Rituals', subtitle: 'School life and daily annadanam' },
                     { slug: 'sacred-festivals', title: 'Sacred Festivals', subtitle: 'Community moments across the year' },
                     { slug: 'community-cultural', title: 'Community & Cultural', subtitle: 'People and the work they do' },
                 ] as card (card.slug)}

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Unit\Payments\Jobs;
 
 use App\Jobs\ReceiptEmailJob;
+use App\Mail\ReceiptMailable;
 use App\Payments\Domain\Entities\Receipt;
 use App\Payments\Domain\Enums\Currency;
 use App\Payments\Domain\Repositories\ReceiptRepositoryContract;
@@ -33,30 +34,34 @@ use Tests\TestCase;
  */
 final class ReceiptEmailJobTest extends TestCase
 {
+    protected function setUp(): void
+    {
+        parent::setUp();
+        Mail::fake();
+    }
+
     public function testSkipsWhenReceiptNotFound(): void
     {
-        Mail::fake();
-
         $receipts = $this->createMock(ReceiptRepositoryContract::class);
         $receipts->method('findById')->willReturn(null);
+        $this->app->instance(ReceiptRepositoryContract::class, $receipts);
 
         $job = new ReceiptEmailJob(new Identifier('01ARZ3NDEKTSV4RRFFQ69G5FAV'));
-        $job->handle($receipts);
+        $job->handle();
 
         Mail::assertNothingSent();
     }
 
     public function testSkipsWhenDonorEmailIsNull(): void
     {
-        Mail::fake();
-
         $receipt = $this->makeReceipt(donorEmail: null);
 
         $receipts = $this->createMock(ReceiptRepositoryContract::class);
         $receipts->method('findById')->willReturn($receipt);
+        $this->app->instance(ReceiptRepositoryContract::class, $receipts);
 
         $job = new ReceiptEmailJob(new Identifier($receipt->id()->ulid()));
-        $job->handle($receipts);
+        $job->handle();
 
         Mail::assertNothingSent();
     }
@@ -74,16 +79,18 @@ final class ReceiptEmailJobTest extends TestCase
 
         $receipts = $this->createMock(ReceiptRepositoryContract::class);
         $receipts->method('findById')->willReturn($receipt);
+        $this->app->instance(ReceiptRepositoryContract::class, $receipts);
 
         $job = new ReceiptEmailJob(new Identifier($receipt->id()->ulid()));
-        $job->handle($receipts);
+        $job->handle();
 
         Mail::assertSentCount(1);
-        Mail::assertSent(function ($message) use ($receipt, $accessToken): bool {
-            $to = $message->getTo();
+        Mail::assertSent(ReceiptMailable::class, function ($message) use ($receipt, $accessToken): bool {
+            $to = $message->to;
             $hasRecipient = isset($to['priya@example.in']);
-            $subject = $message->getSubject() ?? '';
-            $body = $message->getBody() ?? '';
+            $envelope = $message->envelope();
+            $subject = $envelope->subject ?? '';
+            $body = $message->render() ?? '';
 
             return $hasRecipient
                 && str_contains($subject, $receipt->receiptNumber())
@@ -130,7 +137,7 @@ final class ReceiptEmailJobTest extends TestCase
             donationId: EntityId::generate('donation'),
             paymentId: EntityId::generate('payment'),
             campaignId: EntityId::generate('campaign'),
-            receiptNumber: 'TR-2026-ABC123',
+            receiptNumber: 'TR-2026-000123-A7c3ZpQ9',
             campaignTitleSnapshot: 'Temple Land Acquisition',
             donorName: $donorName,
             amountMinor: 50_000,

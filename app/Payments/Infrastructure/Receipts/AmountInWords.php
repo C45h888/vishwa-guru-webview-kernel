@@ -76,7 +76,10 @@ final class AmountInWords
             return $uppercase ? ucfirst($result) : $result;
         }
 
-        $words = self::convertNumber($minorAmount);
+        // Convert paise → rupees (integer division, paise are dropped per spec)
+        $rupees = intdiv($minorAmount, 100);
+
+        $words = self::convertNumber($rupees);
         $result = $words . ' Rupees Only';
 
         return $uppercase ? ucfirst($result) : $result;
@@ -84,10 +87,11 @@ final class AmountInWords
 
     /**
      * Convert a number to Indian words (without the "Rupees" label).
+     * Input is in rupees (not paise) — caller must convert paise → rupees.
      */
-    private static function convertNumber(int $number): string
+    private static function convertNumber(int $rupees): string
     {
-        if ($number === 0) {
+        if ($rupees === 0) {
             return 'Zero';
         }
 
@@ -103,13 +107,13 @@ final class AmountInWords
         $thousands = 0;
         $hundreds = 0;
         $ones = 0;
-        self::splitIntoIndianGroups($number, $crores, $lakhs, $thousands, $hundreds, $ones);
+        self::splitIntoIndianGroups($rupees, $crores, $lakhs, $thousands, $hundreds, $ones);
 
         if ($crores > 0) {
-            $parts[] = self::twoDigitToWords($crores) . ' Crore';
+            $parts[] = self::twoDigitToWords($crores) . ' Crore' . ($crores > 1 ? 's' : '');
         }
         if ($lakhs > 0) {
-            $parts[] = self::twoDigitToWords($lakhs) . ' Lakh';
+            $parts[] = self::twoDigitToWords($lakhs) . ' Lakh' . ($lakhs > 1 ? 's' : '');
         }
         if ($thousands > 0) {
             $parts[] = self::twoDigitToWords($thousands) . ' Thousand';
@@ -125,12 +129,12 @@ final class AmountInWords
     }
 
     /**
-     * Split a number into Indian digit groups.
+     * Split a number (in RUPEES) into Indian digit groups.
      *
      * Indian grouping (rightmost 3 digits, then pairs):
      *   ... crore (7-8 digits) | lakh (5-6 digits) | thousand (3-4 digits) | hundred (1-2 digits)
      *
-     * @param  int  $number  Input number
+     * @param  int  $rupees  Input number in rupees (not paise)
      * @param  int  $crores   Tens of lakhs (1-99)
      * @param  int  $lakhs    Lakhs (1-99)
      * @param  int  $thousands Thousands (1-99)
@@ -138,33 +142,44 @@ final class AmountInWords
      * @param  int  $ones     Remaining two digits (0-99)
      */
     private static function splitIntoIndianGroups(
-        int $number,
+        int $rupees,
         int &$crores,
         int &$lakhs,
         int &$thousands,
         int &$hundreds,
         int &$ones,
     ): void {
-        $crores = intdiv($number, 1_00_00_000);  // tens of lakhs
-        $number %= 1_00_00_000;
+        $crores = intdiv($rupees, 1_00_00_000);  // tens of lakhs (crore)
+        $rupees %= 1_00_00_000;
 
-        $lakhs = intdiv($number, 1_00_000);      // lakhs
-        $number %= 1_00_000;
+        $lakhs = intdiv($rupees, 1_00_000);      // lakhs
+        $rupees %= 1_00_000;
 
-        $thousands = intdiv($number, 1_000);      // thousands
-        $number %= 1_000;
+        $thousands = intdiv($rupees, 1_000);      // thousands
+        $rupees %= 1_000;
 
-        $hundreds = intdiv($number, 100);         // hundreds
-        $ones = $number % 100;                    // remaining two digits
+        $hundreds = intdiv($rupees, 100);         // hundreds
+        $ones = $rupees % 100;                    // remaining two digits
     }
 
     /**
      * Convert a two-digit number (0–99) to words.
+     * Handles values >= 100 by recursively processing hundreds.
      */
     private static function twoDigitToWords(int $n): string
     {
         if ($n < 20) {
             return self::WORDS_0_19[$n];
+        }
+
+        if ($n >= 100) {
+            $hundreds = intdiv($n, 100);
+            $remainder = $n % 100;
+            $word = self::WORDS_0_19[$hundreds] . ' Hundred';
+            if ($remainder > 0) {
+                $word .= ' ' . self::twoDigitToWords($remainder);
+            }
+            return $word;
         }
 
         $tens = intdiv($n, 10);
