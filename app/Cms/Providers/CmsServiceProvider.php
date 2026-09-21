@@ -26,6 +26,7 @@ use App\Cms\Infrastructure\Repositories\EloquentStaticPageReferenceRepository;
 use App\Cms\Infrastructure\Repositories\EloquentStaticPageRepository;
 use App\Cms\Infrastructure\Repositories\PublicMediaQuery;
 use App\Cms\Contracts\ImageUrlResolverContract;
+use App\Cms\Contracts\MediaGenerationContract;
 use App\Cms\Contracts\PublicMediaQueryContract;
 use App\Cms\Contracts\ResolvedPageCacheContract;
 use App\Cms\Contracts\StaticPageRendererContract;
@@ -36,16 +37,20 @@ use App\Cms\Domain\Repositories\StaticPageReferenceRepositoryContract;
 use App\Cms\Domain\Repositories\StaticPageRepositoryContract;
 use App\Cms\Infrastructure\Events\CmsDomainEvents;
 use App\Cms\Services\ContactInformationService;
+use App\Cms\Services\Flux2ImageGenerationService;
 use App\Cms\Services\HeroBannerService;
 use App\Cms\Services\ReferenceResolutionService;
 use App\Cms\Services\PublicMediaPresentationService;
+use App\Cms\Services\SubjectAuthenticityClassifier;
 use App\Cms\Services\AboutPageContentFactory;
 use App\Cms\Services\HomepageContentFactory;
 use App\Cms\Services\LegalPageContentFactory;
 use App\Cms\Services\StaticPageQueryService;
 use App\Cms\Services\StaticPageRendererService;
 use App\Cms\Services\StaticPageService;
+use App\Cms\Console\Commands\GenerateMediaCommand;
 use App\Persistence\Contracts\RepositoryRegistryContract;
+use App\Payments\Domain\Repositories\FileAssetRepositoryContract;
 use Illuminate\Contracts\Container\Container;
 use Illuminate\Support\ServiceProvider;
 
@@ -143,6 +148,25 @@ final class CmsServiceProvider extends ServiceProvider
         $app->singleton(ContactInformationService::class);
         $app->singleton(ReferenceResolutionService::class);
         $app->singleton(PublicMediaPresentationService::class);
+
+        // ════════════════════════════════════════════════════════════════
+        // AXIS H — Generated-media pipeline (Flux2 on the InvokeAI pod)
+        // ════════════════════════════════════════════════════════════════
+        $app->singleton(SubjectAuthenticityClassifier::class);
+        $app->singleton(MediaGenerationContract::class, static function (Container $app): MediaGenerationContract {
+            $config = $app['config']->get('media_generation', []);
+            return new Flux2ImageGenerationService(
+                $app->make(SubjectAuthenticityClassifier::class),
+                $app->make(FileAssetRepositoryContract::class),
+                $app->make(CmsMediaAssetRepositoryContract::class),
+                is_array($config) ? $config : [],
+            );
+        });
+        $app->bind(GenerateMediaCommand::class);
+        if ($this->app->runningInConsole()) {
+            $this->commands([GenerateMediaCommand::class]);
+        }
+
         $app->singleton(HomepageContentFactory::class);
         $app->singleton(AboutPageContentFactory::class);
         $app->singleton(LegalPageContentFactory::class);
@@ -225,8 +249,14 @@ final class CmsServiceProvider extends ServiceProvider
             AboutPageContentFactory::class,
             LegalPageContentFactory::class,
 
+            // Generated-media pipeline (Flux2)
+            MediaGenerationContract::class,
+            SubjectAuthenticityClassifier::class,
+            GenerateMediaCommand::class,
+
             // Repository registry contract (we depend on it in boot())
             RepositoryRegistryContract::class,
+            FileAssetRepositoryContract::class,
 
             // Module declaration (consumed by Shared's discovery)
             CmsModule::class,
