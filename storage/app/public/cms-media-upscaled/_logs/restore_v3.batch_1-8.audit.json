@@ -1,0 +1,210 @@
+{
+  "batch": [
+    1,
+    8
+  ],
+  "summary": {
+    "ok": 8,
+    "fail": 0,
+    "ai_used": 0,
+    "elapsed": 1.514178991317749
+  },
+  "files": [
+    {
+      "src": "49f8d3d7-1a57-473b-9978-36fda745bdc0.JPG",
+      "ok": true,
+      "out": "49f8d3d7-1a57-473b-9978-36fda745bdc0.jpg",
+      "original_size": [
+        963,
+        1280
+      ],
+      "final_size": [
+        1204,
+        1600
+      ],
+      "applied_phase3": [
+        "saturation_gentle"
+      ],
+      "applied_phase4": [
+        "denoise"
+      ],
+      "ai_used": false,
+      "ai_rejected": false,
+      "ssim": null,
+      "in_bytes": 188940,
+      "out_bytes": 341310,
+      "elapsed": 0.19843006134033203
+    },
+    {
+      "src": "4aabf6d1-2712-4722-b9ec-1cecfbb281c3.JPG",
+      "ok": true,
+      "out": "4aabf6d1-2712-4722-b9ec-1cecfbb281c3.jpg",
+      "original_size": [
+        1204,
+        1600
+      ],
+      "final_size": [
+        1204,
+        1600
+      ],
+      "applied_phase3": [
+        "white_balance"
+      ],
+      "applied_phase4": [
+        "denoise"
+      ],
+      "ai_used": false,
+      "ai_rejected": false,
+      "ssim": null,
+      "in_bytes": 365660,
+      "out_bytes": 398732,
+      "elapsed": 0.18773102760314941
+    },
+    {
+      "src": "68cfd1ef-7cc9-4547-b82b-b7bc14d7ed6f.JPG",
+      "ok": true,
+      "out": "68cfd1ef-7cc9-4547-b82b-b7bc14d7ed6f.jpg",
+      "original_size": [
+        1204,
+        1600
+      ],
+      "final_size": [
+        1204,
+        1600
+      ],
+      "applied_phase3": [
+        "exposure_gamma",
+        "white_balance"
+      ],
+      "applied_phase4": [
+        "denoise"
+      ],
+      "ai_used": false,
+      "ai_rejected": false,
+      "ssim": null,
+      "in_bytes": 298120,
+      "out_bytes": 441954,
+      "elapsed": 0.2023022174835205
+    },
+    {
+      "src": "8af17d99-6b22-4d29-979b-9a1d89505c2a.JPG",
+      "ok": true,
+      "out": "8af17d99-6b22-4d29-979b-9a1d89505c2a.jpg",
+      "original_size": [
+        1204,
+        1600
+      ],
+      "final_size": [
+        1204,
+        1600
+      ],
+      "applied_phase3": [
+        "exposure_gamma",
+        "white_balance"
+      ],
+      "applied_phase4": [
+        "denoise"
+      ],
+      "ai_used": false,
+      "ai_rejected": false,
+      "ssim": null,
+      "in_bytes": 375054,
+      "out_bytes": 417295,
+      "elapsed": 0.2060999870300293
+    },
+    {
+      "src": "908ed207-411e-43a2-8f8e-1092f662609a.JPG",
+      "ok": true,
+      "out": "908ed207-411e-43a2-8f8e-1092f662609a.jpg",
+      "original_size": [
+        963,
+        1280
+      ],
+      "final_size": [
+        1204,
+        1600
+      ],
+      "applied_phase3": [
+        "saturation_gentle"
+      ],
+      "applied_phase4": [
+        "denoise"
+      ],
+      "ai_used": false,
+      "ai_rejected": false,
+      "ssim": null,
+      "in_bytes": 178201,
+      "out_bytes": 321242,
+      "elapsed": 0.22422313690185547
+    },
+    {
+      "src": "GAUSHALA.jpg",
+      "ok": true,
+      "out": "GAUSHALA.jpg",
+      "original_size": [
+        1672,
+        941
+      ],
+      "final_size": [
+        1672,
+        941
+      ],
+      "applied_phase3": [],
+      "applied_phase4": [
+        "denoise"
+      ],
+      "ai_used": false,
+      "ai_rejected": false,
+      "ssim": null,
+      "in_bytes": 764474,
+      "out_bytes": 482535,
+      "elapsed": 0.12821102142333984
+    },
+    {
+      "src": "LAND.jpg",
+      "ok": true,
+      "out": "LAND.jpg",
+      "original_size": [
+        1574,
+        2100
+      ],
+      "final_size": [
+        1574,
+        2100
+      ],
+      "applied_phase3": [],
+      "applied_phase4": [],
+      "ai_used": false,
+      "ai_rejected": false,
+      "ssim": null,
+      "in_bytes": 2967853,
+      "out_bytes": 688122,
+      "elapsed": 0.1957380771636963
+    },
+    {
+      "src": "WELFARE.jpg",
+      "ok": true,
+      "out": "WELFARE.jpg",
+      "original_size": [
+        1672,
+        941
+      ],
+      "final_size": [
+        1672,
+        941
+      ],
+      "applied_phase3": [
+        "white_balance"
+      ],
+      "applied_phase4": [
+        "denoise"
+      ],
+      "ai_used": false,
+      "ai_rejected": false,
+      "ssim": null,
+      "in_bytes": 977385,
+      "out_bytes": 604285,
+      "elapsed": 0.16235613822937012
+    }
+  ]
+}

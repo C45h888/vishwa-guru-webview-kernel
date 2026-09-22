@@ -1,0 +1,4426 @@
+{
+  "summary": {
+    "total": 85,
+    "by_damage": {
+      "ok": 35,
+      "color_cast": 26,
+      "noisy": 25,
+      "low_saturation": 12,
+      "underexposed": 6,
+      "blurry": 1,
+      "overexposed": 1
+    },
+    "needs_phase3": 38,
+    "needs_phase4": 25,
+    "ai_detail_eligible": 1,
+    "face_heavy_count": 34,
+    "orientation_needs": 0
+  },
+  "files": [
+    {
+      "src": "49f8d3d7-1a57-473b-9978-36fda745bdc0.JPG",
+      "geometric": {
+        "width": 963,
+        "height": 1280,
+        "aspect_ratio": 0.752,
+        "exif_orientation": 1,
+        "orientation_normalized": false,
+        "format": "JPEG",
+        "mode": "RGB",
+        "file_bytes": 188940,
+        "megapixels": 1.23
+      },
+      "photometric": {
+        "brightness_mean": 111.7,
+        "brightness_p5": 35.7,
+        "brightness_p50": 114.0,
+        "brightness_p95": 186.0,
+        "dynamic_range_p5_95": 150.3,
+        "channel_mean_rgb": [
+          115.8,
+          113.7,
+          105.5
+        ],
+        "color_cast_rgb": [
+          4.1,
+          2.0,
+          -6.2
+        ],
+        "saturation_mean": 49.8
+      },
+      "noise_blur": {
+        "noise_score_highpass_stddev": 29.24,
+        "laplacian_variance": 198.19
+      },
+      "compression": {
+        "is_jpeg": true,
+        "blockiness_8x8": 1.289
+      },
+      "face_heavy_filename": false,
+      "damage": [
+        "low_saturation",
+        "noisy"
+      ],
+      "recommendation": {
+        "phase3_photometric": [
+          "saturation_gentle"
+        ],
+        "phase4_noise_artifacts": [
+          "denoise"
+        ],
+        "phase5_ai_detail": false,
+        "ai_blocked_reason": null
+      }
+    },
+    {
+      "src": "4aabf6d1-2712-4722-b9ec-1cecfbb281c3.JPG",
+      "geometric": {
+        "width": 1204,
+        "height": 1600,
+        "aspect_ratio": 0.752,
+        "exif_orientation": 1,
+        "orientation_normalized": false,
+        "format": "JPEG",
+        "mode": "RGB",
+        "file_bytes": 365660,
+        "megapixels": 1.93
+      },
+      "photometric": {
+        "brightness_mean": 80.1,
+        "brightness_p5": 17.3,
+        "brightness_p50": 53.7,
+        "brightness_p95": 205.0,
+        "dynamic_range_p5_95": 187.7,
+        "channel_mean_rgb": [
+          96.0,
+          82.3,
+          62.0
+        ],
+        "color_cast_rgb": [
+          15.9,
+          2.2,
+          -18.1
+        ],
+        "saturation_mean": 125.2
+      },
+      "noise_blur": {
+        "noise_score_highpass_stddev": 31.25,
+        "laplacian_variance": 183.75
+      },
+      "compression": {
+        "is_jpeg": true,
+        "blockiness_8x8": 1.361
+      },
+      "face_heavy_filename": false,
+      "damage": [
+        "color_cast",
+        "noisy"
+      ],
+      "recommendation": {
+        "phase3_photometric": [
+          "white_balance"
+        ],
+        "phase4_noise_artifacts": [
+          "denoise"
+        ],
+        "phase5_ai_detail": false,
+        "ai_blocked_reason": null
+      }
+    },
+    {
+      "src": "68cfd1ef-7cc9-4547-b82b-b7bc14d7ed6f.JPG",
+      "geometric": {
+        "width": 1204,
+        "height": 1600,
+        "aspect_ratio": 0.752,
+        "exif_orientation": 1,
+        "orientation_normalized": false,
+        "format": "JPEG",
+        "mode": "RGB",
+        "file_bytes": 298120,
+        "megapixels": 1.93
+      },
+      "photometric": {
+        "brightness_mean": 77.8,
+        "brightness_p5": 18.0,
+        "brightness_p50": 52.3,
+        "brightness_p95": 207.3,
+        "dynamic_range_p5_95": 189.3,
+        "channel_mean_rgb": [
+          93.2,
+          79.8,
+          60.3
+        ],
+        "color_cast_rgb": [
+          15.4,
+          2.0,
+          -17.5
+        ],
+        "saturation_mean": 123.9
+      },
+      "noise_blur": {
+        "noise_score_highpass_stddev": 36.93,
+        "laplacian_variance": 265.94
+      },
+      "compression": {
+        "is_jpeg": true,
+        "blockiness_8x8": 1.306
+      },
+      "face_heavy_filename": false,
+      "damage": [
+        "underexposed",
+        "color_cast",
+        "noisy"
+      ],
+      "recommendation": {
+        "phase3_photometric": [
+          "exposure_gamma",
+          "white_balance"
+        ],
+        "phase4_noise_artifacts": [
+          "denoise"
+        ],
+        "phase5_ai_detail": false,
+        "ai_blocked_reason": null
+      }
+    },
+    {
+      "src": "8af17d99-6b22-4d29-979b-9a1d89505c2a.JPG",
+      "geometric": {
+        "width": 1204,
+        "height": 1600,
+        "aspect_ratio": 0.752,
+        "exif_orientation": 1,
+        "orientation_normalized": false,
+        "format": "JPEG",
+        "mode": "RGB",
+        "file_bytes": 375054,
+        "megapixels": 1.93
+      },
+      "photometric": {
+        "brightness_mean": 78.6,
+        "brightness_p5": 18.0,
+        "brightness_p50": 53.0,
+        "brightness_p95": 209.3,
+        "dynamic_range_p5_95": 191.3,
+        "channel_mean_rgb": [
+          91.1,
+          81.3,
+          63.4
+        ],
+        "color_cast_rgb": [
+          12.5,
+          2.7,
+          -15.2
+        ],
+        "saturation_mean": 114.8
+      },
+      "noise_blur": {
+        "noise_score_highpass_stddev": 33.16,
+        "laplacian_variance": 207.48
+      },
+      "compression": {
+        "is_jpeg": true,
+        "blockiness_8x8": 1.334
+      },
+      "face_heavy_filename": false,
+      "damage": [
+        "underexposed",
+        "color_cast",
+        "noisy"
+      ],
+      "recommendation": {
+        "phase3_photometric": [
+          "exposure_gamma",
+          "white_balance"
+        ],
+        "phase4_noise_artifacts": [
+          "denoise"
+        ],
+        "phase5_ai_detail": false,
+        "ai_blocked_reason": null
+      }
+    },
+    {
+      "src": "908ed207-411e-43a2-8f8e-1092f662609a.JPG",
+      "geometric": {
+        "width": 963,
+        "height": 1280,
+        "aspect_ratio": 0.752,
+        "exif_orientation": 1,
+        "orientation_normalized": false,
+        "format": "JPEG",
+        "mode": "RGB",
+        "file_bytes": 178201,
+        "megapixels": 1.23
+      },
+      "photometric": {
+        "brightness_mean": 122.7,
+        "brightness_p5": 30.0,
+        "brightness_p50": 110.0,
+        "brightness_p95": 217.0,
+        "dynamic_range_p5_95": 187.0,
+        "channel_mean_rgb": [
+          127.2,
+          124.8,
+          116.2
+        ],
+        "color_cast_rgb": [
+          4.5,
+          2.0,
+          -6.5
+        ],
+        "saturation_mean": 49.4
+      },
+      "noise_blur": {
+        "noise_score_highpass_stddev": 29.06,
+        "laplacian_variance": 218.04
+      },
+      "compression": {
+        "is_jpeg": true,
+        "blockiness_8x8": 1.292
+      },
+      "face_heavy_filename": false,
+      "damage": [
+        "low_saturation",
+        "noisy"
+      ],
+      "recommendation": {
+        "phase3_photometric": [
+          "saturation_gentle"
+        ],
+        "phase4_noise_artifacts": [
+          "denoise"
+        ],
+        "phase5_ai_detail": false,
+        "ai_blocked_reason": null
+      }
+    },
+    {
+      "src": "GAUSHALA.jpg",
+      "geometric": {
+        "width": 1672,
+        "height": 941,
+        "aspect_ratio": 1.777,
+        "exif_orientation": 1,
+        "orientation_normalized": false,
+        "format": "JPEG",
+        "mode": "RGB",
+        "file_bytes": 764474,
+        "megapixels": 1.57
+      },
+      "photometric": {
+        "brightness_mean": 118.9,
+        "brightness_p5": 27.0,
+        "brightness_p50": 111.0,
+        "brightness_p95": 209.7,
+        "dynamic_range_p5_95": 182.7,
+        "channel_mean_rgb": [
+          125.6,
+          120.1,
+          110.9
+        ],
+        "color_cast_rgb": [
+          6.7,
+          1.3,
+          -7.9
+        ],
+        "saturation_mean": 78.7
+      },
+      "noise_blur": {
+        "noise_score_highpass_stddev": 53.84,
+        "laplacian_variance": 665.5
+      },
+      "compression": {
+        "is_jpeg": true,
+        "blockiness_8x8": 1.011
+      },
+      "face_heavy_filename": false,
+      "damage": [
+        "noisy"
+      ],
+      "recommendation": {
+        "phase3_photometric": [],
+        "phase4_noise_artifacts": [
+          "denoise"
+        ],
+        "phase5_ai_detail": false,
+        "ai_blocked_reason": null
+      }
+    },
+    {
+      "src": "LAND.jpg",
+      "geometric": {
+        "width": 1574,
+        "height": 2100,
+        "aspect_ratio": 0.75,
+        "exif_orientation": 1,
+        "orientation_normalized": false,
+        "format": "JPEG",
+        "mode": "RGB",
+        "file_bytes": 2967853,
+        "megapixels": 3.31
+      },
+      "photometric": {
+        "brightness_mean": 125.1,
+        "brightness_p5": 39.3,
+        "brightness_p50": 123.3,
+        "brightness_p95": 218.7,
+        "dynamic_range_p5_95": 179.3,
+        "channel_mean_rgb": [
+          124.5,
+          132.8,
+          117.9
+        ],
+        "color_cast_rgb": [
+          -0.5,
+          7.7,
+          -7.2
+        ],
+        "saturation_mean": 100.3
+      },
+      "noise_blur": {
+        "noise_score_highpass_stddev": 21.69,
+        "laplacian_variance": 88.44
+      },
+      "compression": {
+        "is_jpeg": true,
+        "blockiness_8x8": 1.001
+      },
+      "face_heavy_filename": false,
+      "damage": [
+        "ok"
+      ],
+      "recommendation": {
+        "phase3_photometric": [],
+        "phase4_noise_artifacts": [],
+        "phase5_ai_detail": false,
+        "ai_blocked_reason": null
+      }
+    },
+    {
+      "src": "WELFARE.jpg",
+      "geometric": {
+        "width": 1672,
+        "height": 941,
+        "aspect_ratio": 1.777,
+        "exif_orientation": 1,
+        "orientation_normalized": false,
+        "format": "JPEG",
+        "mode": "RGB",
+        "file_bytes": 977385,
+        "megapixels": 1.57
+      },
+      "photometric": {
+        "brightness_mean": 89.5,
+        "brightness_p5": 14.0,
+        "brightness_p50": 69.0,
+        "brightness_p95": 217.3,
+        "dynamic_range_p5_95": 203.3,
+        "channel_mean_rgb": [
+          101.9,
+          91.0,
+          75.7
+        ],
+        "color_cast_rgb": [
+          12.3,
+          1.5,
+          -13.8
+        ],
+        "saturation_mean": 103.0
+      },
+      "noise_blur": {
+        "noise_score_highpass_stddev": 66.68,
+        "laplacian_variance": 1273.09
+      },
+      "compression": {
+        "is_jpeg": true,
+        "blockiness_8x8": 1.0
+      },
+      "face_heavy_filename": false,
+      "damage": [
+        "color_cast",
+        "noisy"
+      ],
+      "recommendation": {
+        "phase3_photometric": [
+          "white_balance"
+        ],
+        "phase4_noise_artifacts": [
+          "denoise"
+        ],
+        "phase5_ai_detail": false,
+        "ai_blocked_reason": null
+      }
+    },
+    {
+      "src": "b7fc0a19-0055-47d5-abc9-b96ab83b5472.JPG",
+      "geometric": {
+        "width": 963,
+        "height": 1280,
+        "aspect_ratio": 0.752,
+        "exif_orientation": 1,
+        "orientation_normalized": false,
+        "format": "JPEG",
+        "mode": "RGB",
+        "file_bytes": 161253,
+        "megapixels": 1.23
+      },
+      "photometric": {
+        "brightness_mean": 133.8,
+        "brightness_p5": 44.3,
+        "brightness_p50": 151.0,
+        "brightness_p95": 195.3,
+        "dynamic_range_p5_95": 151.0,
+        "channel_mean_rgb": [
+          133.5,
+          135.4,
+          132.6
+        ],
+        "color_cast_rgb": [
+          -0.3,
+          1.5,
+          -1.3
+        ],
+        "saturation_mean": 48.3
+      },
+      "noise_blur": {
+        "noise_score_highpass_stddev": 26.88,
+        "laplacian_variance": 195.69
+      },
+      "compression": {
+        "is_jpeg": true,
+        "blockiness_8x8": 1.325
+      },
+      "face_heavy_filename": false,
+      "damage": [
+        "low_saturation"
+      ],
+      "recommendation": {
+        "phase3_photometric": [
+          "saturation_gentle"
+        ],
+        "phase4_noise_artifacts": [],
+        "phase5_ai_detail": false,
+        "ai_blocked_reason": null
+      }
+    },
+    {
+      "src": "edited-photo-02.jpg.webp",
+      "geometric": {
+        "width": 1026,
+        "height": 1600,
+        "aspect_ratio": 0.641,
+        "exif_orientation": 1,
+        "orientation_normalized": false,
+        "format": "WEBP",
+        "mode": "RGB",
+        "file_bytes": 118010,
+        "megapixels": 1.64
+      },
+      "photometric": {
+        "brightness_mean": 99.2,
+        "brightness_p5": 12.3,
+        "brightness_p50": 87.3,
+        "brightness_p95": 219.7,
+        "dynamic_range_p5_95": 207.3,
+        "channel_mean_rgb": [
+          100.0,
+          99.6,
+          98.1
+        ],
+        "color_cast_rgb": [
+          0.8,
+          0.4,
+          -1.1
+        ],
+        "saturation_mean": 62.8
+      },
+      "noise_blur": {
+        "noise_score_highpass_stddev": 22.34,
+        "laplacian_variance": 112.48
+      },
+      "compression": {
+        "is_jpeg": false,
+        "blockiness_8x8": 0.0
+      },
+      "face_heavy_filename": false,
+      "damage": [
+        "ok"
+      ],
+      "recommendation": {
+        "phase3_photometric": [],
+        "phase4_noise_artifacts": [],
+        "phase5_ai_detail": false,
+        "ai_blocked_reason": null
+      }
+    },
+    {
+      "src": "edited-photo-03.jpg.1x1.webp",
+      "geometric": {
+        "width": 1600,
+        "height": 1600,
+        "aspect_ratio": 1.0,
+        "exif_orientation": 1,
+        "orientation_normalized": false,
+        "format": "WEBP",
+        "mode": "RGB",
+        "file_bytes": 100272,
+        "megapixels": 2.56
+      },
+      "photometric": {
+        "brightness_mean": 105.4,
+        "brightness_p5": 5.7,
+        "brightness_p50": 101.7,
+        "brightness_p95": 222.0,
+        "dynamic_range_p5_95": 216.3,
+        "channel_mean_rgb": [
+          114.7,
+          104.8,
+          96.8
+        ],
+        "color_cast_rgb": [
+          9.3,
+          -0.6,
+          -8.6
+        ],
+        "saturation_mean": 52.0
+      },
+      "noise_blur": {
+        "noise_score_highpass_stddev": 7.96,
+        "laplacian_variance": 35.03
+      },
+      "compression": {
+        "is_jpeg": false,
+        "blockiness_8x8": 0.0
+      },
+      "face_heavy_filename": false,
+      "damage": [
+        "blurry"
+      ],
+      "recommendation": {
+        "phase3_photometric": [],
+        "phase4_noise_artifacts": [],
+        "phase5_ai_detail": true,
+        "ai_blocked_reason": null
+      }
+    },
+    {
+      "src": "edited-photo-04.jpg.16x9.webp",
+      "geometric": {
+        "width": 1280,
+        "height": 720,
+        "aspect_ratio": 1.778,
+        "exif_orientation": 1,
+        "orientation_normalized": false,
+        "format": "WEBP",
+        "mode": "RGB",
+        "file_bytes": 61908,
+        "megapixels": 0.92
+      },
+      "photometric": {
+        "brightness_mean": 102.3,
+        "brightness_p5": 10.7,
+        "brightness_p50": 88.7,
+        "brightness_p95": 219.3,
+        "dynamic_range_p5_95": 208.7,
+        "channel_mean_rgb": [
+          113.7,
+          97.4,
+          95.6
+        ],
+        "color_cast_rgb": [
+          11.4,
+          -4.8,
+          -6.6
+        ],
+        "saturation_mean": 86.2
+      },
+      "noise_blur": {
+        "noise_score_highpass_stddev": 19.11,
+        "laplacian_variance": 80.19
+      },
+      "compression": {
+        "is_jpeg": false,
+        "blockiness_8x8": 0.0
+      },
+      "face_heavy_filename": false,
+      "damage": [
+        "ok"
+      ],
+      "recommendation": {
+        "phase3_photometric": [],
+        "phase4_noise_artifacts": [],
+        "phase5_ai_detail": false,
+        "ai_blocked_reason": null
+      }
+    },
+    {
+      "src": "edited-photo-04.jpg.webp",
+      "geometric": {
+        "width": 1074,
+        "height": 1600,
+        "aspect_ratio": 0.671,
+        "exif_orientation": 1,
+        "orientation_normalized": false,
+        "format": "WEBP",
+        "mode": "RGB",
+        "file_bytes": 93048,
+        "megapixels": 1.72
+      },
+      "photometric": {
+        "brightness_mean": 97.9,
+        "brightness_p5": 12.3,
+        "brightness_p50": 85.3,
+        "brightness_p95": 219.0,
+        "dynamic_range_p5_95": 206.7,
+        "channel_mean_rgb": [
+          108.1,
+          92.5,
+          93.0
+        ],
+        "color_cast_rgb": [
+          10.3,
+          -5.4,
+          -4.9
+        ],
+        "saturation_mean": 84.4
+      },
+      "noise_blur": {
+        "noise_score_highpass_stddev": 13.78,
+        "laplacian_variance": 53.46
+      },
+      "compression": {
+        "is_jpeg": false,
+        "blockiness_8x8": 0.0
+      },
+      "face_heavy_filename": false,
+      "damage": [
+        "ok"
+      ],
+      "recommendation": {
+        "phase3_photometric": [],
+        "phase4_noise_artifacts": [],
+        "phase5_ai_detail": false,
+        "ai_blocked_reason": null
+      }
+    },
+    {
+      "src": "edited-photo-05.jpg.16x9.webp",
+      "geometric": {
+        "width": 1280,
+        "height": 720,
+        "aspect_ratio": 1.778,
+        "exif_orientation": 1,
+        "orientation_normalized": false,
+        "format": "WEBP",
+        "mode": "RGB",
+        "file_bytes": 47214,
+        "megapixels": 0.92
+      },
+      "photometric": {
+        "brightness_mean": 115.1,
+        "brightness_p5": 25.0,
+        "brightness_p50": 107.0,
+        "brightness_p95": 218.3,
+        "dynamic_range_p5_95": 193.3,
+        "channel_mean_rgb": [
+          117.6,
+          113.1,
+          114.5
+        ],
+        "color_cast_rgb": [
+          2.5,
+          -2.0,
+          -0.6
+        ],
+        "saturation_mean": 54.0
+      },
+      "noise_blur": {
+        "noise_score_highpass_stddev": 16.71,
+        "laplacian_variance": 104.47
+      },
+      "compression": {
+        "is_jpeg": false,
+        "blockiness_8x8": 0.0
+      },
+      "face_heavy_filename": false,
+      "damage": [
+        "ok"
+      ],
+      "recommendation": {
+        "phase3_photometric": [],
+        "phase4_noise_artifacts": [],
+        "phase5_ai_detail": false,
+        "ai_blocked_reason": null
+      }
+    },
+    {
+      "src": "edited-photo-05.jpg.webp",
+      "geometric": {
+        "width": 1600,
+        "height": 1050,
+        "aspect_ratio": 1.524,
+        "exif_orientation": 1,
+        "orientation_normalized": false,
+        "format": "WEBP",
+        "mode": "RGB",
+        "file_bytes": 167992,
+        "megapixels": 1.68
+      },
+      "photometric": {
+        "brightness_mean": 117.3,
+        "brightness_p5": 26.7,
+        "brightness_p50": 112.3,
+        "brightness_p95": 218.3,
+        "dynamic_range_p5_95": 191.7,
+        "channel_mean_rgb": [
+          118.8,
+          115.3,
+          117.8
+        ],
+        "color_cast_rgb": [
+          1.5,
+          -2.0,
+          0.5
+        ],
+        "saturation_mean": 54.4
+      },
+      "noise_blur": {
+        "noise_score_highpass_stddev": 12.8,
+        "laplacian_variance": 73.14
+      },
+      "compression": {
+        "is_jpeg": false,
+        "blockiness_8x8": 0.0
+      },
+      "face_heavy_filename": false,
+      "damage": [
+        "ok"
+      ],
+      "recommendation": {
+        "phase3_photometric": [],
+        "phase4_noise_artifacts": [],
+        "phase5_ai_detail": false,
+        "ai_blocked_reason": null
+      }
+    },
+    {
+      "src": "edited-photo-06.jpg.webp",
+      "geometric": {
+        "width": 1600,
+        "height": 1102,
+        "aspect_ratio": 1.452,
+        "exif_orientation": 1,
+        "orientation_normalized": false,
+        "format": "WEBP",
+        "mode": "RGB",
+        "file_bytes": 237344,
+        "megapixels": 1.76
+      },
+      "photometric": {
+        "brightness_mean": 113.4,
+        "brightness_p5": 22.7,
+        "brightness_p50": 106.0,
+        "brightness_p95": 220.0,
+        "dynamic_range_p5_95": 197.3,
+        "channel_mean_rgb": [
+          126.8,
+          108.6,
+          104.9
+        ],
+        "color_cast_rgb": [
+          13.4,
+          -4.9,
+          -8.5
+        ],
+        "saturation_mean": 70.5
+      },
+      "noise_blur": {
+        "noise_score_highpass_stddev": 15.68,
+        "laplacian_variance": 72.71
+      },
+      "compression": {
+        "is_jpeg": false,
+        "blockiness_8x8": 0.0
+      },
+      "face_heavy_filename": false,
+      "damage": [
+        "color_cast"
+      ],
+      "recommendation": {
+        "phase3_photometric": [
+          "white_balance"
+        ],
+        "phase4_noise_artifacts": [],
+        "phase5_ai_detail": false,
+        "ai_blocked_reason": null
+      }
+    },
+    {
+      "src": "edited-photo-07.jpg.webp",
+      "geometric": {
+        "width": 1600,
+        "height": 1007,
+        "aspect_ratio": 1.589,
+        "exif_orientation": 1,
+        "orientation_normalized": false,
+        "format": "WEBP",
+        "mode": "RGB",
+        "file_bytes": 241122,
+        "megapixels": 1.61
+      },
+      "photometric": {
+        "brightness_mean": 127.2,
+        "brightness_p5": 17.7,
+        "brightness_p50": 147.0,
+        "brightness_p95": 213.0,
+        "dynamic_range_p5_95": 195.3,
+        "channel_mean_rgb": [
+          128.3,
+          125.8,
+          127.6
+        ],
+        "color_cast_rgb": [
+          1.1,
+          -1.5,
+          0.4
+        ],
+        "saturation_mean": 46.1
+      },
+      "noise_blur": {
+        "noise_score_highpass_stddev": 22.66,
+        "laplacian_variance": 99.29
+      },
+      "compression": {
+        "is_jpeg": false,
+        "blockiness_8x8": 0.0
+      },
+      "face_heavy_filename": false,
+      "damage": [
+        "low_saturation"
+      ],
+      "recommendation": {
+        "phase3_photometric": [
+          "saturation_gentle"
+        ],
+        "phase4_noise_artifacts": [],
+        "phase5_ai_detail": false,
+        "ai_blocked_reason": null
+      }
+    },
+    {
+      "src": "edited-photo-08.jpg.webp",
+      "geometric": {
+        "width": 1600,
+        "height": 1048,
+        "aspect_ratio": 1.527,
+        "exif_orientation": 1,
+        "orientation_normalized": false,
+        "format": "WEBP",
+        "mode": "RGB",
+        "file_bytes": 223644,
+        "megapixels": 1.68
+      },
+      "photometric": {
+        "brightness_mean": 123.8,
+        "brightness_p5": 16.7,
+        "brightness_p50": 143.3,
+        "brightness_p95": 213.0,
+        "dynamic_range_p5_95": 196.3,
+        "channel_mean_rgb": [
+          125.6,
+          122.1,
+          123.7
+        ],
+        "color_cast_rgb": [
+          1.8,
+          -1.7,
+          -0.1
+        ],
+        "saturation_mean": 50.4
+      },
+      "noise_blur": {
+        "noise_score_highpass_stddev": 22.26,
+        "laplacian_variance": 94.85
+      },
+      "compression": {
+        "is_jpeg": false,
+        "blockiness_8x8": 0.0
+      },
+      "face_heavy_filename": false,
+      "damage": [
+        "ok"
+      ],
+      "recommendation": {
+        "phase3_photometric": [],
+        "phase4_noise_artifacts": [],
+        "phase5_ai_detail": false,
+        "ai_blocked_reason": null
+      }
+    },
+    {
+      "src": "edited-photo-09.jpg.webp",
+      "geometric": {
+        "width": 1600,
+        "height": 1010,
+        "aspect_ratio": 1.584,
+        "exif_orientation": 1,
+        "orientation_normalized": false,
+        "format": "WEBP",
+        "mode": "RGB",
+        "file_bytes": 366882,
+        "megapixels": 1.62
+      },
+      "photometric": {
+        "brightness_mean": 104.4,
+        "brightness_p5": 27.0,
+        "brightness_p50": 74.3,
+        "brightness_p95": 225.3,
+        "dynamic_range_p5_95": 198.3,
+        "channel_mean_rgb": [
+          110.1,
+          97.7,
+          105.2
+        ],
+        "color_cast_rgb": [
+          5.8,
+          -6.6,
+          0.8
+        ],
+        "saturation_mean": 130.8
+      },
+      "noise_blur": {
+        "noise_score_highpass_stddev": 26.41,
+        "laplacian_variance": 138.37
+      },
+      "compression": {
+        "is_jpeg": false,
+        "blockiness_8x8": 0.0
+      },
+      "face_heavy_filename": false,
+      "damage": [
+        "ok"
+      ],
+      "recommendation": {
+        "phase3_photometric": [],
+        "phase4_noise_artifacts": [],
+        "phase5_ai_detail": false,
+        "ai_blocked_reason": null
+      }
+    },
+    {
+      "src": "edited-photo-10.jpg.webp",
+      "geometric": {
+        "width": 970,
+        "height": 1600,
+        "aspect_ratio": 0.606,
+        "exif_orientation": 1,
+        "orientation_normalized": false,
+        "format": "WEBP",
+        "mode": "RGB",
+        "file_bytes": 135826,
+        "megapixels": 1.55
+      },
+      "photometric": {
+        "brightness_mean": 110.5,
+        "brightness_p5": 32.7,
+        "brightness_p50": 93.0,
+        "brightness_p95": 211.7,
+        "dynamic_range_p5_95": 179.0,
+        "channel_mean_rgb": [
+          123.6,
+          106.3,
+          101.5
+        ],
+        "color_cast_rgb": [
+          13.1,
+          -4.1,
+          -9.0
+        ],
+        "saturation_mean": 108.6
+      },
+      "noise_blur": {
+        "noise_score_highpass_stddev": 18.57,
+        "laplacian_variance": 87.42
+      },
+      "compression": {
+        "is_jpeg": false,
+        "blockiness_8x8": 0.0
+      },
+      "face_heavy_filename": false,
+      "damage": [
+        "color_cast"
+      ],
+      "recommendation": {
+        "phase3_photometric": [
+          "white_balance"
+        ],
+        "phase4_noise_artifacts": [],
+        "phase5_ai_detail": false,
+        "ai_blocked_reason": null
+      }
+    },
+    {
+      "src": "edited-photo-11.jpg.webp",
+      "geometric": {
+        "width": 1600,
+        "height": 971,
+        "aspect_ratio": 1.648,
+        "exif_orientation": 1,
+        "orientation_normalized": false,
+        "format": "WEBP",
+        "mode": "RGB",
+        "file_bytes": 312180,
+        "megapixels": 1.55
+      },
+      "photometric": {
+        "brightness_mean": 138.0,
+        "brightness_p5": 28.7,
+        "brightness_p50": 146.7,
+        "brightness_p95": 228.3,
+        "dynamic_range_p5_95": 199.7,
+        "channel_mean_rgb": [
+          142.3,
+          130.6,
+          141.2
+        ],
+        "color_cast_rgb": [
+          4.2,
+          -7.4,
+          3.2
+        ],
+        "saturation_mean": 84.6
+      },
+      "noise_blur": {
+        "noise_score_highpass_stddev": 22.82,
+        "laplacian_variance": 96.07
+      },
+      "compression": {
+        "is_jpeg": false,
+        "blockiness_8x8": 0.0
+      },
+      "face_heavy_filename": false,
+      "damage": [
+        "ok"
+      ],
+      "recommendation": {
+        "phase3_photometric": [],
+        "phase4_noise_artifacts": [],
+        "phase5_ai_detail": false,
+        "ai_blocked_reason": null
+      }
+    },
+    {
+      "src": "edited-photo-12.jpg.webp",
+      "geometric": {
+        "width": 1085,
+        "height": 1600,
+        "aspect_ratio": 0.678,
+        "exif_orientation": 1,
+        "orientation_normalized": false,
+        "format": "WEBP",
+        "mode": "RGB",
+        "file_bytes": 119164,
+        "megapixels": 1.74
+      },
+      "photometric": {
+        "brightness_mean": 149.7,
+        "brightness_p5": 52.7,
+        "brightness_p50": 166.0,
+        "brightness_p95": 218.7,
+        "dynamic_range_p5_95": 166.0,
+        "channel_mean_rgb": [
+          168.1,
+          140.7,
+          140.2
+        ],
+        "color_cast_rgb": [
+          18.5,
+          -9.0,
+          -9.5
+        ],
+        "saturation_mean": 59.8
+      },
+      "noise_blur": {
+        "noise_score_highpass_stddev": 15.4,
+        "laplacian_variance": 112.52
+      },
+      "compression": {
+        "is_jpeg": false,
+        "blockiness_8x8": 0.0
+      },
+      "face_heavy_filename": false,
+      "damage": [
+        "color_cast"
+      ],
+      "recommendation": {
+        "phase3_photometric": [
+          "white_balance"
+        ],
+        "phase4_noise_artifacts": [],
+        "phase5_ai_detail": false,
+        "ai_blocked_reason": null
+      }
+    },
+    {
+      "src": "edited-photo-13.jpg.webp",
+      "geometric": {
+        "width": 1600,
+        "height": 1143,
+        "aspect_ratio": 1.4,
+        "exif_orientation": 1,
+        "orientation_normalized": false,
+        "format": "WEBP",
+        "mode": "RGB",
+        "file_bytes": 392184,
+        "megapixels": 1.83
+      },
+      "photometric": {
+        "brightness_mean": 111.2,
+        "brightness_p5": 50.7,
+        "brightness_p50": 100.7,
+        "brightness_p95": 202.0,
+        "dynamic_range_p5_95": 151.3,
+        "channel_mean_rgb": [
+          110.8,
+          97.5,
+          125.4
+        ],
+        "color_cast_rgb": [
+          -0.4,
+          -13.7,
+          14.1
+        ],
+        "saturation_mean": 108.4
+      },
+      "noise_blur": {
+        "noise_score_highpass_stddev": 21.72,
+        "laplacian_variance": 127.18
+      },
+      "compression": {
+        "is_jpeg": false,
+        "blockiness_8x8": 0.0
+      },
+      "face_heavy_filename": false,
+      "damage": [
+        "color_cast"
+      ],
+      "recommendation": {
+        "phase3_photometric": [
+          "white_balance"
+        ],
+        "phase4_noise_artifacts": [],
+        "phase5_ai_detail": false,
+        "ai_blocked_reason": null
+      }
+    },
+    {
+      "src": "edited-photo-14.jpg.webp",
+      "geometric": {
+        "width": 1600,
+        "height": 940,
+        "aspect_ratio": 1.702,
+        "exif_orientation": 1,
+        "orientation_normalized": false,
+        "format": "WEBP",
+        "mode": "RGB",
+        "file_bytes": 248686,
+        "megapixels": 1.5
+      },
+      "photometric": {
+        "brightness_mean": 147.1,
+        "brightness_p5": 46.7,
+        "brightness_p50": 156.0,
+        "brightness_p95": 222.7,
+        "dynamic_range_p5_95": 176.0,
+        "channel_mean_rgb": [
+          165.6,
+          141.3,
+          134.4
+        ],
+        "color_cast_rgb": [
+          18.5,
+          -5.8,
+          -12.7
+        ],
+        "saturation_mean": 71.8
+      },
+      "noise_blur": {
+        "noise_score_highpass_stddev": 27.26,
+        "laplacian_variance": 188.31
+      },
+      "compression": {
+        "is_jpeg": false,
+        "blockiness_8x8": 0.0
+      },
+      "face_heavy_filename": false,
+      "damage": [
+        "color_cast"
+      ],
+      "recommendation": {
+        "phase3_photometric": [
+          "white_balance"
+        ],
+        "phase4_noise_artifacts": [],
+        "phase5_ai_detail": false,
+        "ai_blocked_reason": null
+      }
+    },
+    {
+      "src": "edited-photo-15.jpg.webp",
+      "geometric": {
+        "width": 1600,
+        "height": 1019,
+        "aspect_ratio": 1.57,
+        "exif_orientation": 1,
+        "orientation_normalized": false,
+        "format": "WEBP",
+        "mode": "RGB",
+        "file_bytes": 355758,
+        "megapixels": 1.63
+      },
+      "photometric": {
+        "brightness_mean": 105.0,
+        "brightness_p5": 27.0,
+        "brightness_p50": 75.3,
+        "brightness_p95": 225.7,
+        "dynamic_range_p5_95": 198.7,
+        "channel_mean_rgb": [
+          111.8,
+          98.4,
+          104.8
+        ],
+        "color_cast_rgb": [
+          6.8,
+          -6.6,
+          -0.2
+        ],
+        "saturation_mean": 130.4
+      },
+      "noise_blur": {
+        "noise_score_highpass_stddev": 25.73,
+        "laplacian_variance": 119.35
+      },
+      "compression": {
+        "is_jpeg": false,
+        "blockiness_8x8": 0.0
+      },
+      "face_heavy_filename": false,
+      "damage": [
+        "ok"
+      ],
+      "recommendation": {
+        "phase3_photometric": [],
+        "phase4_noise_artifacts": [],
+        "phase5_ai_detail": false,
+        "ai_blocked_reason": null
+      }
+    },
+    {
+      "src": "edited-photo-16.jpg.webp",
+      "geometric": {
+        "width": 1081,
+        "height": 1600,
+        "aspect_ratio": 0.676,
+        "exif_orientation": 1,
+        "orientation_normalized": false,
+        "format": "WEBP",
+        "mode": "RGB",
+        "file_bytes": 187376,
+        "megapixels": 1.73
+      },
+      "photometric": {
+        "brightness_mean": 125.7,
+        "brightness_p5": 26.7,
+        "brightness_p50": 122.0,
+        "brightness_p95": 226.3,
+        "dynamic_range_p5_95": 199.7,
+        "channel_mean_rgb": [
+          133.1,
+          122.8,
+          121.2
+        ],
+        "color_cast_rgb": [
+          7.4,
+          -2.9,
+          -4.5
+        ],
+        "saturation_mean": 53.3
+      },
+      "noise_blur": {
+        "noise_score_highpass_stddev": 34.57,
+        "laplacian_variance": 227.96
+      },
+      "compression": {
+        "is_jpeg": false,
+        "blockiness_8x8": 0.0
+      },
+      "face_heavy_filename": false,
+      "damage": [
+        "noisy"
+      ],
+      "recommendation": {
+        "phase3_photometric": [],
+        "phase4_noise_artifacts": [
+          "denoise"
+        ],
+        "phase5_ai_detail": false,
+        "ai_blocked_reason": null
+      }
+    },
+    {
+      "src": "edited-photo-17.jpg.webp",
+      "geometric": {
+        "width": 1600,
+        "height": 1090,
+        "aspect_ratio": 1.468,
+        "exif_orientation": 1,
+        "orientation_normalized": false,
+        "format": "WEBP",
+        "mode": "RGB",
+        "file_bytes": 213970,
+        "megapixels": 1.74
+      },
+      "photometric": {
+        "brightness_mean": 155.4,
+        "brightness_p5": 34.3,
+        "brightness_p50": 187.3,
+        "brightness_p95": 224.3,
+        "dynamic_range_p5_95": 190.0,
+        "channel_mean_rgb": [
+          167.8,
+          150.2,
+          148.1
+        ],
+        "color_cast_rgb": [
+          12.5,
+          -5.2,
+          -7.3
+        ],
+        "saturation_mean": 61.9
+      },
+      "noise_blur": {
+        "noise_score_highpass_stddev": 16.02,
+        "laplacian_variance": 121.37
+      },
+      "compression": {
+        "is_jpeg": false,
+        "blockiness_8x8": 0.0
+      },
+      "face_heavy_filename": false,
+      "damage": [
+        "color_cast"
+      ],
+      "recommendation": {
+        "phase3_photometric": [
+          "white_balance"
+        ],
+        "phase4_noise_artifacts": [],
+        "phase5_ai_detail": false,
+        "ai_blocked_reason": null
+      }
+    },
+    {
+      "src": "edited-photo-18.jpg.webp",
+      "geometric": {
+        "width": 1600,
+        "height": 1023,
+        "aspect_ratio": 1.564,
+        "exif_orientation": 1,
+        "orientation_normalized": false,
+        "format": "WEBP",
+        "mode": "RGB",
+        "file_bytes": 257850,
+        "megapixels": 1.64
+      },
+      "photometric": {
+        "brightness_mean": 118.0,
+        "brightness_p5": 30.7,
+        "brightness_p50": 105.0,
+        "brightness_p95": 226.3,
+        "dynamic_range_p5_95": 195.7,
+        "channel_mean_rgb": [
+          122.4,
+          113.8,
+          117.8
+        ],
+        "color_cast_rgb": [
+          4.4,
+          -4.2,
+          -0.2
+        ],
+        "saturation_mean": 54.3
+      },
+      "noise_blur": {
+        "noise_score_highpass_stddev": 19.82,
+        "laplacian_variance": 82.99
+      },
+      "compression": {
+        "is_jpeg": false,
+        "blockiness_8x8": 0.0
+      },
+      "face_heavy_filename": false,
+      "damage": [
+        "ok"
+      ],
+      "recommendation": {
+        "phase3_photometric": [],
+        "phase4_noise_artifacts": [],
+        "phase5_ai_detail": false,
+        "ai_blocked_reason": null
+      }
+    },
+    {
+      "src": "edited-photo-19.jpg.webp",
+      "geometric": {
+        "width": 1600,
+        "height": 1072,
+        "aspect_ratio": 1.493,
+        "exif_orientation": 1,
+        "orientation_normalized": false,
+        "format": "WEBP",
+        "mode": "RGB",
+        "file_bytes": 322918,
+        "megapixels": 1.72
+      },
+      "photometric": {
+        "brightness_mean": 125.7,
+        "brightness_p5": 26.7,
+        "brightness_p50": 122.0,
+        "brightness_p95": 226.7,
+        "dynamic_range_p5_95": 200.0,
+        "channel_mean_rgb": [
+          133.2,
+          122.8,
+          121.1
+        ],
+        "color_cast_rgb": [
+          7.5,
+          -2.9,
+          -4.6
+        ],
+        "saturation_mean": 53.4
+      },
+      "noise_blur": {
+        "noise_score_highpass_stddev": 34.71,
+        "laplacian_variance": 229.2
+      },
+      "compression": {
+        "is_jpeg": false,
+        "blockiness_8x8": 0.0
+      },
+      "face_heavy_filename": false,
+      "damage": [
+        "noisy"
+      ],
+      "recommendation": {
+        "phase3_photometric": [],
+        "phase4_noise_artifacts": [
+          "denoise"
+        ],
+        "phase5_ai_detail": false,
+        "ai_blocked_reason": null
+      }
+    },
+    {
+      "src": "edited-photo-20.jpg.1x1.webp",
+      "geometric": {
+        "width": 1000,
+        "height": 1000,
+        "aspect_ratio": 1.0,
+        "exif_orientation": 1,
+        "orientation_normalized": false,
+        "format": "WEBP",
+        "mode": "RGB",
+        "file_bytes": 70748,
+        "megapixels": 1.0
+      },
+      "photometric": {
+        "brightness_mean": 118.0,
+        "brightness_p5": 14.0,
+        "brightness_p50": 138.3,
+        "brightness_p95": 212.3,
+        "dynamic_range_p5_95": 198.3,
+        "channel_mean_rgb": [
+          120.7,
+          116.6,
+          116.8
+        ],
+        "color_cast_rgb": [
+          2.7,
+          -1.4,
+          -1.2
+        ],
+        "saturation_mean": 54.2
+      },
+      "noise_blur": {
+        "noise_score_highpass_stddev": 25.14,
+        "laplacian_variance": 122.28
+      },
+      "compression": {
+        "is_jpeg": false,
+        "blockiness_8x8": 0.0
+      },
+      "face_heavy_filename": false,
+      "damage": [
+        "ok"
+      ],
+      "recommendation": {
+        "phase3_photometric": [],
+        "phase4_noise_artifacts": [],
+        "phase5_ai_detail": false,
+        "ai_blocked_reason": null
+      }
+    },
+    {
+      "src": "edited-photo-20.jpg.webp",
+      "geometric": {
+        "width": 1600,
+        "height": 1041,
+        "aspect_ratio": 1.537,
+        "exif_orientation": 1,
+        "orientation_normalized": false,
+        "format": "WEBP",
+        "mode": "RGB",
+        "file_bytes": 249758,
+        "megapixels": 1.67
+      },
+      "photometric": {
+        "brightness_mean": 123.9,
+        "brightness_p5": 17.0,
+        "brightness_p50": 142.3,
+        "brightness_p95": 213.0,
+        "dynamic_range_p5_95": 196.0,
+        "channel_mean_rgb": [
+          125.4,
+          122.3,
+          124.1
+        ],
+        "color_cast_rgb": [
+          1.4,
+          -1.6,
+          0.2
+        ],
+        "saturation_mean": 48.6
+      },
+      "noise_blur": {
+        "noise_score_highpass_stddev": 22.66,
+        "laplacian_variance": 97.21
+      },
+      "compression": {
+        "is_jpeg": false,
+        "blockiness_8x8": 0.0
+      },
+      "face_heavy_filename": false,
+      "damage": [
+        "low_saturation"
+      ],
+      "recommendation": {
+        "phase3_photometric": [
+          "saturation_gentle"
+        ],
+        "phase4_noise_artifacts": [],
+        "phase5_ai_detail": false,
+        "ai_blocked_reason": null
+      }
+    },
+    {
+      "src": "edited-photo-21.jpg.webp",
+      "geometric": {
+        "width": 1600,
+        "height": 1107,
+        "aspect_ratio": 1.445,
+        "exif_orientation": 1,
+        "orientation_normalized": false,
+        "format": "WEBP",
+        "mode": "RGB",
+        "file_bytes": 423992,
+        "megapixels": 1.77
+      },
+      "photometric": {
+        "brightness_mean": 126.7,
+        "brightness_p5": 36.3,
+        "brightness_p50": 117.3,
+        "brightness_p95": 226.0,
+        "dynamic_range_p5_95": 189.7,
+        "channel_mean_rgb": [
+          135.1,
+          117.4,
+          127.4
+        ],
+        "color_cast_rgb": [
+          8.5,
+          -9.2,
+          0.8
+        ],
+        "saturation_mean": 58.8
+      },
+      "noise_blur": {
+        "noise_score_highpass_stddev": 22.67,
+        "laplacian_variance": 147.98
+      },
+      "compression": {
+        "is_jpeg": false,
+        "blockiness_8x8": 0.0
+      },
+      "face_heavy_filename": false,
+      "damage": [
+        "ok"
+      ],
+      "recommendation": {
+        "phase3_photometric": [],
+        "phase4_noise_artifacts": [],
+        "phase5_ai_detail": false,
+        "ai_blocked_reason": null
+      }
+    },
+    {
+      "src": "edited-photo-22.jpg.webp",
+      "geometric": {
+        "width": 1600,
+        "height": 1036,
+        "aspect_ratio": 1.544,
+        "exif_orientation": 1,
+        "orientation_normalized": false,
+        "format": "WEBP",
+        "mode": "RGB",
+        "file_bytes": 264134,
+        "megapixels": 1.66
+      },
+      "photometric": {
+        "brightness_mean": 148.7,
+        "brightness_p5": 47.7,
+        "brightness_p50": 161.0,
+        "brightness_p95": 222.3,
+        "dynamic_range_p5_95": 174.7,
+        "channel_mean_rgb": [
+          168.5,
+          143.0,
+          134.7
+        ],
+        "color_cast_rgb": [
+          19.7,
+          -5.7,
+          -14.0
+        ],
+        "saturation_mean": 72.8
+      },
+      "noise_blur": {
+        "noise_score_highpass_stddev": 25.92,
+        "laplacian_variance": 169.22
+      },
+      "compression": {
+        "is_jpeg": false,
+        "blockiness_8x8": 0.0
+      },
+      "face_heavy_filename": false,
+      "damage": [
+        "color_cast"
+      ],
+      "recommendation": {
+        "phase3_photometric": [
+          "white_balance"
+        ],
+        "phase4_noise_artifacts": [],
+        "phase5_ai_detail": false,
+        "ai_blocked_reason": null
+      }
+    },
+    {
+      "src": "edited-photo-23.jpg.webp",
+      "geometric": {
+        "width": 1600,
+        "height": 1062,
+        "aspect_ratio": 1.507,
+        "exif_orientation": 1,
+        "orientation_normalized": false,
+        "format": "WEBP",
+        "mode": "RGB",
+        "file_bytes": 353860,
+        "megapixels": 1.7
+      },
+      "photometric": {
+        "brightness_mean": 124.1,
+        "brightness_p5": 49.0,
+        "brightness_p50": 109.3,
+        "brightness_p95": 217.0,
+        "dynamic_range_p5_95": 168.0,
+        "channel_mean_rgb": [
+          129.8,
+          115.1,
+          127.2
+        ],
+        "color_cast_rgb": [
+          5.8,
+          -8.9,
+          3.2
+        ],
+        "saturation_mean": 60.5
+      },
+      "noise_blur": {
+        "noise_score_highpass_stddev": 20.8,
+        "laplacian_variance": 119.81
+      },
+      "compression": {
+        "is_jpeg": false,
+        "blockiness_8x8": 0.0
+      },
+      "face_heavy_filename": false,
+      "damage": [
+        "ok"
+      ],
+      "recommendation": {
+        "phase3_photometric": [],
+        "phase4_noise_artifacts": [],
+        "phase5_ai_detail": false,
+        "ai_blocked_reason": null
+      }
+    },
+    {
+      "src": "edited-photo-24.jpg.webp",
+      "geometric": {
+        "width": 1600,
+        "height": 1075,
+        "aspect_ratio": 1.488,
+        "exif_orientation": 1,
+        "orientation_normalized": false,
+        "format": "WEBP",
+        "mode": "RGB",
+        "file_bytes": 415408,
+        "megapixels": 1.72
+      },
+      "photometric": {
+        "brightness_mean": 144.8,
+        "brightness_p5": 46.3,
+        "brightness_p50": 154.0,
+        "brightness_p95": 228.0,
+        "dynamic_range_p5_95": 181.7,
+        "channel_mean_rgb": [
+          158.7,
+          135.2,
+          140.3
+        ],
+        "color_cast_rgb": [
+          14.0,
+          -9.6,
+          -4.4
+        ],
+        "saturation_mean": 60.3
+      },
+      "noise_blur": {
+        "noise_score_highpass_stddev": 25.15,
+        "laplacian_variance": 165.62
+      },
+      "compression": {
+        "is_jpeg": false,
+        "blockiness_8x8": 0.0
+      },
+      "face_heavy_filename": false,
+      "damage": [
+        "color_cast"
+      ],
+      "recommendation": {
+        "phase3_photometric": [
+          "white_balance"
+        ],
+        "phase4_noise_artifacts": [],
+        "phase5_ai_detail": false,
+        "ai_blocked_reason": null
+      }
+    },
+    {
+      "src": "edited-photo-25.jpg.16x9.webp",
+      "geometric": {
+        "width": 1280,
+        "height": 720,
+        "aspect_ratio": 1.778,
+        "exif_orientation": 1,
+        "orientation_normalized": false,
+        "format": "WEBP",
+        "mode": "RGB",
+        "file_bytes": 102314,
+        "megapixels": 0.92
+      },
+      "photometric": {
+        "brightness_mean": 113.4,
+        "brightness_p5": 10.3,
+        "brightness_p50": 119.0,
+        "brightness_p95": 228.7,
+        "dynamic_range_p5_95": 218.3,
+        "channel_mean_rgb": [
+          122.6,
+          107.4,
+          110.2
+        ],
+        "color_cast_rgb": [
+          9.2,
+          -6.0,
+          -3.2
+        ],
+        "saturation_mean": 100.8
+      },
+      "noise_blur": {
+        "noise_score_highpass_stddev": 29.66,
+        "laplacian_variance": 148.65
+      },
+      "compression": {
+        "is_jpeg": false,
+        "blockiness_8x8": 0.0
+      },
+      "face_heavy_filename": false,
+      "damage": [
+        "noisy"
+      ],
+      "recommendation": {
+        "phase3_photometric": [],
+        "phase4_noise_artifacts": [
+          "denoise"
+        ],
+        "phase5_ai_detail": false,
+        "ai_blocked_reason": null
+      }
+    },
+    {
+      "src": "edited-photo-25.jpg.webp",
+      "geometric": {
+        "width": 965,
+        "height": 1600,
+        "aspect_ratio": 0.603,
+        "exif_orientation": 1,
+        "orientation_normalized": false,
+        "format": "WEBP",
+        "mode": "RGB",
+        "file_bytes": 154098,
+        "megapixels": 1.54
+      },
+      "photometric": {
+        "brightness_mean": 112.6,
+        "brightness_p5": 9.7,
+        "brightness_p50": 121.0,
+        "brightness_p95": 228.3,
+        "dynamic_range_p5_95": 218.7,
+        "channel_mean_rgb": [
+          124.0,
+          105.5,
+          108.4
+        ],
+        "color_cast_rgb": [
+          11.4,
+          -7.2,
+          -4.2
+        ],
+        "saturation_mean": 103.4
+      },
+      "noise_blur": {
+        "noise_score_highpass_stddev": 22.25,
+        "laplacian_variance": 88.28
+      },
+      "compression": {
+        "is_jpeg": false,
+        "blockiness_8x8": 0.0
+      },
+      "face_heavy_filename": false,
+      "damage": [
+        "ok"
+      ],
+      "recommendation": {
+        "phase3_photometric": [],
+        "phase4_noise_artifacts": [],
+        "phase5_ai_detail": false,
+        "ai_blocked_reason": null
+      }
+    },
+    {
+      "src": "edited-photo-26.jpg.3x4.webp",
+      "geometric": {
+        "width": 900,
+        "height": 1200,
+        "aspect_ratio": 0.75,
+        "exif_orientation": 1,
+        "orientation_normalized": false,
+        "format": "WEBP",
+        "mode": "RGB",
+        "file_bytes": 119132,
+        "megapixels": 1.08
+      },
+      "photometric": {
+        "brightness_mean": 110.5,
+        "brightness_p5": 38.7,
+        "brightness_p50": 92.3,
+        "brightness_p95": 223.7,
+        "dynamic_range_p5_95": 185.0,
+        "channel_mean_rgb": [
+          116.1,
+          103.1,
+          112.1
+        ],
+        "color_cast_rgb": [
+          5.7,
+          -7.3,
+          1.6
+        ],
+        "saturation_mean": 62.7
+      },
+      "noise_blur": {
+        "noise_score_highpass_stddev": 27.52,
+        "laplacian_variance": 171.09
+      },
+      "compression": {
+        "is_jpeg": false,
+        "blockiness_8x8": 0.0
+      },
+      "face_heavy_filename": false,
+      "damage": [
+        "ok"
+      ],
+      "recommendation": {
+        "phase3_photometric": [],
+        "phase4_noise_artifacts": [],
+        "phase5_ai_detail": false,
+        "ai_blocked_reason": null
+      }
+    },
+    {
+      "src": "edited-photo-26.jpg.webp",
+      "geometric": {
+        "width": 1600,
+        "height": 1133,
+        "aspect_ratio": 1.412,
+        "exif_orientation": 1,
+        "orientation_normalized": false,
+        "format": "WEBP",
+        "mode": "RGB",
+        "file_bytes": 364814,
+        "megapixels": 1.81
+      },
+      "photometric": {
+        "brightness_mean": 110.9,
+        "brightness_p5": 39.0,
+        "brightness_p50": 93.7,
+        "brightness_p95": 223.7,
+        "dynamic_range_p5_95": 184.7,
+        "channel_mean_rgb": [
+          116.5,
+          103.4,
+          112.7
+        ],
+        "color_cast_rgb": [
+          5.6,
+          -7.5,
+          1.8
+        ],
+        "saturation_mean": 62.3
+      },
+      "noise_blur": {
+        "noise_score_highpass_stddev": 20.36,
+        "laplacian_variance": 111.23
+      },
+      "compression": {
+        "is_jpeg": false,
+        "blockiness_8x8": 0.0
+      },
+      "face_heavy_filename": false,
+      "damage": [
+        "ok"
+      ],
+      "recommendation": {
+        "phase3_photometric": [],
+        "phase4_noise_artifacts": [],
+        "phase5_ai_detail": false,
+        "ai_blocked_reason": null
+      }
+    },
+    {
+      "src": "edited-photo-27.jpg.3x4.webp",
+      "geometric": {
+        "width": 900,
+        "height": 1200,
+        "aspect_ratio": 0.75,
+        "exif_orientation": 1,
+        "orientation_normalized": false,
+        "format": "WEBP",
+        "mode": "RGB",
+        "file_bytes": 123700,
+        "megapixels": 1.08
+      },
+      "photometric": {
+        "brightness_mean": 149.1,
+        "brightness_p5": 55.7,
+        "brightness_p50": 147.0,
+        "brightness_p95": 225.3,
+        "dynamic_range_p5_95": 169.7,
+        "channel_mean_rgb": [
+          152.0,
+          148.6,
+          146.8
+        ],
+        "color_cast_rgb": [
+          2.9,
+          -0.5,
+          -2.4
+        ],
+        "saturation_mean": 55.9
+      },
+      "noise_blur": {
+        "noise_score_highpass_stddev": 27.03,
+        "laplacian_variance": 186.44
+      },
+      "compression": {
+        "is_jpeg": false,
+        "blockiness_8x8": 0.0
+      },
+      "face_heavy_filename": false,
+      "damage": [
+        "ok"
+      ],
+      "recommendation": {
+        "phase3_photometric": [],
+        "phase4_noise_artifacts": [],
+        "phase5_ai_detail": false,
+        "ai_blocked_reason": null
+      }
+    },
+    {
+      "src": "edited-photo-27.jpg.webp",
+      "geometric": {
+        "width": 1600,
+        "height": 1089,
+        "aspect_ratio": 1.469,
+        "exif_orientation": 1,
+        "orientation_normalized": false,
+        "format": "WEBP",
+        "mode": "RGB",
+        "file_bytes": 442924,
+        "megapixels": 1.74
+      },
+      "photometric": {
+        "brightness_mean": 141.5,
+        "brightness_p5": 49.7,
+        "brightness_p50": 139.0,
+        "brightness_p95": 225.3,
+        "dynamic_range_p5_95": 175.7,
+        "channel_mean_rgb": [
+          145.1,
+          142.0,
+          137.5
+        ],
+        "color_cast_rgb": [
+          3.6,
+          0.5,
+          -4.1
+        ],
+        "saturation_mean": 52.3
+      },
+      "noise_blur": {
+        "noise_score_highpass_stddev": 29.35,
+        "laplacian_variance": 180.21
+      },
+      "compression": {
+        "is_jpeg": false,
+        "blockiness_8x8": 0.0
+      },
+      "face_heavy_filename": false,
+      "damage": [
+        "noisy"
+      ],
+      "recommendation": {
+        "phase3_photometric": [],
+        "phase4_noise_artifacts": [
+          "denoise"
+        ],
+        "phase5_ai_detail": false,
+        "ai_blocked_reason": null
+      }
+    },
+    {
+      "src": "edited-photo-28.jpg.webp",
+      "geometric": {
+        "width": 1600,
+        "height": 984,
+        "aspect_ratio": 1.626,
+        "exif_orientation": 1,
+        "orientation_normalized": false,
+        "format": "WEBP",
+        "mode": "RGB",
+        "file_bytes": 300334,
+        "megapixels": 1.57
+      },
+      "photometric": {
+        "brightness_mean": 104.6,
+        "brightness_p5": 27.3,
+        "brightness_p50": 73.7,
+        "brightness_p95": 226.3,
+        "dynamic_range_p5_95": 199.0,
+        "channel_mean_rgb": [
+          109.7,
+          97.9,
+          106.2
+        ],
+        "color_cast_rgb": [
+          5.1,
+          -6.7,
+          1.5
+        ],
+        "saturation_mean": 130.4
+      },
+      "noise_blur": {
+        "noise_score_highpass_stddev": 26.71,
+        "laplacian_variance": 149.92
+      },
+      "compression": {
+        "is_jpeg": false,
+        "blockiness_8x8": 0.0
+      },
+      "face_heavy_filename": false,
+      "damage": [
+        "ok"
+      ],
+      "recommendation": {
+        "phase3_photometric": [],
+        "phase4_noise_artifacts": [],
+        "phase5_ai_detail": false,
+        "ai_blocked_reason": null
+      }
+    },
+    {
+      "src": "edited-photo-copy.jpg.webp",
+      "geometric": {
+        "width": 1600,
+        "height": 981,
+        "aspect_ratio": 1.631,
+        "exif_orientation": 1,
+        "orientation_normalized": false,
+        "format": "WEBP",
+        "mode": "RGB",
+        "file_bytes": 184816,
+        "megapixels": 1.57
+      },
+      "photometric": {
+        "brightness_mean": 91.1,
+        "brightness_p5": 4.3,
+        "brightness_p50": 84.3,
+        "brightness_p95": 212.0,
+        "dynamic_range_p5_95": 207.7,
+        "channel_mean_rgb": [
+          99.3,
+          89.2,
+          84.9
+        ],
+        "color_cast_rgb": [
+          8.2,
+          -1.9,
+          -6.3
+        ],
+        "saturation_mean": 68.5
+      },
+      "noise_blur": {
+        "noise_score_highpass_stddev": 13.06,
+        "laplacian_variance": 64.31
+      },
+      "compression": {
+        "is_jpeg": false,
+        "blockiness_8x8": 0.0
+      },
+      "face_heavy_filename": false,
+      "damage": [
+        "ok"
+      ],
+      "recommendation": {
+        "phase3_photometric": [],
+        "phase4_noise_artifacts": [],
+        "phase5_ai_detail": false,
+        "ai_blocked_reason": null
+      }
+    },
+    {
+      "src": "edited-photo.jpg.webp",
+      "geometric": {
+        "width": 1600,
+        "height": 1048,
+        "aspect_ratio": 1.527,
+        "exif_orientation": 1,
+        "orientation_normalized": false,
+        "format": "WEBP",
+        "mode": "RGB",
+        "file_bytes": 294722,
+        "megapixels": 1.68
+      },
+      "photometric": {
+        "brightness_mean": 121.5,
+        "brightness_p5": 27.0,
+        "brightness_p50": 121.7,
+        "brightness_p95": 214.0,
+        "dynamic_range_p5_95": 187.0,
+        "channel_mean_rgb": [
+          130.9,
+          120.2,
+          113.5
+        ],
+        "color_cast_rgb": [
+          9.4,
+          -1.4,
+          -8.0
+        ],
+        "saturation_mean": 67.3
+      },
+      "noise_blur": {
+        "noise_score_highpass_stddev": 28.18,
+        "laplacian_variance": 140.1
+      },
+      "compression": {
+        "is_jpeg": false,
+        "blockiness_8x8": 0.0
+      },
+      "face_heavy_filename": false,
+      "damage": [
+        "noisy"
+      ],
+      "recommendation": {
+        "phase3_photometric": [],
+        "phase4_noise_artifacts": [
+          "denoise"
+        ],
+        "phase5_ai_detail": false,
+        "ai_blocked_reason": null
+      }
+    },
+    {
+      "src": "edited-photo.png.webp",
+      "geometric": {
+        "width": 1600,
+        "height": 949,
+        "aspect_ratio": 1.686,
+        "exif_orientation": 1,
+        "orientation_normalized": false,
+        "format": "WEBP",
+        "mode": "RGB",
+        "file_bytes": 215122,
+        "megapixels": 1.52
+      },
+      "photometric": {
+        "brightness_mean": 122.2,
+        "brightness_p5": 41.3,
+        "brightness_p50": 116.3,
+        "brightness_p95": 214.3,
+        "dynamic_range_p5_95": 173.0,
+        "channel_mean_rgb": [
+          137.4,
+          111.6,
+          117.6
+        ],
+        "color_cast_rgb": [
+          15.1,
+          -10.6,
+          -4.6
+        ],
+        "saturation_mean": 66.9
+      },
+      "noise_blur": {
+        "noise_score_highpass_stddev": 17.55,
+        "laplacian_variance": 123.88
+      },
+      "compression": {
+        "is_jpeg": false,
+        "blockiness_8x8": 0.0
+      },
+      "face_heavy_filename": false,
+      "damage": [
+        "color_cast"
+      ],
+      "recommendation": {
+        "phase3_photometric": [
+          "white_balance"
+        ],
+        "phase4_noise_artifacts": [],
+        "phase5_ai_detail": false,
+        "ai_blocked_reason": null
+      }
+    },
+    {
+      "src": "events-slide-1-ganesh-chaturthi.webp",
+      "geometric": {
+        "width": 963,
+        "height": 1280,
+        "aspect_ratio": 0.752,
+        "exif_orientation": 1,
+        "orientation_normalized": false,
+        "format": "WEBP",
+        "mode": "RGB",
+        "file_bytes": 111206,
+        "megapixels": 1.23
+      },
+      "photometric": {
+        "brightness_mean": 111.7,
+        "brightness_p5": 35.7,
+        "brightness_p50": 114.3,
+        "brightness_p95": 186.3,
+        "dynamic_range_p5_95": 150.7,
+        "channel_mean_rgb": [
+          115.9,
+          113.9,
+          105.4
+        ],
+        "color_cast_rgb": [
+          4.1,
+          2.2,
+          -6.3
+        ],
+        "saturation_mean": 50.1
+      },
+      "noise_blur": {
+        "noise_score_highpass_stddev": 29.49,
+        "laplacian_variance": 205.08
+      },
+      "compression": {
+        "is_jpeg": false,
+        "blockiness_8x8": 0.0
+      },
+      "face_heavy_filename": true,
+      "damage": [
+        "noisy"
+      ],
+      "recommendation": {
+        "phase3_photometric": [],
+        "phase4_noise_artifacts": [
+          "denoise"
+        ],
+        "phase5_ai_detail": false,
+        "ai_blocked_reason": null
+      }
+    },
+    {
+      "src": "events-slide-2-varalakshmi.webp",
+      "geometric": {
+        "width": 1204,
+        "height": 1600,
+        "aspect_ratio": 0.752,
+        "exif_orientation": 1,
+        "orientation_normalized": false,
+        "format": "WEBP",
+        "mode": "RGB",
+        "file_bytes": 220640,
+        "megapixels": 1.93
+      },
+      "photometric": {
+        "brightness_mean": 80.1,
+        "brightness_p5": 17.3,
+        "brightness_p50": 53.7,
+        "brightness_p95": 205.0,
+        "dynamic_range_p5_95": 187.7,
+        "channel_mean_rgb": [
+          96.0,
+          82.5,
+          61.9
+        ],
+        "color_cast_rgb": [
+          15.9,
+          2.4,
+          -18.2
+        ],
+        "saturation_mean": 125.8
+      },
+      "noise_blur": {
+        "noise_score_highpass_stddev": 31.54,
+        "laplacian_variance": 191.81
+      },
+      "compression": {
+        "is_jpeg": false,
+        "blockiness_8x8": 0.0
+      },
+      "face_heavy_filename": true,
+      "damage": [
+        "color_cast",
+        "noisy"
+      ],
+      "recommendation": {
+        "phase3_photometric": [
+          "white_balance"
+        ],
+        "phase4_noise_artifacts": [
+          "denoise"
+        ],
+        "phase5_ai_detail": false,
+        "ai_blocked_reason": null
+      }
+    },
+    {
+      "src": "events-slide-3-sandhyavandanam.webp",
+      "geometric": {
+        "width": 1204,
+        "height": 1600,
+        "aspect_ratio": 0.752,
+        "exif_orientation": 1,
+        "orientation_normalized": false,
+        "format": "WEBP",
+        "mode": "RGB",
+        "file_bytes": 246198,
+        "megapixels": 1.93
+      },
+      "photometric": {
+        "brightness_mean": 77.8,
+        "brightness_p5": 18.3,
+        "brightness_p50": 52.3,
+        "brightness_p95": 207.3,
+        "dynamic_range_p5_95": 189.0,
+        "channel_mean_rgb": [
+          93.2,
+          80.0,
+          60.2
+        ],
+        "color_cast_rgb": [
+          15.4,
+          2.2,
+          -17.6
+        ],
+        "saturation_mean": 124.5
+      },
+      "noise_blur": {
+        "noise_score_highpass_stddev": 37.1,
+        "laplacian_variance": 274.5
+      },
+      "compression": {
+        "is_jpeg": false,
+        "blockiness_8x8": 0.0
+      },
+      "face_heavy_filename": true,
+      "damage": [
+        "underexposed",
+        "color_cast",
+        "noisy"
+      ],
+      "recommendation": {
+        "phase3_photometric": [
+          "exposure_gamma",
+          "white_balance"
+        ],
+        "phase4_noise_artifacts": [
+          "denoise"
+        ],
+        "phase5_ai_detail": false,
+        "ai_blocked_reason": null
+      }
+    },
+    {
+      "src": "events-slide-4-nivedanam.webp",
+      "geometric": {
+        "width": 1204,
+        "height": 1600,
+        "aspect_ratio": 0.752,
+        "exif_orientation": 1,
+        "orientation_normalized": false,
+        "format": "WEBP",
+        "mode": "RGB",
+        "file_bytes": 231662,
+        "megapixels": 1.93
+      },
+      "photometric": {
+        "brightness_mean": 78.6,
+        "brightness_p5": 18.0,
+        "brightness_p50": 52.7,
+        "brightness_p95": 209.3,
+        "dynamic_range_p5_95": 191.3,
+        "channel_mean_rgb": [
+          91.0,
+          81.4,
+          63.3
+        ],
+        "color_cast_rgb": [
+          12.4,
+          2.8,
+          -15.3
+        ],
+        "saturation_mean": 115.3
+      },
+      "noise_blur": {
+        "noise_score_highpass_stddev": 33.0,
+        "laplacian_variance": 211.08
+      },
+      "compression": {
+        "is_jpeg": false,
+        "blockiness_8x8": 0.0
+      },
+      "face_heavy_filename": true,
+      "damage": [
+        "underexposed",
+        "color_cast",
+        "noisy"
+      ],
+      "recommendation": {
+        "phase3_photometric": [
+          "exposure_gamma",
+          "white_balance"
+        ],
+        "phase4_noise_artifacts": [
+          "denoise"
+        ],
+        "phase5_ai_detail": false,
+        "ai_blocked_reason": null
+      }
+    },
+    {
+      "src": "events-slide-5-kumbhabhishekam.webp",
+      "geometric": {
+        "width": 963,
+        "height": 1280,
+        "aspect_ratio": 0.752,
+        "exif_orientation": 1,
+        "orientation_normalized": false,
+        "format": "WEBP",
+        "mode": "RGB",
+        "file_bytes": 102794,
+        "megapixels": 1.23
+      },
+      "photometric": {
+        "brightness_mean": 122.7,
+        "brightness_p5": 30.0,
+        "brightness_p50": 110.0,
+        "brightness_p95": 217.0,
+        "dynamic_range_p5_95": 187.0,
+        "channel_mean_rgb": [
+          127.2,
+          124.9,
+          116.1
+        ],
+        "color_cast_rgb": [
+          4.5,
+          2.2,
+          -6.7
+        ],
+        "saturation_mean": 49.5
+      },
+      "noise_blur": {
+        "noise_score_highpass_stddev": 29.29,
+        "laplacian_variance": 224.1
+      },
+      "compression": {
+        "is_jpeg": false,
+        "blockiness_8x8": 0.0
+      },
+      "face_heavy_filename": true,
+      "damage": [
+        "low_saturation",
+        "noisy"
+      ],
+      "recommendation": {
+        "phase3_photometric": [
+          "saturation_gentle"
+        ],
+        "phase4_noise_artifacts": [
+          "denoise"
+        ],
+        "phase5_ai_detail": false,
+        "ai_blocked_reason": null
+      }
+    },
+    {
+      "src": "events-slide-6-kalyanam.webp",
+      "geometric": {
+        "width": 963,
+        "height": 1280,
+        "aspect_ratio": 0.752,
+        "exif_orientation": 1,
+        "orientation_normalized": false,
+        "format": "WEBP",
+        "mode": "RGB",
+        "file_bytes": 91278,
+        "megapixels": 1.23
+      },
+      "photometric": {
+        "brightness_mean": 133.9,
+        "brightness_p5": 44.0,
+        "brightness_p50": 151.3,
+        "brightness_p95": 195.3,
+        "dynamic_range_p5_95": 151.3,
+        "channel_mean_rgb": [
+          133.6,
+          135.5,
+          132.5
+        ],
+        "color_cast_rgb": [
+          -0.3,
+          1.6,
+          -1.4
+        ],
+        "saturation_mean": 48.5
+      },
+      "noise_blur": {
+        "noise_score_highpass_stddev": 26.99,
+        "laplacian_variance": 200.56
+      },
+      "compression": {
+        "is_jpeg": false,
+        "blockiness_8x8": 0.0
+      },
+      "face_heavy_filename": true,
+      "damage": [
+        "low_saturation"
+      ],
+      "recommendation": {
+        "phase3_photometric": [
+          "saturation_gentle"
+        ],
+        "phase4_noise_artifacts": [],
+        "phase5_ai_detail": false,
+        "ai_blocked_reason": null
+      }
+    },
+    {
+      "src": "events-slide-7-cultural-evenings.webp",
+      "geometric": {
+        "width": 1920,
+        "height": 1212,
+        "aspect_ratio": 1.584,
+        "exif_orientation": 1,
+        "orientation_normalized": false,
+        "format": "WEBP",
+        "mode": "RGB",
+        "file_bytes": 233704,
+        "megapixels": 2.33
+      },
+      "photometric": {
+        "brightness_mean": 104.4,
+        "brightness_p5": 27.0,
+        "brightness_p50": 74.7,
+        "brightness_p95": 225.7,
+        "dynamic_range_p5_95": 198.7,
+        "channel_mean_rgb": [
+          110.2,
+          97.7,
+          105.2
+        ],
+        "color_cast_rgb": [
+          5.8,
+          -6.6,
+          0.8
+        ],
+        "saturation_mean": 130.9
+      },
+      "noise_blur": {
+        "noise_score_highpass_stddev": 21.27,
+        "laplacian_variance": 97.19
+      },
+      "compression": {
+        "is_jpeg": false,
+        "blockiness_8x8": 0.0
+      },
+      "face_heavy_filename": true,
+      "damage": [
+        "ok"
+      ],
+      "recommendation": {
+        "phase3_photometric": [],
+        "phase4_noise_artifacts": [],
+        "phase5_ai_detail": false,
+        "ai_blocked_reason": null
+      }
+    },
+    {
+      "src": "events-slide-8-brahmotsavam.webp",
+      "geometric": {
+        "width": 1920,
+        "height": 1228,
+        "aspect_ratio": 1.564,
+        "exif_orientation": 1,
+        "orientation_normalized": false,
+        "format": "WEBP",
+        "mode": "RGB",
+        "file_bytes": 149868,
+        "megapixels": 2.36
+      },
+      "photometric": {
+        "brightness_mean": 118.0,
+        "brightness_p5": 30.7,
+        "brightness_p50": 105.0,
+        "brightness_p95": 226.3,
+        "dynamic_range_p5_95": 195.7,
+        "channel_mean_rgb": [
+          122.4,
+          113.8,
+          117.8
+        ],
+        "color_cast_rgb": [
+          4.4,
+          -4.2,
+          -0.2
+        ],
+        "saturation_mean": 54.5
+      },
+      "noise_blur": {
+        "noise_score_highpass_stddev": 16.13,
+        "laplacian_variance": 59.15
+      },
+      "compression": {
+        "is_jpeg": false,
+        "blockiness_8x8": 0.0
+      },
+      "face_heavy_filename": true,
+      "damage": [
+        "ok"
+      ],
+      "recommendation": {
+        "phase3_photometric": [],
+        "phase4_noise_artifacts": [],
+        "phase5_ai_detail": false,
+        "ai_blocked_reason": null
+      }
+    },
+    {
+      "src": "home-page-header.png.webp",
+      "geometric": {
+        "width": 1600,
+        "height": 899,
+        "aspect_ratio": 1.78,
+        "exif_orientation": 1,
+        "orientation_normalized": false,
+        "format": "WEBP",
+        "mode": "RGB",
+        "file_bytes": 61294,
+        "megapixels": 1.44
+      },
+      "photometric": {
+        "brightness_mean": 105.6,
+        "brightness_p5": 24.7,
+        "brightness_p50": 80.3,
+        "brightness_p95": 211.0,
+        "dynamic_range_p5_95": 186.3,
+        "channel_mean_rgb": [
+          102.4,
+          105.7,
+          108.6
+        ],
+        "color_cast_rgb": [
+          -3.2,
+          0.1,
+          3.1
+        ],
+        "saturation_mean": 55.8
+      },
+      "noise_blur": {
+        "noise_score_highpass_stddev": 19.9,
+        "laplacian_variance": 113.73
+      },
+      "compression": {
+        "is_jpeg": false,
+        "blockiness_8x8": 0.0
+      },
+      "face_heavy_filename": false,
+      "damage": [
+        "ok"
+      ],
+      "recommendation": {
+        "phase3_photometric": [],
+        "phase4_noise_artifacts": [],
+        "phase5_ai_detail": false,
+        "ai_blocked_reason": null
+      }
+    },
+    {
+      "src": "journal-awards-01-chaganti.webp",
+      "geometric": {
+        "width": 1600,
+        "height": 1007,
+        "aspect_ratio": 1.589,
+        "exif_orientation": 1,
+        "orientation_normalized": false,
+        "format": "WEBP",
+        "mode": "RGB",
+        "file_bytes": 241122,
+        "megapixels": 1.61
+      },
+      "photometric": {
+        "brightness_mean": 127.2,
+        "brightness_p5": 17.7,
+        "brightness_p50": 147.0,
+        "brightness_p95": 213.0,
+        "dynamic_range_p5_95": 195.3,
+        "channel_mean_rgb": [
+          128.3,
+          125.8,
+          127.6
+        ],
+        "color_cast_rgb": [
+          1.1,
+          -1.5,
+          0.4
+        ],
+        "saturation_mean": 46.1
+      },
+      "noise_blur": {
+        "noise_score_highpass_stddev": 22.66,
+        "laplacian_variance": 99.29
+      },
+      "compression": {
+        "is_jpeg": false,
+        "blockiness_8x8": 0.0
+      },
+      "face_heavy_filename": true,
+      "damage": [
+        "low_saturation"
+      ],
+      "recommendation": {
+        "phase3_photometric": [
+          "saturation_gentle"
+        ],
+        "phase4_noise_artifacts": [],
+        "phase5_ai_detail": false,
+        "ai_blocked_reason": null
+      }
+    },
+    {
+      "src": "journal-awards-02-vivekananda.webp",
+      "geometric": {
+        "width": 1600,
+        "height": 971,
+        "aspect_ratio": 1.648,
+        "exif_orientation": 1,
+        "orientation_normalized": false,
+        "format": "WEBP",
+        "mode": "RGB",
+        "file_bytes": 312180,
+        "megapixels": 1.55
+      },
+      "photometric": {
+        "brightness_mean": 138.0,
+        "brightness_p5": 28.7,
+        "brightness_p50": 146.7,
+        "brightness_p95": 228.3,
+        "dynamic_range_p5_95": 199.7,
+        "channel_mean_rgb": [
+          142.3,
+          130.6,
+          141.2
+        ],
+        "color_cast_rgb": [
+          4.2,
+          -7.4,
+          3.2
+        ],
+        "saturation_mean": 84.6
+      },
+      "noise_blur": {
+        "noise_score_highpass_stddev": 22.82,
+        "laplacian_variance": 96.07
+      },
+      "compression": {
+        "is_jpeg": false,
+        "blockiness_8x8": 0.0
+      },
+      "face_heavy_filename": true,
+      "damage": [
+        "ok"
+      ],
+      "recommendation": {
+        "phase3_photometric": [],
+        "phase4_noise_artifacts": [],
+        "phase5_ai_detail": false,
+        "ai_blocked_reason": null
+      }
+    },
+    {
+      "src": "journal-awards-03-shishya-celebration.webp",
+      "geometric": {
+        "width": 1600,
+        "height": 1072,
+        "aspect_ratio": 1.493,
+        "exif_orientation": 1,
+        "orientation_normalized": false,
+        "format": "WEBP",
+        "mode": "RGB",
+        "file_bytes": 322918,
+        "megapixels": 1.72
+      },
+      "photometric": {
+        "brightness_mean": 125.7,
+        "brightness_p5": 26.7,
+        "brightness_p50": 122.0,
+        "brightness_p95": 226.7,
+        "dynamic_range_p5_95": 200.0,
+        "channel_mean_rgb": [
+          133.2,
+          122.8,
+          121.1
+        ],
+        "color_cast_rgb": [
+          7.5,
+          -2.9,
+          -4.6
+        ],
+        "saturation_mean": 53.4
+      },
+      "noise_blur": {
+        "noise_score_highpass_stddev": 34.71,
+        "laplacian_variance": 229.2
+      },
+      "compression": {
+        "is_jpeg": false,
+        "blockiness_8x8": 0.0
+      },
+      "face_heavy_filename": true,
+      "damage": [
+        "noisy"
+      ],
+      "recommendation": {
+        "phase3_photometric": [],
+        "phase4_noise_artifacts": [
+          "denoise"
+        ],
+        "phase5_ai_detail": false,
+        "ai_blocked_reason": null
+      }
+    },
+    {
+      "src": "journal-awards-04-sarvabhouma.webp",
+      "geometric": {
+        "width": 1600,
+        "height": 1041,
+        "aspect_ratio": 1.537,
+        "exif_orientation": 1,
+        "orientation_normalized": false,
+        "format": "WEBP",
+        "mode": "RGB",
+        "file_bytes": 249758,
+        "megapixels": 1.67
+      },
+      "photometric": {
+        "brightness_mean": 123.9,
+        "brightness_p5": 17.0,
+        "brightness_p50": 142.3,
+        "brightness_p95": 213.0,
+        "dynamic_range_p5_95": 196.0,
+        "channel_mean_rgb": [
+          125.4,
+          122.3,
+          124.1
+        ],
+        "color_cast_rgb": [
+          1.4,
+          -1.6,
+          0.2
+        ],
+        "saturation_mean": 48.6
+      },
+      "noise_blur": {
+        "noise_score_highpass_stddev": 22.66,
+        "laplacian_variance": 97.21
+      },
+      "compression": {
+        "is_jpeg": false,
+        "blockiness_8x8": 0.0
+      },
+      "face_heavy_filename": true,
+      "damage": [
+        "low_saturation"
+      ],
+      "recommendation": {
+        "phase3_photometric": [
+          "saturation_gentle"
+        ],
+        "phase4_noise_artifacts": [],
+        "phase5_ai_detail": false,
+        "ai_blocked_reason": null
+      }
+    },
+    {
+      "src": "journal-awards-05-south-indian.webp",
+      "geometric": {
+        "width": 1600,
+        "height": 965,
+        "aspect_ratio": 1.658,
+        "exif_orientation": 1,
+        "orientation_normalized": false,
+        "format": "WEBP",
+        "mode": "RGB",
+        "file_bytes": 318594,
+        "megapixels": 1.54
+      },
+      "photometric": {
+        "brightness_mean": 112.7,
+        "brightness_p5": 9.7,
+        "brightness_p50": 121.0,
+        "brightness_p95": 228.3,
+        "dynamic_range_p5_95": 218.7,
+        "channel_mean_rgb": [
+          124.0,
+          105.5,
+          108.4
+        ],
+        "color_cast_rgb": [
+          11.4,
+          -7.2,
+          -4.2
+        ],
+        "saturation_mean": 103.3
+      },
+      "noise_blur": {
+        "noise_score_highpass_stddev": 22.3,
+        "laplacian_variance": 88.61
+      },
+      "compression": {
+        "is_jpeg": false,
+        "blockiness_8x8": 0.0
+      },
+      "face_heavy_filename": true,
+      "damage": [
+        "ok"
+      ],
+      "recommendation": {
+        "phase3_photometric": [],
+        "phase4_noise_artifacts": [],
+        "phase5_ai_detail": false,
+        "ai_blocked_reason": null
+      }
+    },
+    {
+      "src": "journal-awards-06-ganap-sachidananda.webp",
+      "geometric": {
+        "width": 1600,
+        "height": 1202,
+        "aspect_ratio": 1.331,
+        "exif_orientation": 1,
+        "orientation_normalized": false,
+        "format": "WEBP",
+        "mode": "RGB",
+        "file_bytes": 77974,
+        "megapixels": 1.92
+      },
+      "photometric": {
+        "brightness_mean": 98.7,
+        "brightness_p5": 25.7,
+        "brightness_p50": 76.3,
+        "brightness_p95": 206.3,
+        "dynamic_range_p5_95": 180.7,
+        "channel_mean_rgb": [
+          94.9,
+          98.3,
+          102.8
+        ],
+        "color_cast_rgb": [
+          -3.8,
+          -0.3,
+          4.1
+        ],
+        "saturation_mean": 60.1
+      },
+      "noise_blur": {
+        "noise_score_highpass_stddev": 18.93,
+        "laplacian_variance": 88.2
+      },
+      "compression": {
+        "is_jpeg": false,
+        "blockiness_8x8": 0.0
+      },
+      "face_heavy_filename": true,
+      "damage": [
+        "ok"
+      ],
+      "recommendation": {
+        "phase3_photometric": [],
+        "phase4_noise_artifacts": [],
+        "phase5_ai_detail": false,
+        "ai_blocked_reason": null
+      }
+    },
+    {
+      "src": "journal-community-02-ceremony-with-priest.webp",
+      "geometric": {
+        "width": 1600,
+        "height": 1090,
+        "aspect_ratio": 1.468,
+        "exif_orientation": 1,
+        "orientation_normalized": false,
+        "format": "WEBP",
+        "mode": "RGB",
+        "file_bytes": 213970,
+        "megapixels": 1.74
+      },
+      "photometric": {
+        "brightness_mean": 155.4,
+        "brightness_p5": 34.3,
+        "brightness_p50": 187.3,
+        "brightness_p95": 224.3,
+        "dynamic_range_p5_95": 190.0,
+        "channel_mean_rgb": [
+          167.8,
+          150.2,
+          148.1
+        ],
+        "color_cast_rgb": [
+          12.5,
+          -5.2,
+          -7.3
+        ],
+        "saturation_mean": 61.9
+      },
+      "noise_blur": {
+        "noise_score_highpass_stddev": 16.02,
+        "laplacian_variance": 121.37
+      },
+      "compression": {
+        "is_jpeg": false,
+        "blockiness_8x8": 0.0
+      },
+      "face_heavy_filename": true,
+      "damage": [
+        "color_cast"
+      ],
+      "recommendation": {
+        "phase3_photometric": [
+          "white_balance"
+        ],
+        "phase4_noise_artifacts": [],
+        "phase5_ai_detail": false,
+        "ai_blocked_reason": null
+      }
+    },
+    {
+      "src": "journal-community-03-ashram-boys.webp",
+      "geometric": {
+        "width": 1600,
+        "height": 940,
+        "aspect_ratio": 1.702,
+        "exif_orientation": 1,
+        "orientation_normalized": false,
+        "format": "WEBP",
+        "mode": "RGB",
+        "file_bytes": 248686,
+        "megapixels": 1.5
+      },
+      "photometric": {
+        "brightness_mean": 147.1,
+        "brightness_p5": 46.7,
+        "brightness_p50": 156.0,
+        "brightness_p95": 222.7,
+        "dynamic_range_p5_95": 176.0,
+        "channel_mean_rgb": [
+          165.6,
+          141.3,
+          134.4
+        ],
+        "color_cast_rgb": [
+          18.5,
+          -5.8,
+          -12.7
+        ],
+        "saturation_mean": 71.8
+      },
+      "noise_blur": {
+        "noise_score_highpass_stddev": 27.26,
+        "laplacian_variance": 188.31
+      },
+      "compression": {
+        "is_jpeg": false,
+        "blockiness_8x8": 0.0
+      },
+      "face_heavy_filename": true,
+      "damage": [
+        "color_cast"
+      ],
+      "recommendation": {
+        "phase3_photometric": [
+          "white_balance"
+        ],
+        "phase4_noise_artifacts": [],
+        "phase5_ai_detail": false,
+        "ai_blocked_reason": null
+      }
+    },
+    {
+      "src": "journal-community-04-ashram-adults.webp",
+      "geometric": {
+        "width": 1599,
+        "height": 1036,
+        "aspect_ratio": 1.543,
+        "exif_orientation": 1,
+        "orientation_normalized": false,
+        "format": "WEBP",
+        "mode": "RGB",
+        "file_bytes": 261024,
+        "megapixels": 1.66
+      },
+      "photometric": {
+        "brightness_mean": 148.7,
+        "brightness_p5": 47.7,
+        "brightness_p50": 161.0,
+        "brightness_p95": 222.0,
+        "dynamic_range_p5_95": 174.3,
+        "channel_mean_rgb": [
+          168.5,
+          143.0,
+          134.7
+        ],
+        "color_cast_rgb": [
+          19.7,
+          -5.7,
+          -14.0
+        ],
+        "saturation_mean": 72.8
+      },
+      "noise_blur": {
+        "noise_score_highpass_stddev": 26.06,
+        "laplacian_variance": 170.51
+      },
+      "compression": {
+        "is_jpeg": false,
+        "blockiness_8x8": 0.0
+      },
+      "face_heavy_filename": true,
+      "damage": [
+        "color_cast"
+      ],
+      "recommendation": {
+        "phase3_photometric": [
+          "white_balance"
+        ],
+        "phase4_noise_artifacts": [],
+        "phase5_ai_detail": false,
+        "ai_blocked_reason": null
+      }
+    },
+    {
+      "src": "journal-community-05-villagers.webp",
+      "geometric": {
+        "width": 1600,
+        "height": 1062,
+        "aspect_ratio": 1.507,
+        "exif_orientation": 1,
+        "orientation_normalized": false,
+        "format": "WEBP",
+        "mode": "RGB",
+        "file_bytes": 353860,
+        "megapixels": 1.7
+      },
+      "photometric": {
+        "brightness_mean": 124.1,
+        "brightness_p5": 49.0,
+        "brightness_p50": 109.3,
+        "brightness_p95": 217.0,
+        "dynamic_range_p5_95": 168.0,
+        "channel_mean_rgb": [
+          129.8,
+          115.1,
+          127.2
+        ],
+        "color_cast_rgb": [
+          5.8,
+          -8.9,
+          3.2
+        ],
+        "saturation_mean": 60.5
+      },
+      "noise_blur": {
+        "noise_score_highpass_stddev": 20.8,
+        "laplacian_variance": 119.81
+      },
+      "compression": {
+        "is_jpeg": false,
+        "blockiness_8x8": 0.0
+      },
+      "face_heavy_filename": true,
+      "damage": [
+        "ok"
+      ],
+      "recommendation": {
+        "phase3_photometric": [],
+        "phase4_noise_artifacts": [],
+        "phase5_ai_detail": false,
+        "ai_blocked_reason": null
+      }
+    },
+    {
+      "src": "journal-community-06-booklets.webp",
+      "geometric": {
+        "width": 1600,
+        "height": 1089,
+        "aspect_ratio": 1.469,
+        "exif_orientation": 1,
+        "orientation_normalized": false,
+        "format": "WEBP",
+        "mode": "RGB",
+        "file_bytes": 442924,
+        "megapixels": 1.74
+      },
+      "photometric": {
+        "brightness_mean": 141.5,
+        "brightness_p5": 49.7,
+        "brightness_p50": 139.0,
+        "brightness_p95": 225.3,
+        "dynamic_range_p5_95": 175.7,
+        "channel_mean_rgb": [
+          145.1,
+          142.0,
+          137.5
+        ],
+        "color_cast_rgb": [
+          3.6,
+          0.5,
+          -4.1
+        ],
+        "saturation_mean": 52.3
+      },
+      "noise_blur": {
+        "noise_score_highpass_stddev": 29.35,
+        "laplacian_variance": 180.21
+      },
+      "compression": {
+        "is_jpeg": false,
+        "blockiness_8x8": 0.0
+      },
+      "face_heavy_filename": true,
+      "damage": [
+        "noisy"
+      ],
+      "recommendation": {
+        "phase3_photometric": [],
+        "phase4_noise_artifacts": [
+          "denoise"
+        ],
+        "phase5_ai_detail": false,
+        "ai_blocked_reason": null
+      }
+    },
+    {
+      "src": "journal-cultural-01-bharatanatyam-tribute.webp",
+      "geometric": {
+        "width": 970,
+        "height": 1600,
+        "aspect_ratio": 0.606,
+        "exif_orientation": 1,
+        "orientation_normalized": false,
+        "format": "WEBP",
+        "mode": "RGB",
+        "file_bytes": 135826,
+        "megapixels": 1.55
+      },
+      "photometric": {
+        "brightness_mean": 110.5,
+        "brightness_p5": 32.7,
+        "brightness_p50": 93.0,
+        "brightness_p95": 211.7,
+        "dynamic_range_p5_95": 179.0,
+        "channel_mean_rgb": [
+          123.6,
+          106.3,
+          101.5
+        ],
+        "color_cast_rgb": [
+          13.1,
+          -4.1,
+          -9.0
+        ],
+        "saturation_mean": 108.6
+      },
+      "noise_blur": {
+        "noise_score_highpass_stddev": 18.57,
+        "laplacian_variance": 87.42
+      },
+      "compression": {
+        "is_jpeg": false,
+        "blockiness_8x8": 0.0
+      },
+      "face_heavy_filename": true,
+      "damage": [
+        "color_cast"
+      ],
+      "recommendation": {
+        "phase3_photometric": [
+          "white_balance"
+        ],
+        "phase4_noise_artifacts": [],
+        "phase5_ai_detail": false,
+        "ai_blocked_reason": null
+      }
+    },
+    {
+      "src": "journal-cultural-02-bharatanatyam-guru.webp",
+      "geometric": {
+        "width": 1600,
+        "height": 1019,
+        "aspect_ratio": 1.57,
+        "exif_orientation": 1,
+        "orientation_normalized": false,
+        "format": "WEBP",
+        "mode": "RGB",
+        "file_bytes": 355758,
+        "megapixels": 1.63
+      },
+      "photometric": {
+        "brightness_mean": 105.0,
+        "brightness_p5": 27.0,
+        "brightness_p50": 75.3,
+        "brightness_p95": 225.7,
+        "dynamic_range_p5_95": 198.7,
+        "channel_mean_rgb": [
+          111.8,
+          98.4,
+          104.8
+        ],
+        "color_cast_rgb": [
+          6.8,
+          -6.6,
+          -0.2
+        ],
+        "saturation_mean": 130.4
+      },
+      "noise_blur": {
+        "noise_score_highpass_stddev": 25.73,
+        "laplacian_variance": 119.35
+      },
+      "compression": {
+        "is_jpeg": false,
+        "blockiness_8x8": 0.0
+      },
+      "face_heavy_filename": true,
+      "damage": [
+        "ok"
+      ],
+      "recommendation": {
+        "phase3_photometric": [],
+        "phase4_noise_artifacts": [],
+        "phase5_ai_detail": false,
+        "ai_blocked_reason": null
+      }
+    },
+    {
+      "src": "journal-cultural-03-bharatanatyam-hyderabad.webp",
+      "geometric": {
+        "width": 1600,
+        "height": 984,
+        "aspect_ratio": 1.626,
+        "exif_orientation": 1,
+        "orientation_normalized": false,
+        "format": "WEBP",
+        "mode": "RGB",
+        "file_bytes": 300334,
+        "megapixels": 1.57
+      },
+      "photometric": {
+        "brightness_mean": 104.6,
+        "brightness_p5": 27.3,
+        "brightness_p50": 73.7,
+        "brightness_p95": 226.3,
+        "dynamic_range_p5_95": 199.0,
+        "channel_mean_rgb": [
+          109.7,
+          97.9,
+          106.2
+        ],
+        "color_cast_rgb": [
+          5.1,
+          -6.7,
+          1.5
+        ],
+        "saturation_mean": 130.4
+      },
+      "noise_blur": {
+        "noise_score_highpass_stddev": 26.71,
+        "laplacian_variance": 149.92
+      },
+      "compression": {
+        "is_jpeg": false,
+        "blockiness_8x8": 0.0
+      },
+      "face_heavy_filename": true,
+      "damage": [
+        "ok"
+      ],
+      "recommendation": {
+        "phase3_photometric": [],
+        "phase4_noise_artifacts": [],
+        "phase5_ai_detail": false,
+        "ai_blocked_reason": null
+      }
+    },
+    {
+      "src": "journal-cultural-04-literary-tribute.webp",
+      "geometric": {
+        "width": 1600,
+        "height": 1048,
+        "aspect_ratio": 1.527,
+        "exif_orientation": 1,
+        "orientation_normalized": false,
+        "format": "WEBP",
+        "mode": "RGB",
+        "file_bytes": 223644,
+        "megapixels": 1.68
+      },
+      "photometric": {
+        "brightness_mean": 123.8,
+        "brightness_p5": 16.7,
+        "brightness_p50": 143.3,
+        "brightness_p95": 213.0,
+        "dynamic_range_p5_95": 196.3,
+        "channel_mean_rgb": [
+          125.6,
+          122.1,
+          123.7
+        ],
+        "color_cast_rgb": [
+          1.8,
+          -1.7,
+          -0.1
+        ],
+        "saturation_mean": 50.4
+      },
+      "noise_blur": {
+        "noise_score_highpass_stddev": 22.26,
+        "laplacian_variance": 94.85
+      },
+      "compression": {
+        "is_jpeg": false,
+        "blockiness_8x8": 0.0
+      },
+      "face_heavy_filename": true,
+      "damage": [
+        "ok"
+      ],
+      "recommendation": {
+        "phase3_photometric": [],
+        "phase4_noise_artifacts": [],
+        "phase5_ai_detail": false,
+        "ai_blocked_reason": null
+      }
+    },
+    {
+      "src": "journal-cultural-05-sangam-collage.webp",
+      "geometric": {
+        "width": 1600,
+        "height": 1081,
+        "aspect_ratio": 1.48,
+        "exif_orientation": 1,
+        "orientation_normalized": false,
+        "format": "WEBP",
+        "mode": "RGB",
+        "file_bytes": 366476,
+        "megapixels": 1.73
+      },
+      "photometric": {
+        "brightness_mean": 125.7,
+        "brightness_p5": 26.7,
+        "brightness_p50": 122.0,
+        "brightness_p95": 226.7,
+        "dynamic_range_p5_95": 200.0,
+        "channel_mean_rgb": [
+          133.2,
+          122.8,
+          121.2
+        ],
+        "color_cast_rgb": [
+          7.4,
+          -2.9,
+          -4.5
+        ],
+        "saturation_mean": 53.2
+      },
+      "noise_blur": {
+        "noise_score_highpass_stddev": 34.57,
+        "laplacian_variance": 228.26
+      },
+      "compression": {
+        "is_jpeg": false,
+        "blockiness_8x8": 0.0
+      },
+      "face_heavy_filename": true,
+      "damage": [
+        "noisy"
+      ],
+      "recommendation": {
+        "phase3_photometric": [],
+        "phase4_noise_artifacts": [
+          "denoise"
+        ],
+        "phase5_ai_detail": false,
+        "ai_blocked_reason": null
+      }
+    },
+    {
+      "src": "journal-festivals-01-girija-kalyana.webp",
+      "geometric": {
+        "width": 1600,
+        "height": 1026,
+        "aspect_ratio": 1.559,
+        "exif_orientation": 1,
+        "orientation_normalized": false,
+        "format": "WEBP",
+        "mode": "RGB",
+        "file_bytes": 234450,
+        "megapixels": 1.64
+      },
+      "photometric": {
+        "brightness_mean": 99.2,
+        "brightness_p5": 12.3,
+        "brightness_p50": 87.3,
+        "brightness_p95": 219.7,
+        "dynamic_range_p5_95": 207.3,
+        "channel_mean_rgb": [
+          100.0,
+          99.6,
+          98.1
+        ],
+        "color_cast_rgb": [
+          0.8,
+          0.4,
+          -1.2
+        ],
+        "saturation_mean": 62.9
+      },
+      "noise_blur": {
+        "noise_score_highpass_stddev": 22.34,
+        "laplacian_variance": 112.62
+      },
+      "compression": {
+        "is_jpeg": false,
+        "blockiness_8x8": 0.0
+      },
+      "face_heavy_filename": false,
+      "damage": [
+        "ok"
+      ],
+      "recommendation": {
+        "phase3_photometric": [],
+        "phase4_noise_artifacts": [],
+        "phase5_ai_detail": false,
+        "ai_blocked_reason": null
+      }
+    },
+    {
+      "src": "journal-festivals-03-ganesh-chaturthi.webp",
+      "geometric": {
+        "width": 963,
+        "height": 1280,
+        "aspect_ratio": 0.752,
+        "exif_orientation": 1,
+        "orientation_normalized": false,
+        "format": "WEBP",
+        "mode": "RGB",
+        "file_bytes": 111206,
+        "megapixels": 1.23
+      },
+      "photometric": {
+        "brightness_mean": 111.7,
+        "brightness_p5": 35.7,
+        "brightness_p50": 114.3,
+        "brightness_p95": 186.3,
+        "dynamic_range_p5_95": 150.7,
+        "channel_mean_rgb": [
+          115.9,
+          113.9,
+          105.4
+        ],
+        "color_cast_rgb": [
+          4.1,
+          2.2,
+          -6.3
+        ],
+        "saturation_mean": 50.1
+      },
+      "noise_blur": {
+        "noise_score_highpass_stddev": 29.49,
+        "laplacian_variance": 205.08
+      },
+      "compression": {
+        "is_jpeg": false,
+        "blockiness_8x8": 0.0
+      },
+      "face_heavy_filename": false,
+      "damage": [
+        "noisy"
+      ],
+      "recommendation": {
+        "phase3_photometric": [],
+        "phase4_noise_artifacts": [
+          "denoise"
+        ],
+        "phase5_ai_detail": false,
+        "ai_blocked_reason": null
+      }
+    },
+    {
+      "src": "journal-indoor-01.webp",
+      "geometric": {
+        "width": 981,
+        "height": 1600,
+        "aspect_ratio": 0.613,
+        "exif_orientation": 1,
+        "orientation_normalized": false,
+        "format": "WEBP",
+        "mode": "RGB",
+        "file_bytes": 85156,
+        "megapixels": 1.57
+      },
+      "photometric": {
+        "brightness_mean": 91.1,
+        "brightness_p5": 4.3,
+        "brightness_p50": 84.3,
+        "brightness_p95": 212.0,
+        "dynamic_range_p5_95": 207.7,
+        "channel_mean_rgb": [
+          99.3,
+          89.2,
+          84.9
+        ],
+        "color_cast_rgb": [
+          8.2,
+          -2.0,
+          -6.2
+        ],
+        "saturation_mean": 68.1
+      },
+      "noise_blur": {
+        "noise_score_highpass_stddev": 12.91,
+        "laplacian_variance": 63.68
+      },
+      "compression": {
+        "is_jpeg": false,
+        "blockiness_8x8": 0.0
+      },
+      "face_heavy_filename": false,
+      "damage": [
+        "ok"
+      ],
+      "recommendation": {
+        "phase3_photometric": [],
+        "phase4_noise_artifacts": [],
+        "phase5_ai_detail": false,
+        "ai_blocked_reason": null
+      }
+    },
+    {
+      "src": "journal-kalyanam-01.webp",
+      "geometric": {
+        "width": 963,
+        "height": 1280,
+        "aspect_ratio": 0.752,
+        "exif_orientation": 1,
+        "orientation_normalized": false,
+        "format": "WEBP",
+        "mode": "RGB",
+        "file_bytes": 91278,
+        "megapixels": 1.23
+      },
+      "photometric": {
+        "brightness_mean": 133.9,
+        "brightness_p5": 44.0,
+        "brightness_p50": 151.3,
+        "brightness_p95": 195.3,
+        "dynamic_range_p5_95": 151.3,
+        "channel_mean_rgb": [
+          133.6,
+          135.5,
+          132.5
+        ],
+        "color_cast_rgb": [
+          -0.3,
+          1.6,
+          -1.4
+        ],
+        "saturation_mean": 48.5
+      },
+      "noise_blur": {
+        "noise_score_highpass_stddev": 26.99,
+        "laplacian_variance": 200.56
+      },
+      "compression": {
+        "is_jpeg": false,
+        "blockiness_8x8": 0.0
+      },
+      "face_heavy_filename": true,
+      "damage": [
+        "low_saturation"
+      ],
+      "recommendation": {
+        "phase3_photometric": [
+          "saturation_gentle"
+        ],
+        "phase4_noise_artifacts": [],
+        "phase5_ai_detail": false,
+        "ai_blocked_reason": null
+      }
+    },
+    {
+      "src": "journal-kalyanam-02.webp",
+      "geometric": {
+        "width": 1600,
+        "height": 1102,
+        "aspect_ratio": 1.452,
+        "exif_orientation": 1,
+        "orientation_normalized": false,
+        "format": "WEBP",
+        "mode": "RGB",
+        "file_bytes": 237344,
+        "megapixels": 1.76
+      },
+      "photometric": {
+        "brightness_mean": 113.4,
+        "brightness_p5": 22.7,
+        "brightness_p50": 106.0,
+        "brightness_p95": 220.0,
+        "dynamic_range_p5_95": 197.3,
+        "channel_mean_rgb": [
+          126.8,
+          108.6,
+          104.9
+        ],
+        "color_cast_rgb": [
+          13.4,
+          -4.9,
+          -8.5
+        ],
+        "saturation_mean": 70.5
+      },
+      "noise_blur": {
+        "noise_score_highpass_stddev": 15.68,
+        "laplacian_variance": 72.71
+      },
+      "compression": {
+        "is_jpeg": false,
+        "blockiness_8x8": 0.0
+      },
+      "face_heavy_filename": true,
+      "damage": [
+        "color_cast"
+      ],
+      "recommendation": {
+        "phase3_photometric": [
+          "white_balance"
+        ],
+        "phase4_noise_artifacts": [],
+        "phase5_ai_detail": false,
+        "ai_blocked_reason": null
+      }
+    },
+    {
+      "src": "journal-kalyanam-03.webp",
+      "geometric": {
+        "width": 1600,
+        "height": 1074,
+        "aspect_ratio": 1.49,
+        "exif_orientation": 1,
+        "orientation_normalized": false,
+        "format": "WEBP",
+        "mode": "RGB",
+        "file_bytes": 201068,
+        "megapixels": 1.72
+      },
+      "photometric": {
+        "brightness_mean": 97.9,
+        "brightness_p5": 12.3,
+        "brightness_p50": 85.3,
+        "brightness_p95": 219.0,
+        "dynamic_range_p5_95": 206.7,
+        "channel_mean_rgb": [
+          108.1,
+          92.5,
+          92.9
+        ],
+        "color_cast_rgb": [
+          10.3,
+          -5.3,
+          -4.9
+        ],
+        "saturation_mean": 84.5
+      },
+      "noise_blur": {
+        "noise_score_highpass_stddev": 13.83,
+        "laplacian_variance": 53.65
+      },
+      "compression": {
+        "is_jpeg": false,
+        "blockiness_8x8": 0.0
+      },
+      "face_heavy_filename": true,
+      "damage": [
+        "ok"
+      ],
+      "recommendation": {
+        "phase3_photometric": [],
+        "phase4_noise_artifacts": [],
+        "phase5_ai_detail": false,
+        "ai_blocked_reason": null
+      }
+    },
+    {
+      "src": "journal-kumbhabhishekam-01.webp",
+      "geometric": {
+        "width": 963,
+        "height": 1280,
+        "aspect_ratio": 0.752,
+        "exif_orientation": 1,
+        "orientation_normalized": false,
+        "format": "WEBP",
+        "mode": "RGB",
+        "file_bytes": 102794,
+        "megapixels": 1.23
+      },
+      "photometric": {
+        "brightness_mean": 122.7,
+        "brightness_p5": 30.0,
+        "brightness_p50": 110.0,
+        "brightness_p95": 217.0,
+        "dynamic_range_p5_95": 187.0,
+        "channel_mean_rgb": [
+          127.2,
+          124.9,
+          116.1
+        ],
+        "color_cast_rgb": [
+          4.5,
+          2.2,
+          -6.7
+        ],
+        "saturation_mean": 49.5
+      },
+      "noise_blur": {
+        "noise_score_highpass_stddev": 29.29,
+        "laplacian_variance": 224.1
+      },
+      "compression": {
+        "is_jpeg": false,
+        "blockiness_8x8": 0.0
+      },
+      "face_heavy_filename": false,
+      "damage": [
+        "low_saturation",
+        "noisy"
+      ],
+      "recommendation": {
+        "phase3_photometric": [
+          "saturation_gentle"
+        ],
+        "phase4_noise_artifacts": [
+          "denoise"
+        ],
+        "phase5_ai_detail": false,
+        "ai_blocked_reason": null
+      }
+    },
+    {
+      "src": "journal-pooja-01-sandhyavandanam.webp",
+      "geometric": {
+        "width": 1204,
+        "height": 1600,
+        "aspect_ratio": 0.752,
+        "exif_orientation": 1,
+        "orientation_normalized": false,
+        "format": "WEBP",
+        "mode": "RGB",
+        "file_bytes": 246198,
+        "megapixels": 1.93
+      },
+      "photometric": {
+        "brightness_mean": 77.8,
+        "brightness_p5": 18.3,
+        "brightness_p50": 52.3,
+        "brightness_p95": 207.3,
+        "dynamic_range_p5_95": 189.0,
+        "channel_mean_rgb": [
+          93.2,
+          80.0,
+          60.2
+        ],
+        "color_cast_rgb": [
+          15.4,
+          2.2,
+          -17.6
+        ],
+        "saturation_mean": 124.5
+      },
+      "noise_blur": {
+        "noise_score_highpass_stddev": 37.1,
+        "laplacian_variance": 274.5
+      },
+      "compression": {
+        "is_jpeg": false,
+        "blockiness_8x8": 0.0
+      },
+      "face_heavy_filename": true,
+      "damage": [
+        "underexposed",
+        "color_cast",
+        "noisy"
+      ],
+      "recommendation": {
+        "phase3_photometric": [
+          "exposure_gamma",
+          "white_balance"
+        ],
+        "phase4_noise_artifacts": [
+          "denoise"
+        ],
+        "phase5_ai_detail": false,
+        "ai_blocked_reason": null
+      }
+    },
+    {
+      "src": "journal-pooja-02-nivedanam.webp",
+      "geometric": {
+        "width": 1204,
+        "height": 1600,
+        "aspect_ratio": 0.752,
+        "exif_orientation": 1,
+        "orientation_normalized": false,
+        "format": "WEBP",
+        "mode": "RGB",
+        "file_bytes": 231662,
+        "megapixels": 1.93
+      },
+      "photometric": {
+        "brightness_mean": 78.6,
+        "brightness_p5": 18.0,
+        "brightness_p50": 52.7,
+        "brightness_p95": 209.3,
+        "dynamic_range_p5_95": 191.3,
+        "channel_mean_rgb": [
+          91.0,
+          81.4,
+          63.3
+        ],
+        "color_cast_rgb": [
+          12.4,
+          2.8,
+          -15.3
+        ],
+        "saturation_mean": 115.3
+      },
+      "noise_blur": {
+        "noise_score_highpass_stddev": 33.0,
+        "laplacian_variance": 211.08
+      },
+      "compression": {
+        "is_jpeg": false,
+        "blockiness_8x8": 0.0
+      },
+      "face_heavy_filename": true,
+      "damage": [
+        "underexposed",
+        "color_cast",
+        "noisy"
+      ],
+      "recommendation": {
+        "phase3_photometric": [
+          "exposure_gamma",
+          "white_balance"
+        ],
+        "phase4_noise_artifacts": [
+          "denoise"
+        ],
+        "phase5_ai_detail": false,
+        "ai_blocked_reason": null
+      }
+    },
+    {
+      "src": "journal-pooja-03-procession.webp",
+      "geometric": {
+        "width": 1600,
+        "height": 1107,
+        "aspect_ratio": 1.445,
+        "exif_orientation": 1,
+        "orientation_normalized": false,
+        "format": "WEBP",
+        "mode": "RGB",
+        "file_bytes": 423992,
+        "megapixels": 1.77
+      },
+      "photometric": {
+        "brightness_mean": 126.7,
+        "brightness_p5": 36.3,
+        "brightness_p50": 117.3,
+        "brightness_p95": 226.0,
+        "dynamic_range_p5_95": 189.7,
+        "channel_mean_rgb": [
+          135.1,
+          117.4,
+          127.4
+        ],
+        "color_cast_rgb": [
+          8.5,
+          -9.2,
+          0.8
+        ],
+        "saturation_mean": 58.8
+      },
+      "noise_blur": {
+        "noise_score_highpass_stddev": 22.67,
+        "laplacian_variance": 147.98
+      },
+      "compression": {
+        "is_jpeg": false,
+        "blockiness_8x8": 0.0
+      },
+      "face_heavy_filename": true,
+      "damage": [
+        "ok"
+      ],
+      "recommendation": {
+        "phase3_photometric": [],
+        "phase4_noise_artifacts": [],
+        "phase5_ai_detail": false,
+        "ai_blocked_reason": null
+      }
+    },
+    {
+      "src": "journal-pooja-04-sacred-post.webp",
+      "geometric": {
+        "width": 1600,
+        "height": 1075,
+        "aspect_ratio": 1.488,
+        "exif_orientation": 1,
+        "orientation_normalized": false,
+        "format": "WEBP",
+        "mode": "RGB",
+        "file_bytes": 415408,
+        "megapixels": 1.72
+      },
+      "photometric": {
+        "brightness_mean": 144.8,
+        "brightness_p5": 46.3,
+        "brightness_p50": 154.0,
+        "brightness_p95": 228.0,
+        "dynamic_range_p5_95": 181.7,
+        "channel_mean_rgb": [
+          158.7,
+          135.2,
+          140.3
+        ],
+        "color_cast_rgb": [
+          14.0,
+          -9.6,
+          -4.4
+        ],
+        "saturation_mean": 60.3
+      },
+      "noise_blur": {
+        "noise_score_highpass_stddev": 25.15,
+        "laplacian_variance": 165.62
+      },
+      "compression": {
+        "is_jpeg": false,
+        "blockiness_8x8": 0.0
+      },
+      "face_heavy_filename": true,
+      "damage": [
+        "color_cast"
+      ],
+      "recommendation": {
+        "phase3_photometric": [
+          "white_balance"
+        ],
+        "phase4_noise_artifacts": [],
+        "phase5_ai_detail": false,
+        "ai_blocked_reason": null
+      }
+    },
+    {
+      "src": "journal-pooja-05-temple-entrance.webp",
+      "geometric": {
+        "width": 1600,
+        "height": 1133,
+        "aspect_ratio": 1.412,
+        "exif_orientation": 1,
+        "orientation_normalized": false,
+        "format": "WEBP",
+        "mode": "RGB",
+        "file_bytes": 364814,
+        "megapixels": 1.81
+      },
+      "photometric": {
+        "brightness_mean": 110.9,
+        "brightness_p5": 39.0,
+        "brightness_p50": 93.7,
+        "brightness_p95": 223.7,
+        "dynamic_range_p5_95": 184.7,
+        "channel_mean_rgb": [
+          116.5,
+          103.4,
+          112.7
+        ],
+        "color_cast_rgb": [
+          5.6,
+          -7.5,
+          1.8
+        ],
+        "saturation_mean": 62.3
+      },
+      "noise_blur": {
+        "noise_score_highpass_stddev": 20.36,
+        "laplacian_variance": 111.23
+      },
+      "compression": {
+        "is_jpeg": false,
+        "blockiness_8x8": 0.0
+      },
+      "face_heavy_filename": true,
+      "damage": [
+        "ok"
+      ],
+      "recommendation": {
+        "phase3_photometric": [],
+        "phase4_noise_artifacts": [],
+        "phase5_ai_detail": false,
+        "ai_blocked_reason": null
+      }
+    },
+    {
+      "src": "logo.jpeg",
+      "geometric": {
+        "width": 2304,
+        "height": 1728,
+        "aspect_ratio": 1.333,
+        "exif_orientation": 1,
+        "orientation_normalized": false,
+        "format": "JPEG",
+        "mode": "RGB",
+        "file_bytes": 1472477,
+        "megapixels": 3.98
+      },
+      "photometric": {
+        "brightness_mean": 187.5,
+        "brightness_p5": 16.0,
+        "brightness_p50": 242.3,
+        "brightness_p95": 253.0,
+        "dynamic_range_p5_95": 237.0,
+        "channel_mean_rgb": [
+          188.3,
+          187.9,
+          186.3
+        ],
+        "color_cast_rgb": [
+          0.8,
+          0.4,
+          -1.2
+        ],
+        "saturation_mean": 10.6
+      },
+      "noise_blur": {
+        "noise_score_highpass_stddev": 54.59,
+        "laplacian_variance": 794.21
+      },
+      "compression": {
+        "is_jpeg": true,
+        "blockiness_8x8": 0.99
+      },
+      "face_heavy_filename": false,
+      "damage": [
+        "overexposed",
+        "low_saturation",
+        "noisy"
+      ],
+      "recommendation": {
+        "phase3_photometric": [
+          "exposure_gamma",
+          "saturation_gentle",
+          "highlight_recovery"
+        ],
+        "phase4_noise_artifacts": [
+          "denoise"
+        ],
+        "phase5_ai_detail": false,
+        "ai_blocked_reason": null
+      }
+    },
+    {
+      "src": "trustee-photo.jpg",
+      "geometric": {
+        "width": 1179,
+        "height": 2118,
+        "aspect_ratio": 0.557,
+        "exif_orientation": 1,
+        "orientation_normalized": false,
+        "format": "JPEG",
+        "mode": "RGB",
+        "file_bytes": 2170646,
+        "megapixels": 2.5
+      },
+      "photometric": {
+        "brightness_mean": 115.6,
+        "brightness_p5": 30.7,
+        "brightness_p50": 107.7,
+        "brightness_p95": 228.0,
+        "dynamic_range_p5_95": 197.3,
+        "channel_mean_rgb": [
+          123.4,
+          132.1,
+          91.4
+        ],
+        "color_cast_rgb": [
+          7.8,
+          16.4,
+          -24.2
+        ],
+        "saturation_mean": 98.8
+      },
+      "noise_blur": {
+        "noise_score_highpass_stddev": 13.51,
+        "laplacian_variance": 58.64
+      },
+      "compression": {
+        "is_jpeg": true,
+        "blockiness_8x8": 0.862
+      },
+      "face_heavy_filename": true,
+      "damage": [
+        "color_cast"
+      ],
+      "recommendation": {
+        "phase3_photometric": [
+          "white_balance"
+        ],
+        "phase4_noise_artifacts": [],
+        "phase5_ai_detail": false,
+        "ai_blocked_reason": null
+      }
+    },
+    {
+      "src": "trustee-photo.jpg.3x4.webp",
+      "geometric": {
+        "width": 900,
+        "height": 1200,
+        "aspect_ratio": 0.75,
+        "exif_orientation": 1,
+        "orientation_normalized": false,
+        "format": "WEBP",
+        "mode": "RGB",
+        "file_bytes": 91704,
+        "megapixels": 1.08
+      },
+      "photometric": {
+        "brightness_mean": 123.7,
+        "brightness_p5": 33.0,
+        "brightness_p50": 115.3,
+        "brightness_p95": 229.7,
+        "dynamic_range_p5_95": 196.7,
+        "channel_mean_rgb": [
+          132.9,
+          139.5,
+          98.7
+        ],
+        "color_cast_rgb": [
+          9.2,
+          15.8,
+          -25.0
+        ],
+        "saturation_mean": 100.1
+      },
+      "noise_blur": {
+        "noise_score_highpass_stddev": 18.08,
+        "laplacian_variance": 111.04
+      },
+      "compression": {
+        "is_jpeg": false,
+        "blockiness_8x8": 0.0
+      },
+      "face_heavy_filename": true,
+      "damage": [
+        "color_cast"
+      ],
+      "recommendation": {
+        "phase3_photometric": [
+          "white_balance"
+        ],
+        "phase4_noise_artifacts": [],
+        "phase5_ai_detail": false,
+        "ai_blocked_reason": null
+      }
+    }
+  ]
+}

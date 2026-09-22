@@ -1,0 +1,1736 @@
+{
+  "batch": [
+    9,
+    85
+  ],
+  "summary": {
+    "ok": 77,
+    "fail": 0,
+    "ai_used": 0,
+    "elapsed": 77.4365758895874
+  },
+  "files": [
+    {
+      "src": "b7fc0a19-0055-47d5-abc9-b96ab83b5472.JPG",
+      "ok": true,
+      "out": "b7fc0a19-0055-47d5-abc9-b96ab83b5472.jpg",
+      "original_size": [
+        963,
+        1280
+      ],
+      "final_size": [
+        1204,
+        1600
+      ],
+      "applied_phase3": [
+        "saturation_gentle"
+      ],
+      "applied_phase4": [],
+      "ai_used": false,
+      "ai_rejected": false,
+      "ssim": null,
+      "in_bytes": 161253,
+      "out_bytes": 315603,
+      "elapsed": 0.17000722885131836
+    },
+    {
+      "src": "edited-photo-02.jpg.webp",
+      "ok": true,
+      "out": "edited-photo-02.jpg.jpg",
+      "original_size": [
+        1026,
+        1600
+      ],
+      "final_size": [
+        1026,
+        1600
+      ],
+      "applied_phase3": [],
+      "applied_phase4": [],
+      "ai_used": false,
+      "ai_rejected": false,
+      "ssim": null,
+      "in_bytes": 118010,
+      "out_bytes": 294817,
+      "elapsed": 0.11557888984680176
+    },
+    {
+      "src": "edited-photo-03.jpg.1x1.webp",
+      "ok": true,
+      "out": "edited-photo-03.jpg.1x1.jpg",
+      "original_size": [
+        1600,
+        1600
+      ],
+      "final_size": [
+        1600,
+        1600
+      ],
+      "applied_phase3": [],
+      "applied_phase4": [],
+      "ai_used": false,
+      "ai_rejected": true,
+      "ssim": 0.77,
+      "in_bytes": 100272,
+      "out_bytes": 299377,
+      "elapsed": 68.52770709991455
+    },
+    {
+      "src": "edited-photo-04.jpg.16x9.webp",
+      "ok": true,
+      "out": "edited-photo-04.jpg.16x9.jpg",
+      "original_size": [
+        1280,
+        720
+      ],
+      "final_size": [
+        1600,
+        900
+      ],
+      "applied_phase3": [],
+      "applied_phase4": [],
+      "ai_used": false,
+      "ai_rejected": false,
+      "ssim": null,
+      "in_bytes": 61908,
+      "out_bytes": 227622,
+      "elapsed": 0.07945489883422852
+    },
+    {
+      "src": "edited-photo-04.jpg.webp",
+      "ok": true,
+      "out": "edited-photo-04.jpg.jpg",
+      "original_size": [
+        1074,
+        1600
+      ],
+      "final_size": [
+        1074,
+        1600
+      ],
+      "applied_phase3": [],
+      "applied_phase4": [],
+      "ai_used": false,
+      "ai_rejected": false,
+      "ssim": null,
+      "in_bytes": 93048,
+      "out_bytes": 258130,
+      "elapsed": 0.07665085792541504
+    },
+    {
+      "src": "edited-photo-05.jpg.16x9.webp",
+      "ok": true,
+      "out": "edited-photo-05.jpg.16x9.jpg",
+      "original_size": [
+        1280,
+        720
+      ],
+      "final_size": [
+        1600,
+        900
+      ],
+      "applied_phase3": [],
+      "applied_phase4": [],
+      "ai_used": false,
+      "ai_rejected": false,
+      "ssim": null,
+      "in_bytes": 47214,
+      "out_bytes": 195176,
+      "elapsed": 0.0757291316986084
+    },
+    {
+      "src": "edited-photo-05.jpg.webp",
+      "ok": true,
+      "out": "edited-photo-05.jpg.jpg",
+      "original_size": [
+        1600,
+        1050
+      ],
+      "final_size": [
+        1600,
+        1050
+      ],
+      "applied_phase3": [],
+      "applied_phase4": [],
+      "ai_used": false,
+      "ai_rejected": false,
+      "ssim": null,
+      "in_bytes": 167992,
+      "out_bytes": 234042,
+      "elapsed": 0.07553625106811523
+    },
+    {
+      "src": "edited-photo-06.jpg.webp",
+      "ok": true,
+      "out": "edited-photo-06.jpg.jpg",
+      "original_size": [
+        1600,
+        1102
+      ],
+      "final_size": [
+        1600,
+        1102
+      ],
+      "applied_phase3": [
+        "white_balance"
+      ],
+      "applied_phase4": [],
+      "ai_used": false,
+      "ai_rejected": false,
+      "ssim": null,
+      "in_bytes": 237344,
+      "out_bytes": 303854,
+      "elapsed": 0.11232709884643555
+    },
+    {
+      "src": "edited-photo-07.jpg.webp",
+      "ok": true,
+      "out": "edited-photo-07.jpg.jpg",
+      "original_size": [
+        1600,
+        1007
+      ],
+      "final_size": [
+        1600,
+        1007
+      ],
+      "applied_phase3": [
+        "saturation_gentle"
+      ],
+      "applied_phase4": [],
+      "ai_used": false,
+      "ai_rejected": false,
+      "ssim": null,
+      "in_bytes": 241122,
+      "out_bytes": 310403,
+      "elapsed": 0.08872699737548828
+    },
+    {
+      "src": "edited-photo-08.jpg.webp",
+      "ok": true,
+      "out": "edited-photo-08.jpg.jpg",
+      "original_size": [
+        1600,
+        1048
+      ],
+      "final_size": [
+        1600,
+        1048
+      ],
+      "applied_phase3": [],
+      "applied_phase4": [],
+      "ai_used": false,
+      "ai_rejected": false,
+      "ssim": null,
+      "in_bytes": 223644,
+      "out_bytes": 309444,
+      "elapsed": 0.08033180236816406
+    },
+    {
+      "src": "edited-photo-09.jpg.webp",
+      "ok": true,
+      "out": "edited-photo-09.jpg.jpg",
+      "original_size": [
+        1600,
+        1010
+      ],
+      "final_size": [
+        1600,
+        1010
+      ],
+      "applied_phase3": [],
+      "applied_phase4": [],
+      "ai_used": false,
+      "ai_rejected": false,
+      "ssim": null,
+      "in_bytes": 366882,
+      "out_bytes": 413225,
+      "elapsed": 0.09274101257324219
+    },
+    {
+      "src": "edited-photo-10.jpg.webp",
+      "ok": true,
+      "out": "edited-photo-10.jpg.jpg",
+      "original_size": [
+        970,
+        1600
+      ],
+      "final_size": [
+        970,
+        1600
+      ],
+      "applied_phase3": [
+        "white_balance"
+      ],
+      "applied_phase4": [],
+      "ai_used": false,
+      "ai_rejected": false,
+      "ssim": null,
+      "in_bytes": 135826,
+      "out_bytes": 324769,
+      "elapsed": 0.10286402702331543
+    },
+    {
+      "src": "edited-photo-11.jpg.webp",
+      "ok": true,
+      "out": "edited-photo-11.jpg.jpg",
+      "original_size": [
+        1600,
+        971
+      ],
+      "final_size": [
+        1600,
+        971
+      ],
+      "applied_phase3": [],
+      "applied_phase4": [],
+      "ai_used": false,
+      "ai_rejected": false,
+      "ssim": null,
+      "in_bytes": 312180,
+      "out_bytes": 364113,
+      "elapsed": 0.08593416213989258
+    },
+    {
+      "src": "edited-photo-12.jpg.webp",
+      "ok": true,
+      "out": "edited-photo-12.jpg.jpg",
+      "original_size": [
+        1085,
+        1600
+      ],
+      "final_size": [
+        1085,
+        1600
+      ],
+      "applied_phase3": [
+        "white_balance"
+      ],
+      "applied_phase4": [],
+      "ai_used": false,
+      "ai_rejected": false,
+      "ssim": null,
+      "in_bytes": 119164,
+      "out_bytes": 312161,
+      "elapsed": 0.10668611526489258
+    },
+    {
+      "src": "edited-photo-13.jpg.webp",
+      "ok": true,
+      "out": "edited-photo-13.jpg.jpg",
+      "original_size": [
+        1600,
+        1143
+      ],
+      "final_size": [
+        1600,
+        1143
+      ],
+      "applied_phase3": [
+        "white_balance"
+      ],
+      "applied_phase4": [],
+      "ai_used": false,
+      "ai_rejected": false,
+      "ssim": null,
+      "in_bytes": 392184,
+      "out_bytes": 456180,
+      "elapsed": 0.14217281341552734
+    },
+    {
+      "src": "edited-photo-14.jpg.webp",
+      "ok": true,
+      "out": "edited-photo-14.jpg.jpg",
+      "original_size": [
+        1600,
+        940
+      ],
+      "final_size": [
+        1600,
+        940
+      ],
+      "applied_phase3": [
+        "white_balance"
+      ],
+      "applied_phase4": [],
+      "ai_used": false,
+      "ai_rejected": false,
+      "ssim": null,
+      "in_bytes": 248686,
+      "out_bytes": 329853,
+      "elapsed": 0.10544109344482422
+    },
+    {
+      "src": "edited-photo-15.jpg.webp",
+      "ok": true,
+      "out": "edited-photo-15.jpg.jpg",
+      "original_size": [
+        1600,
+        1019
+      ],
+      "final_size": [
+        1600,
+        1019
+      ],
+      "applied_phase3": [],
+      "applied_phase4": [],
+      "ai_used": false,
+      "ai_rejected": false,
+      "ssim": null,
+      "in_bytes": 355758,
+      "out_bytes": 416072,
+      "elapsed": 0.09402012825012207
+    },
+    {
+      "src": "edited-photo-16.jpg.webp",
+      "ok": true,
+      "out": "edited-photo-16.jpg.jpg",
+      "original_size": [
+        1081,
+        1600
+      ],
+      "final_size": [
+        1081,
+        1600
+      ],
+      "applied_phase3": [],
+      "applied_phase4": [
+        "denoise"
+      ],
+      "ai_used": false,
+      "ai_rejected": false,
+      "ssim": null,
+      "in_bytes": 187376,
+      "out_bytes": 386458,
+      "elapsed": 0.15719914436340332
+    },
+    {
+      "src": "edited-photo-17.jpg.webp",
+      "ok": true,
+      "out": "edited-photo-17.jpg.jpg",
+      "original_size": [
+        1600,
+        1090
+      ],
+      "final_size": [
+        1600,
+        1090
+      ],
+      "applied_phase3": [
+        "white_balance"
+      ],
+      "applied_phase4": [],
+      "ai_used": false,
+      "ai_rejected": false,
+      "ssim": null,
+      "in_bytes": 213970,
+      "out_bytes": 271886,
+      "elapsed": 0.10919189453125
+    },
+    {
+      "src": "edited-photo-18.jpg.webp",
+      "ok": true,
+      "out": "edited-photo-18.jpg.jpg",
+      "original_size": [
+        1600,
+        1023
+      ],
+      "final_size": [
+        1600,
+        1023
+      ],
+      "applied_phase3": [],
+      "applied_phase4": [],
+      "ai_used": false,
+      "ai_rejected": false,
+      "ssim": null,
+      "in_bytes": 257850,
+      "out_bytes": 326973,
+      "elapsed": 0.08414721488952637
+    },
+    {
+      "src": "edited-photo-19.jpg.webp",
+      "ok": true,
+      "out": "edited-photo-19.jpg.jpg",
+      "original_size": [
+        1600,
+        1072
+      ],
+      "final_size": [
+        1600,
+        1072
+      ],
+      "applied_phase3": [],
+      "applied_phase4": [
+        "denoise"
+      ],
+      "ai_used": false,
+      "ai_rejected": false,
+      "ssim": null,
+      "in_bytes": 322918,
+      "out_bytes": 379696,
+      "elapsed": 0.11981391906738281
+    },
+    {
+      "src": "edited-photo-20.jpg.1x1.webp",
+      "ok": true,
+      "out": "edited-photo-20.jpg.1x1.jpg",
+      "original_size": [
+        1000,
+        1000
+      ],
+      "final_size": [
+        1600,
+        1600
+      ],
+      "applied_phase3": [],
+      "applied_phase4": [],
+      "ai_used": false,
+      "ai_rejected": false,
+      "ssim": null,
+      "in_bytes": 70748,
+      "out_bytes": 340849,
+      "elapsed": 0.1269228458404541
+    },
+    {
+      "src": "edited-photo-20.jpg.webp",
+      "ok": true,
+      "out": "edited-photo-20.jpg.jpg",
+      "original_size": [
+        1600,
+        1041
+      ],
+      "final_size": [
+        1600,
+        1041
+      ],
+      "applied_phase3": [
+        "saturation_gentle"
+      ],
+      "applied_phase4": [],
+      "ai_used": false,
+      "ai_rejected": false,
+      "ssim": null,
+      "in_bytes": 249758,
+      "out_bytes": 317301,
+      "elapsed": 0.09263205528259277
+    },
+    {
+      "src": "edited-photo-21.jpg.webp",
+      "ok": true,
+      "out": "edited-photo-21.jpg.jpg",
+      "original_size": [
+        1600,
+        1107
+      ],
+      "final_size": [
+        1600,
+        1107
+      ],
+      "applied_phase3": [],
+      "applied_phase4": [],
+      "ai_used": false,
+      "ai_rejected": false,
+      "ssim": null,
+      "in_bytes": 423992,
+      "out_bytes": 461650,
+      "elapsed": 0.10725903511047363
+    },
+    {
+      "src": "edited-photo-22.jpg.webp",
+      "ok": true,
+      "out": "edited-photo-22.jpg.jpg",
+      "original_size": [
+        1600,
+        1036
+      ],
+      "final_size": [
+        1600,
+        1036
+      ],
+      "applied_phase3": [
+        "white_balance"
+      ],
+      "applied_phase4": [],
+      "ai_used": false,
+      "ai_rejected": false,
+      "ssim": null,
+      "in_bytes": 264134,
+      "out_bytes": 349904,
+      "elapsed": 0.11426925659179688
+    },
+    {
+      "src": "edited-photo-23.jpg.webp",
+      "ok": true,
+      "out": "edited-photo-23.jpg.jpg",
+      "original_size": [
+        1600,
+        1062
+      ],
+      "final_size": [
+        1600,
+        1062
+      ],
+      "applied_phase3": [],
+      "applied_phase4": [],
+      "ai_used": false,
+      "ai_rejected": false,
+      "ssim": null,
+      "in_bytes": 353860,
+      "out_bytes": 396158,
+      "elapsed": 0.09467005729675293
+    },
+    {
+      "src": "edited-photo-24.jpg.webp",
+      "ok": true,
+      "out": "edited-photo-24.jpg.jpg",
+      "original_size": [
+        1600,
+        1075
+      ],
+      "final_size": [
+        1600,
+        1075
+      ],
+      "applied_phase3": [
+        "white_balance"
+      ],
+      "applied_phase4": [],
+      "ai_used": false,
+      "ai_rejected": false,
+      "ssim": null,
+      "in_bytes": 415408,
+      "out_bytes": 485049,
+      "elapsed": 0.129425048828125
+    },
+    {
+      "src": "edited-photo-25.jpg.16x9.webp",
+      "ok": true,
+      "out": "edited-photo-25.jpg.16x9.jpg",
+      "original_size": [
+        1280,
+        720
+      ],
+      "final_size": [
+        1600,
+        900
+      ],
+      "applied_phase3": [],
+      "applied_phase4": [
+        "denoise"
+      ],
+      "ai_used": false,
+      "ai_rejected": false,
+      "ssim": null,
+      "in_bytes": 102314,
+      "out_bytes": 298551,
+      "elapsed": 0.10652303695678711
+    },
+    {
+      "src": "edited-photo-25.jpg.webp",
+      "ok": true,
+      "out": "edited-photo-25.jpg.jpg",
+      "original_size": [
+        965,
+        1600
+      ],
+      "final_size": [
+        965,
+        1600
+      ],
+      "applied_phase3": [],
+      "applied_phase4": [],
+      "ai_used": false,
+      "ai_rejected": false,
+      "ssim": null,
+      "in_bytes": 154098,
+      "out_bytes": 360396,
+      "elapsed": 0.07973074913024902
+    },
+    {
+      "src": "edited-photo-26.jpg.3x4.webp",
+      "ok": true,
+      "out": "edited-photo-26.jpg.3x4.jpg",
+      "original_size": [
+        900,
+        1200
+      ],
+      "final_size": [
+        1200,
+        1600
+      ],
+      "applied_phase3": [],
+      "applied_phase4": [],
+      "ai_used": false,
+      "ai_rejected": false,
+      "ssim": null,
+      "in_bytes": 119132,
+      "out_bytes": 403310,
+      "elapsed": 0.10884404182434082
+    },
+    {
+      "src": "edited-photo-26.jpg.webp",
+      "ok": true,
+      "out": "edited-photo-26.jpg.jpg",
+      "original_size": [
+        1600,
+        1133
+      ],
+      "final_size": [
+        1600,
+        1133
+      ],
+      "applied_phase3": [],
+      "applied_phase4": [],
+      "ai_used": false,
+      "ai_rejected": false,
+      "ssim": null,
+      "in_bytes": 364814,
+      "out_bytes": 425720,
+      "elapsed": 0.0978538990020752
+    },
+    {
+      "src": "edited-photo-27.jpg.3x4.webp",
+      "ok": true,
+      "out": "edited-photo-27.jpg.3x4.jpg",
+      "original_size": [
+        900,
+        1200
+      ],
+      "final_size": [
+        1200,
+        1600
+      ],
+      "applied_phase3": [],
+      "applied_phase4": [],
+      "ai_used": false,
+      "ai_rejected": false,
+      "ssim": null,
+      "in_bytes": 123700,
+      "out_bytes": 406499,
+      "elapsed": 0.10748624801635742
+    },
+    {
+      "src": "edited-photo-27.jpg.webp",
+      "ok": true,
+      "out": "edited-photo-27.jpg.jpg",
+      "original_size": [
+        1600,
+        1089
+      ],
+      "final_size": [
+        1600,
+        1089
+      ],
+      "applied_phase3": [],
+      "applied_phase4": [
+        "denoise"
+      ],
+      "ai_used": false,
+      "ai_rejected": false,
+      "ssim": null,
+      "in_bytes": 442924,
+      "out_bytes": 428870,
+      "elapsed": 0.13707208633422852
+    },
+    {
+      "src": "edited-photo-28.jpg.webp",
+      "ok": true,
+      "out": "edited-photo-28.jpg.jpg",
+      "original_size": [
+        1600,
+        984
+      ],
+      "final_size": [
+        1600,
+        984
+      ],
+      "applied_phase3": [],
+      "applied_phase4": [],
+      "ai_used": false,
+      "ai_rejected": false,
+      "ssim": null,
+      "in_bytes": 300334,
+      "out_bytes": 390698,
+      "elapsed": 0.0896000862121582
+    },
+    {
+      "src": "edited-photo-copy.jpg.webp",
+      "ok": true,
+      "out": "edited-photo-copy.jpg.jpg",
+      "original_size": [
+        1600,
+        981
+      ],
+      "final_size": [
+        1600,
+        981
+      ],
+      "applied_phase3": [],
+      "applied_phase4": [],
+      "ai_used": false,
+      "ai_rejected": false,
+      "ssim": null,
+      "in_bytes": 184816,
+      "out_bytes": 246154,
+      "elapsed": 0.07964682579040527
+    },
+    {
+      "src": "edited-photo.jpg.webp",
+      "ok": true,
+      "out": "edited-photo.jpg.jpg",
+      "original_size": [
+        1600,
+        1048
+      ],
+      "final_size": [
+        1600,
+        1048
+      ],
+      "applied_phase3": [],
+      "applied_phase4": [
+        "denoise"
+      ],
+      "ai_used": false,
+      "ai_rejected": false,
+      "ssim": null,
+      "in_bytes": 294722,
+      "out_bytes": 343950,
+      "elapsed": 0.11800527572631836
+    },
+    {
+      "src": "edited-photo.png.webp",
+      "ok": true,
+      "out": "edited-photo.png.jpg",
+      "original_size": [
+        1600,
+        949
+      ],
+      "final_size": [
+        1600,
+        949
+      ],
+      "applied_phase3": [
+        "white_balance"
+      ],
+      "applied_phase4": [],
+      "ai_used": false,
+      "ai_rejected": false,
+      "ssim": null,
+      "in_bytes": 215122,
+      "out_bytes": 282224,
+      "elapsed": 0.10042500495910645
+    },
+    {
+      "src": "events-slide-1-ganesh-chaturthi.webp",
+      "ok": true,
+      "out": "events-slide-1-ganesh-chaturthi.jpg",
+      "original_size": [
+        963,
+        1280
+      ],
+      "final_size": [
+        1204,
+        1600
+      ],
+      "applied_phase3": [],
+      "applied_phase4": [
+        "denoise"
+      ],
+      "ai_used": false,
+      "ai_rejected": false,
+      "ssim": null,
+      "in_bytes": 111206,
+      "out_bytes": 334398,
+      "elapsed": 0.1363968849182129
+    },
+    {
+      "src": "events-slide-2-varalakshmi.webp",
+      "ok": true,
+      "out": "events-slide-2-varalakshmi.jpg",
+      "original_size": [
+        1204,
+        1600
+      ],
+      "final_size": [
+        1204,
+        1600
+      ],
+      "applied_phase3": [
+        "white_balance"
+      ],
+      "applied_phase4": [
+        "denoise"
+      ],
+      "ai_used": false,
+      "ai_rejected": false,
+      "ssim": null,
+      "in_bytes": 220640,
+      "out_bytes": 440486,
+      "elapsed": 0.16413617134094238
+    },
+    {
+      "src": "events-slide-3-sandhyavandanam.webp",
+      "ok": true,
+      "out": "events-slide-3-sandhyavandanam.jpg",
+      "original_size": [
+        1204,
+        1600
+      ],
+      "final_size": [
+        1204,
+        1600
+      ],
+      "applied_phase3": [
+        "exposure_gamma",
+        "white_balance"
+      ],
+      "applied_phase4": [
+        "denoise"
+      ],
+      "ai_used": false,
+      "ai_rejected": false,
+      "ssim": null,
+      "in_bytes": 246198,
+      "out_bytes": 482936,
+      "elapsed": 0.19604992866516113
+    },
+    {
+      "src": "events-slide-4-nivedanam.webp",
+      "ok": true,
+      "out": "events-slide-4-nivedanam.jpg",
+      "original_size": [
+        1204,
+        1600
+      ],
+      "final_size": [
+        1204,
+        1600
+      ],
+      "applied_phase3": [
+        "exposure_gamma",
+        "white_balance"
+      ],
+      "applied_phase4": [
+        "denoise"
+      ],
+      "ai_used": false,
+      "ai_rejected": false,
+      "ssim": null,
+      "in_bytes": 231662,
+      "out_bytes": 458672,
+      "elapsed": 0.1902310848236084
+    },
+    {
+      "src": "events-slide-5-kumbhabhishekam.webp",
+      "ok": true,
+      "out": "events-slide-5-kumbhabhishekam.jpg",
+      "original_size": [
+        963,
+        1280
+      ],
+      "final_size": [
+        1204,
+        1600
+      ],
+      "applied_phase3": [
+        "saturation_gentle"
+      ],
+      "applied_phase4": [
+        "denoise"
+      ],
+      "ai_used": false,
+      "ai_rejected": false,
+      "ssim": null,
+      "in_bytes": 102794,
+      "out_bytes": 318437,
+      "elapsed": 0.1443641185760498
+    },
+    {
+      "src": "events-slide-6-kalyanam.webp",
+      "ok": true,
+      "out": "events-slide-6-kalyanam.jpg",
+      "original_size": [
+        963,
+        1280
+      ],
+      "final_size": [
+        1204,
+        1600
+      ],
+      "applied_phase3": [
+        "saturation_gentle"
+      ],
+      "applied_phase4": [],
+      "ai_used": false,
+      "ai_rejected": false,
+      "ssim": null,
+      "in_bytes": 91278,
+      "out_bytes": 310985,
+      "elapsed": 0.11468219757080078
+    },
+    {
+      "src": "events-slide-7-cultural-evenings.webp",
+      "ok": true,
+      "out": "events-slide-7-cultural-evenings.jpg",
+      "original_size": [
+        1920,
+        1212
+      ],
+      "final_size": [
+        1920,
+        1212
+      ],
+      "applied_phase3": [],
+      "applied_phase4": [],
+      "ai_used": false,
+      "ai_rejected": false,
+      "ssim": null,
+      "in_bytes": 233704,
+      "out_bytes": 544389,
+      "elapsed": 0.11961984634399414
+    },
+    {
+      "src": "events-slide-8-brahmotsavam.webp",
+      "ok": true,
+      "out": "events-slide-8-brahmotsavam.jpg",
+      "original_size": [
+        1920,
+        1228
+      ],
+      "final_size": [
+        1920,
+        1228
+      ],
+      "applied_phase3": [],
+      "applied_phase4": [],
+      "ai_used": false,
+      "ai_rejected": false,
+      "ssim": null,
+      "in_bytes": 149868,
+      "out_bytes": 415291,
+      "elapsed": 0.15527081489562988
+    },
+    {
+      "src": "home-page-header.png.webp",
+      "ok": true,
+      "out": "home-page-header.png.jpg",
+      "original_size": [
+        1600,
+        899
+      ],
+      "final_size": [
+        1600,
+        899
+      ],
+      "applied_phase3": [],
+      "applied_phase4": [],
+      "ai_used": false,
+      "ai_rejected": false,
+      "ssim": null,
+      "in_bytes": 61294,
+      "out_bytes": 189323,
+      "elapsed": 0.06280970573425293
+    },
+    {
+      "src": "journal-awards-01-chaganti.webp",
+      "ok": true,
+      "out": "journal-awards-01-chaganti.jpg",
+      "original_size": [
+        1600,
+        1007
+      ],
+      "final_size": [
+        1600,
+        1007
+      ],
+      "applied_phase3": [
+        "saturation_gentle"
+      ],
+      "applied_phase4": [],
+      "ai_used": false,
+      "ai_rejected": false,
+      "ssim": null,
+      "in_bytes": 241122,
+      "out_bytes": 310403,
+      "elapsed": 0.08935809135437012
+    },
+    {
+      "src": "journal-awards-02-vivekananda.webp",
+      "ok": true,
+      "out": "journal-awards-02-vivekananda.jpg",
+      "original_size": [
+        1600,
+        971
+      ],
+      "final_size": [
+        1600,
+        971
+      ],
+      "applied_phase3": [],
+      "applied_phase4": [],
+      "ai_used": false,
+      "ai_rejected": false,
+      "ssim": null,
+      "in_bytes": 312180,
+      "out_bytes": 364113,
+      "elapsed": 0.09371519088745117
+    },
+    {
+      "src": "journal-awards-03-shishya-celebration.webp",
+      "ok": true,
+      "out": "journal-awards-03-shishya-celebration.jpg",
+      "original_size": [
+        1600,
+        1072
+      ],
+      "final_size": [
+        1600,
+        1072
+      ],
+      "applied_phase3": [],
+      "applied_phase4": [
+        "denoise"
+      ],
+      "ai_used": false,
+      "ai_rejected": false,
+      "ssim": null,
+      "in_bytes": 322918,
+      "out_bytes": 379696,
+      "elapsed": 0.13006186485290527
+    },
+    {
+      "src": "journal-awards-04-sarvabhouma.webp",
+      "ok": true,
+      "out": "journal-awards-04-sarvabhouma.jpg",
+      "original_size": [
+        1600,
+        1041
+      ],
+      "final_size": [
+        1600,
+        1041
+      ],
+      "applied_phase3": [
+        "saturation_gentle"
+      ],
+      "applied_phase4": [],
+      "ai_used": false,
+      "ai_rejected": false,
+      "ssim": null,
+      "in_bytes": 249758,
+      "out_bytes": 317301,
+      "elapsed": 0.09788799285888672
+    },
+    {
+      "src": "journal-awards-05-south-indian.webp",
+      "ok": true,
+      "out": "journal-awards-05-south-indian.jpg",
+      "original_size": [
+        1600,
+        965
+      ],
+      "final_size": [
+        1600,
+        965
+      ],
+      "applied_phase3": [],
+      "applied_phase4": [],
+      "ai_used": false,
+      "ai_rejected": false,
+      "ssim": null,
+      "in_bytes": 318594,
+      "out_bytes": 365401,
+      "elapsed": 0.09093570709228516
+    },
+    {
+      "src": "journal-awards-06-ganap-sachidananda.webp",
+      "ok": true,
+      "out": "journal-awards-06-ganap-sachidananda.jpg",
+      "original_size": [
+        1600,
+        1202
+      ],
+      "final_size": [
+        1600,
+        1202
+      ],
+      "applied_phase3": [],
+      "applied_phase4": [],
+      "ai_used": false,
+      "ai_rejected": false,
+      "ssim": null,
+      "in_bytes": 77974,
+      "out_bytes": 245641,
+      "elapsed": 0.08959102630615234
+    },
+    {
+      "src": "journal-community-02-ceremony-with-priest.webp",
+      "ok": true,
+      "out": "journal-community-02-ceremony-with-priest.jpg",
+      "original_size": [
+        1600,
+        1090
+      ],
+      "final_size": [
+        1600,
+        1090
+      ],
+      "applied_phase3": [
+        "white_balance"
+      ],
+      "applied_phase4": [],
+      "ai_used": false,
+      "ai_rejected": false,
+      "ssim": null,
+      "in_bytes": 213970,
+      "out_bytes": 271886,
+      "elapsed": 0.11491990089416504
+    },
+    {
+      "src": "journal-community-03-ashram-boys.webp",
+      "ok": true,
+      "out": "journal-community-03-ashram-boys.jpg",
+      "original_size": [
+        1600,
+        940
+      ],
+      "final_size": [
+        1600,
+        940
+      ],
+      "applied_phase3": [
+        "white_balance"
+      ],
+      "applied_phase4": [],
+      "ai_used": false,
+      "ai_rejected": false,
+      "ssim": null,
+      "in_bytes": 248686,
+      "out_bytes": 329853,
+      "elapsed": 0.10098600387573242
+    },
+    {
+      "src": "journal-community-04-ashram-adults.webp",
+      "ok": true,
+      "out": "journal-community-04-ashram-adults.jpg",
+      "original_size": [
+        1599,
+        1036
+      ],
+      "final_size": [
+        1600,
+        1037
+      ],
+      "applied_phase3": [
+        "white_balance"
+      ],
+      "applied_phase4": [],
+      "ai_used": false,
+      "ai_rejected": false,
+      "ssim": null,
+      "in_bytes": 261024,
+      "out_bytes": 357983,
+      "elapsed": 0.13662385940551758
+    },
+    {
+      "src": "journal-community-05-villagers.webp",
+      "ok": true,
+      "out": "journal-community-05-villagers.jpg",
+      "original_size": [
+        1600,
+        1062
+      ],
+      "final_size": [
+        1600,
+        1062
+      ],
+      "applied_phase3": [],
+      "applied_phase4": [],
+      "ai_used": false,
+      "ai_rejected": false,
+      "ssim": null,
+      "in_bytes": 353860,
+      "out_bytes": 396158,
+      "elapsed": 0.09553122520446777
+    },
+    {
+      "src": "journal-community-06-booklets.webp",
+      "ok": true,
+      "out": "journal-community-06-booklets.jpg",
+      "original_size": [
+        1600,
+        1089
+      ],
+      "final_size": [
+        1600,
+        1089
+      ],
+      "applied_phase3": [],
+      "applied_phase4": [
+        "denoise"
+      ],
+      "ai_used": false,
+      "ai_rejected": false,
+      "ssim": null,
+      "in_bytes": 442924,
+      "out_bytes": 428870,
+      "elapsed": 0.1317882537841797
+    },
+    {
+      "src": "journal-cultural-01-bharatanatyam-tribute.webp",
+      "ok": true,
+      "out": "journal-cultural-01-bharatanatyam-tribute.jpg",
+      "original_size": [
+        970,
+        1600
+      ],
+      "final_size": [
+        970,
+        1600
+      ],
+      "applied_phase3": [
+        "white_balance"
+      ],
+      "applied_phase4": [],
+      "ai_used": false,
+      "ai_rejected": false,
+      "ssim": null,
+      "in_bytes": 135826,
+      "out_bytes": 324769,
+      "elapsed": 0.09818887710571289
+    },
+    {
+      "src": "journal-cultural-02-bharatanatyam-guru.webp",
+      "ok": true,
+      "out": "journal-cultural-02-bharatanatyam-guru.jpg",
+      "original_size": [
+        1600,
+        1019
+      ],
+      "final_size": [
+        1600,
+        1019
+      ],
+      "applied_phase3": [],
+      "applied_phase4": [],
+      "ai_used": false,
+      "ai_rejected": false,
+      "ssim": null,
+      "in_bytes": 355758,
+      "out_bytes": 416072,
+      "elapsed": 0.09304499626159668
+    },
+    {
+      "src": "journal-cultural-03-bharatanatyam-hyderabad.webp",
+      "ok": true,
+      "out": "journal-cultural-03-bharatanatyam-hyderabad.jpg",
+      "original_size": [
+        1600,
+        984
+      ],
+      "final_size": [
+        1600,
+        984
+      ],
+      "applied_phase3": [],
+      "applied_phase4": [],
+      "ai_used": false,
+      "ai_rejected": false,
+      "ssim": null,
+      "in_bytes": 300334,
+      "out_bytes": 390698,
+      "elapsed": 0.08194208145141602
+    },
+    {
+      "src": "journal-cultural-04-literary-tribute.webp",
+      "ok": true,
+      "out": "journal-cultural-04-literary-tribute.jpg",
+      "original_size": [
+        1600,
+        1048
+      ],
+      "final_size": [
+        1600,
+        1048
+      ],
+      "applied_phase3": [],
+      "applied_phase4": [],
+      "ai_used": false,
+      "ai_rejected": false,
+      "ssim": null,
+      "in_bytes": 223644,
+      "out_bytes": 309444,
+      "elapsed": 0.08059811592102051
+    },
+    {
+      "src": "journal-cultural-05-sangam-collage.webp",
+      "ok": true,
+      "out": "journal-cultural-05-sangam-collage.jpg",
+      "original_size": [
+        1600,
+        1081
+      ],
+      "final_size": [
+        1600,
+        1081
+      ],
+      "applied_phase3": [],
+      "applied_phase4": [
+        "denoise"
+      ],
+      "ai_used": false,
+      "ai_rejected": false,
+      "ssim": null,
+      "in_bytes": 366476,
+      "out_bytes": 385732,
+      "elapsed": 0.12067890167236328
+    },
+    {
+      "src": "journal-festivals-01-girija-kalyana.webp",
+      "ok": true,
+      "out": "journal-festivals-01-girija-kalyana.jpg",
+      "original_size": [
+        1600,
+        1026
+      ],
+      "final_size": [
+        1600,
+        1026
+      ],
+      "applied_phase3": [],
+      "applied_phase4": [],
+      "ai_used": false,
+      "ai_rejected": false,
+      "ssim": null,
+      "in_bytes": 234450,
+      "out_bytes": 298092,
+      "elapsed": 0.07799792289733887
+    },
+    {
+      "src": "journal-festivals-03-ganesh-chaturthi.webp",
+      "ok": true,
+      "out": "journal-festivals-03-ganesh-chaturthi.jpg",
+      "original_size": [
+        963,
+        1280
+      ],
+      "final_size": [
+        1204,
+        1600
+      ],
+      "applied_phase3": [],
+      "applied_phase4": [
+        "denoise"
+      ],
+      "ai_used": false,
+      "ai_rejected": false,
+      "ssim": null,
+      "in_bytes": 111206,
+      "out_bytes": 334398,
+      "elapsed": 0.13759708404541016
+    },
+    {
+      "src": "journal-indoor-01.webp",
+      "ok": true,
+      "out": "journal-indoor-01.jpg",
+      "original_size": [
+        981,
+        1600
+      ],
+      "final_size": [
+        981,
+        1600
+      ],
+      "applied_phase3": [],
+      "applied_phase4": [],
+      "ai_used": false,
+      "ai_rejected": false,
+      "ssim": null,
+      "in_bytes": 85156,
+      "out_bytes": 242710,
+      "elapsed": 0.0682380199432373
+    },
+    {
+      "src": "journal-kalyanam-01.webp",
+      "ok": true,
+      "out": "journal-kalyanam-01.jpg",
+      "original_size": [
+        963,
+        1280
+      ],
+      "final_size": [
+        1204,
+        1600
+      ],
+      "applied_phase3": [
+        "saturation_gentle"
+      ],
+      "applied_phase4": [],
+      "ai_used": false,
+      "ai_rejected": false,
+      "ssim": null,
+      "in_bytes": 91278,
+      "out_bytes": 310985,
+      "elapsed": 0.11086106300354004
+    },
+    {
+      "src": "journal-kalyanam-02.webp",
+      "ok": true,
+      "out": "journal-kalyanam-02.jpg",
+      "original_size": [
+        1600,
+        1102
+      ],
+      "final_size": [
+        1600,
+        1102
+      ],
+      "applied_phase3": [
+        "white_balance"
+      ],
+      "applied_phase4": [],
+      "ai_used": false,
+      "ai_rejected": false,
+      "ssim": null,
+      "in_bytes": 237344,
+      "out_bytes": 303854,
+      "elapsed": 0.1098790168762207
+    },
+    {
+      "src": "journal-kalyanam-03.webp",
+      "ok": true,
+      "out": "journal-kalyanam-03.jpg",
+      "original_size": [
+        1600,
+        1074
+      ],
+      "final_size": [
+        1600,
+        1074
+      ],
+      "applied_phase3": [],
+      "applied_phase4": [],
+      "ai_used": false,
+      "ai_rejected": false,
+      "ssim": null,
+      "in_bytes": 201068,
+      "out_bytes": 261812,
+      "elapsed": 0.07822704315185547
+    },
+    {
+      "src": "journal-kumbhabhishekam-01.webp",
+      "ok": true,
+      "out": "journal-kumbhabhishekam-01.jpg",
+      "original_size": [
+        963,
+        1280
+      ],
+      "final_size": [
+        1204,
+        1600
+      ],
+      "applied_phase3": [
+        "saturation_gentle"
+      ],
+      "applied_phase4": [
+        "denoise"
+      ],
+      "ai_used": false,
+      "ai_rejected": false,
+      "ssim": null,
+      "in_bytes": 102794,
+      "out_bytes": 318437,
+      "elapsed": 0.14258098602294922
+    },
+    {
+      "src": "journal-pooja-01-sandhyavandanam.webp",
+      "ok": true,
+      "out": "journal-pooja-01-sandhyavandanam.jpg",
+      "original_size": [
+        1204,
+        1600
+      ],
+      "final_size": [
+        1204,
+        1600
+      ],
+      "applied_phase3": [
+        "exposure_gamma",
+        "white_balance"
+      ],
+      "applied_phase4": [
+        "denoise"
+      ],
+      "ai_used": false,
+      "ai_rejected": false,
+      "ssim": null,
+      "in_bytes": 246198,
+      "out_bytes": 482936,
+      "elapsed": 0.20049095153808594
+    },
+    {
+      "src": "journal-pooja-02-nivedanam.webp",
+      "ok": true,
+      "out": "journal-pooja-02-nivedanam.jpg",
+      "original_size": [
+        1204,
+        1600
+      ],
+      "final_size": [
+        1204,
+        1600
+      ],
+      "applied_phase3": [
+        "exposure_gamma",
+        "white_balance"
+      ],
+      "applied_phase4": [
+        "denoise"
+      ],
+      "ai_used": false,
+      "ai_rejected": false,
+      "ssim": null,
+      "in_bytes": 231662,
+      "out_bytes": 458672,
+      "elapsed": 0.1880931854248047
+    },
+    {
+      "src": "journal-pooja-03-procession.webp",
+      "ok": true,
+      "out": "journal-pooja-03-procession.jpg",
+      "original_size": [
+        1600,
+        1107
+      ],
+      "final_size": [
+        1600,
+        1107
+      ],
+      "applied_phase3": [],
+      "applied_phase4": [],
+      "ai_used": false,
+      "ai_rejected": false,
+      "ssim": null,
+      "in_bytes": 423992,
+      "out_bytes": 461650,
+      "elapsed": 0.1004033088684082
+    },
+    {
+      "src": "journal-pooja-04-sacred-post.webp",
+      "ok": true,
+      "out": "journal-pooja-04-sacred-post.jpg",
+      "original_size": [
+        1600,
+        1075
+      ],
+      "final_size": [
+        1600,
+        1075
+      ],
+      "applied_phase3": [
+        "white_balance"
+      ],
+      "applied_phase4": [],
+      "ai_used": false,
+      "ai_rejected": false,
+      "ssim": null,
+      "in_bytes": 415408,
+      "out_bytes": 485049,
+      "elapsed": 0.12730908393859863
+    },
+    {
+      "src": "journal-pooja-05-temple-entrance.webp",
+      "ok": true,
+      "out": "journal-pooja-05-temple-entrance.jpg",
+      "original_size": [
+        1600,
+        1133
+      ],
+      "final_size": [
+        1600,
+        1133
+      ],
+      "applied_phase3": [],
+      "applied_phase4": [],
+      "ai_used": false,
+      "ai_rejected": false,
+      "ssim": null,
+      "in_bytes": 364814,
+      "out_bytes": 425720,
+      "elapsed": 0.09915900230407715
+    },
+    {
+      "src": "logo.jpeg",
+      "ok": true,
+      "out": "logo.jpg",
+      "original_size": [
+        2304,
+        1728
+      ],
+      "final_size": [
+        2304,
+        1728
+      ],
+      "applied_phase3": [
+        "exposure_gamma",
+        "saturation_gentle"
+      ],
+      "applied_phase4": [
+        "denoise"
+      ],
+      "ai_used": false,
+      "ai_rejected": false,
+      "ssim": null,
+      "in_bytes": 1472477,
+      "out_bytes": 925213,
+      "elapsed": 0.35593485832214355
+    },
+    {
+      "src": "trustee-photo.jpg",
+      "ok": true,
+      "out": "trustee-photo.jpg",
+      "original_size": [
+        1179,
+        2118
+      ],
+      "final_size": [
+        1179,
+        2118
+      ],
+      "applied_phase3": [
+        "white_balance"
+      ],
+      "applied_phase4": [],
+      "ai_used": false,
+      "ai_rejected": false,
+      "ssim": null,
+      "in_bytes": 2170646,
+      "out_bytes": 423385,
+      "elapsed": 0.17899680137634277
+    },
+    {
+      "src": "trustee-photo.jpg.3x4.webp",
+      "ok": true,
+      "out": "trustee-photo.jpg.3x4.jpg",
+      "original_size": [
+        900,
+        1200
+      ],
+      "final_size": [
+        1200,
+        1600
+      ],
+      "applied_phase3": [
+        "white_balance"
+      ],
+      "applied_phase4": [],
+      "ai_used": false,
+      "ai_rejected": false,
+      "ssim": null,
+      "in_bytes": 91704,
+      "out_bytes": 328835,
+      "elapsed": 0.13576912879943848
+    }
+  ]
+}
