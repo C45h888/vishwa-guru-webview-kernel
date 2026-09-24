@@ -1,4 +1,16 @@
 <script lang="ts">
+    /**
+     * SiteHeader — sticky top bar.
+     *
+     * Pass M1 refactor:
+     *   - SiteNav is now mounted once. Its internal viewport-driven
+     *     `{#if isDesktop}` branch decides whether to render the desktop
+     *     nav + Donate CTA or the mobile hamburger trigger. The previous
+     *     duplicate-SiteNav mounting pattern is gone.
+     *   - The desktop "Donate" CTA was moved into SiteNav (it lives next
+     *     to the desktop link cluster, which is a better visual grouping
+     *     than the prior `SiteHeader` standalone button).
+     */
     import SiteNav from './SiteNav.svelte';
     import MandalaDecoration from './MandalaDecoration.svelte';
 
@@ -40,22 +52,9 @@
                     </span>
                 </a>
 
-                <nav class="hidden md:block">
-                    <SiteNav />
-                </nav>
-
-                <div class="hidden md:block">
-                    <a
-                        href="/donate"
-                        class="inline-flex h-9 items-center justify-center rounded-sm bg-primary px-5 text-xs font-semibold uppercase tracking-[0.2em] text-primary-foreground transition-colors hover:bg-accent"
-                    >
-                        Donate
-                    </a>
-                </div>
-
-                <div class="md:hidden">
-                    <SiteNav />
-                </div>
+                <!-- Single SiteNav mount. The component branches on viewport
+                     internally (see SiteNav.svelte). -->
+                <SiteNav />
             </div>
         </div>
     </div>
