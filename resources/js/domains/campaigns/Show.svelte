@@ -1,49 +1,59 @@
 <script lang="ts">
+    /**
+     * Show.svelte — `/campaigns/{slug}`
+     *
+     * Pass M2 layout (per docs/ui-passes/M2-campaigns-overhaul.md):
+     *
+     *   1. Hero          — full-viewport cover (CampaignHero.svelte)
+     *   2. About         — eyebrow + headline + prose; "Why it matters"
+     *                      folded in as the lead paragraph
+     *   3. Campaign      — progress bar + target + status
+     *   4. Donate CTA    — single prominent CTA + receipt trust pill
+     *   5. Seva pill     — 3 connected steps (SevaPill.svelte)
+     *   6. Supports row  — 4-item icon row (SupportsRow.svelte)
+     *
+     * Quiet footer: related campaigns, FAQ, share.
+     *
+     * Doctrine preserved from the previous version:
+     *   - Backend contracts unchanged. Same props, same data shape.
+     *   - All AdminEditOverlay integration points preserved (only the
+     *     hero carries an edit pencil now; the admin can still reach
+     *     the campaign form via the hero).
+     *   - Mobile menu kernel (M1) continues to work — this surface
+     *     inherits PublicLayout.
+     *   - Aesthetic: same 6 design tokens, same type roles, same
+     *     eyebrow rhythm.
+     */
     import { page } from '@inertiajs/svelte';
     import Money from '$shared/components/Money.svelte';
     import CampaignProgress from '$shared/components/CampaignProgress.svelte';
     import CampaignCard from '$shared/components/CampaignCard.svelte';
+    import CampaignHero from '$shared/components/CampaignHero.svelte';
+    import SevaPill from '$shared/components/SevaPill.svelte';
+    import SupportsRow from '$shared/components/SupportsRow.svelte';
     import PublicLayout from '$shared/components/PublicLayout.svelte';
-    import PublicMediaImage from '$shared/components/PublicMediaImage.svelte';
-    import MandalaDecoration from '$shared/components/MandalaDecoration.svelte';
-    import TrustBadgeRow from '$shared/components/TrustBadgeRow.svelte';
-    import AdminEditOverlay from '$shared/components/AdminEditOverlay.svelte';
-    import {
-        campaignFallbackFor,
-        OFFERING_FLOW,
-        DONATION_FAQ,
-    } from '$shared/lib/campaign-fallbacks';
-    import { currencySymbol, currencyName } from '$shared/lib/currency';
     import {
         ArrowRight,
         CheckCircle2,
         ChevronDown,
-        Clock,
         Copy,
         Heart,
         Mail,
         Share2,
         Sparkles,
-        HandHeart,
-        Wrench,
-        Utensils,
-        Users,
     } from 'lucide-svelte';
+    import {
+        campaignFallbackFor,
+        OFFERING_FLOW,
+        DONATION_FAQ,
+    } from '$shared/lib/campaign-fallbacks';
+    import { currencyName } from '$shared/lib/currency';
     import type {
         CampaignDetailProps,
         CampaignProgressProps,
         CampaignSummaryProps,
         AppPageProps,
     } from '$shared/lib/inertia';
-
-    /**
-     * Default static asset hero image — used when the campaign row has no
-     * `cover_image_file_id` (Phase 2 image migration will replace this).
-     * Phase 2 swaps this fallback for the per-campaign public_media row.
-     */
-    const DEFAULT_HERO_IMAGE = '/show-images/hero.png';
-    const ABOUT_FEATURE_IMAGE = '/show-images/about.jpg';
-    const SUPPORTS_HEADER_IMAGE = '/show-images/supports.jpg';
 
     let {
         campaign,
@@ -59,20 +69,10 @@
         })[];
     }> = $props();
 
-    const targetByCurrency = $derived({
-        [campaign.currency_code]: campaign.target_amount_minor,
-    } as Record<string, number | null>);
-
-    const heroImage = $derived(campaign.cover_image ?? null);
-    const hasImage = $derived(heroImage !== null);
-
     const fallback = $derived(campaignFallbackFor(campaign.category));
 
-    /**
-     * Human cause labels for the raw category keys. The DB carries
-     * operational keys (general / construction / operations); visitors
-     * see causes. Unknown keys fall back to title-cased raw text.
-     */
+    // ── Labels & meta ───────────────────────────────────────────────
+
     const CATEGORY_LABELS: Record<string, string> = {
         general: 'Schools + Campus Fund',
         school_annadanam: 'Schools · Daily Annadanam',
@@ -92,11 +92,6 @@
                 .replace(/\b\w/g, (c) => c.toUpperCase()),
     );
 
-    /**
-     * Cause eyebrow + designate hint for the hero. Current causes invite
-     * a direct offering; planned stages say when they open so a donor
-     * never mistakes a future building for today's ask.
-     */
     const causeEyebrow = $derived.by(() => {
         switch (campaign.category) {
             case 'general':
@@ -113,24 +108,47 @@
         }
     });
 
-    // About copy prefers the campaign row's own description (the named,
-    // per-cause prose); the category fallback covers rows with no
-    // description so the page never collapses.
+    const stateLabel = $derived(
+        campaign.state.charAt(0).toUpperCase() + campaign.state.slice(1),
+    );
+
+    // ── About copy ──────────────────────────────────────────────────
+
     const aboutSource = $derived(
         campaign.description && campaign.description.trim() !== ''
             ? campaign.description
             : fallback.about,
     );
 
-    // Multi-paragraph rendering of the About copy. The config string
-    // contains 4 sentences; split on full-stops so each becomes its own
-    // paragraph instead of one block.
     const aboutParagraphs = $derived(
         aboutSource
             .split(/(?<=[.!?])\s+/)
             .map((p) => p.trim())
             .filter((p) => p.length > 0),
     );
+
+    /**
+     * "Why it matters" is now the lead paragraph of the About section
+     * (Pass M2). It uses the fallback's pull-quote when one is
+     * available; otherwise the first campaign-supplied paragraph is
+     * lifted into the lead position so the section still opens with
+     * the cause's voice.
+     */
+    const whyItMattersLead = $derived.by(() => {
+        const quote = fallback.whyItMatters?.trim();
+        if (quote && quote.length > 0) return quote;
+        return aboutParagraphs[0] ?? '';
+    });
+
+    const whyItMattersBody = $derived(
+        fallback.whyItMattersBody?.trim() ?? '',
+    );
+
+    // ── Progress ────────────────────────────────────────────────────
+
+    const targetByCurrency = $derived({
+        [campaign.currency_code]: campaign.target_amount_minor,
+    } as Record<string, number | null>);
 
     const hasProgress = $derived(
         progress.length > 0 && progress.some((p) => p.raised_amount_minor > 0),
@@ -139,7 +157,9 @@
     const hasTarget = $derived(campaign.target_amount_minor !== null);
     const isOpenGoal = $derived(!hasTarget);
 
-    const dateState = $derived.by(() => {
+    // ── Date state ──────────────────────────────────────────────────
+
+    const dateLabel = $derived.by(() => {
         const now = Date.now();
         const start = campaign.starts_at
             ? new Date(campaign.starts_at).getTime()
@@ -148,49 +168,29 @@
             ? new Date(campaign.ends_at).getTime()
             : null;
 
-        const startLabel = start
-            ? new Date(start).toLocaleDateString('en-IN', {
-                  day: 'numeric',
-                  month: 'short',
-                  year: 'numeric',
-              })
-            : null;
-        const endLabel = end
-            ? new Date(end).toLocaleDateString('en-IN', {
-                  day: 'numeric',
-                  month: 'short',
-                  year: 'numeric',
-              })
-            : null;
+        const fmt = (ms: number) =>
+            new Date(ms).toLocaleDateString('en-IN', {
+                day: 'numeric',
+                month: 'short',
+                year: 'numeric',
+            });
 
-        if (start && start > now) {
-            return { kind: 'upcoming' as const, label: `Starts ${startLabel}` };
-        }
-        if (end && end < now) {
-            return { kind: 'ended' as const, label: `Ended ${endLabel}` };
-        }
+        if (start && start > now) return `Starts ${fmt(start)}`;
+        if (end && end < now) return `Ended ${fmt(end)}`;
         if (end) {
             const days = Math.ceil((end - now) / (1000 * 60 * 60 * 24));
             if (days <= 7) {
-                return {
-                    kind: 'urgent' as const,
-                    label:
-                        days === 0
-                            ? 'Ends today'
-                            : `Ends in ${days} day${days === 1 ? '' : 's'}`,
-                };
+                return days === 0
+                    ? 'Ends today'
+                    : `Ends in ${days} day${days === 1 ? '' : 's'}`;
             }
-            return { kind: 'ongoing' as const, label: `Ends ${endLabel}` };
+            return `Ends ${fmt(end)}`;
         }
-        if (start) {
-            return { kind: 'ongoing' as const, label: `Started ${startLabel}` };
-        }
-        return { kind: 'open' as const, label: 'Open now' };
+        if (start) return `Started ${fmt(start)}`;
+        return 'Open now';
     });
 
-    const stateLabel = $derived(
-        campaign.state.charAt(0).toUpperCase() + campaign.state.slice(1),
-    );
+    // ── Share ───────────────────────────────────────────────────────
 
     const pageUrl = $derived(
         typeof window !== 'undefined' ? window.location.href : '',
@@ -214,17 +214,29 @@
         `mailto:?subject=${encodeURIComponent(`Support: ${campaign.title}`)}&body=${encodeURIComponent(`${pageUrl}`)}`,
     );
 
+    // ── FAQ ─────────────────────────────────────────────────────────
+
     const faqOpen = $state(DONATION_FAQ.map(() => false));
     function toggleFaq(i: number) {
         faqOpen[i] = !faqOpen[i];
     }
 
+    // ── Supports row items ──────────────────────────────────────────
+
     /**
-     * Icon for each "What your offering supports" item — picked by index
-     * for visual rhythm. Same 4 icons cycle in order across all three
-     * campaigns so the cards feel like a single editorial system.
+     * The "What every offering supports" items for the icon row. We
+     * pair each label with a short note for the row's secondary line.
+     * Pulled from the campaign fallback so the wording stays consistent
+     * with the rest of the page.
      */
-    const SUPPORT_ICONS = [HandHeart, Wrench, Utensils, Users];
+    const supportsItems = $derived(
+        fallback.whatItSupports.map((label) => ({
+            label,
+            note: '',
+        })),
+    );
+
+    // ── Donate href ────────────────────────────────────────────────
 
     const donateHref = $derived(`/donate?campaign=${campaign.slug}`);
 </script>
@@ -238,324 +250,77 @@
 
 <PublicLayout>
     <article>
-        <!-- ═══ 1. HERO — image left, cause text right (editorial order) ═══ -->
-        <section class="relative overflow-hidden bg-background">
-            <div
-                class="pointer-events-none absolute -right-20 top-0 opacity-[0.08]"
-                aria-hidden="true"
-            >
-                <MandalaDecoration size={320} tint="gold" />
-            </div>
+        <!-- ═══ 1. HERO ═══ -->
+        <CampaignHero
+            {campaign}
+            {donateHref}
+            {categoryLabel}
+            {causeEyebrow}
+            {stateLabel}
+            {dateLabel}
+            isFeatured={campaign.is_featured}
+        />
 
-            <div class="container relative py-12 lg:py-20">
-                <div class="grid grid-cols-1 items-center gap-10 lg:grid-cols-12 lg:gap-16">
-                    <div class="relative order-1 lg:col-span-5">
-                        {#if $page.props.authUser?.role === 'admin'}
-                            <AdminEditOverlay
-                                href={`/admin/campaigns/${campaign.id}/edit`}
-                                srLabel={`Edit campaign: ${campaign.title}`}
-                            />
-                        {/if}
-                        {#if hasImage}
-                            <div
-                                class="overflow-hidden rounded-md border border-border/40 shadow-sm"
-                            >
-                                <PublicMediaImage
-                                    media={heroImage!}
-                                    alt={campaign.title}
-                                    class="aspect-[4/5] w-full object-cover"
-                                />
-                            </div>
-                        {:else}
-                            <div
-                                class="overflow-hidden rounded-md border border-border/40 shadow-sm"
-                            >
-                                <img
-                                    src={DEFAULT_HERO_IMAGE}
-                                    alt={campaign.title}
-                                    class="aspect-[4/5] w-full object-cover"
-                                    loading="eager"
-                                    decoding="async"
-                                />
-                            </div>
-                        {/if}
-                    </div>
-
-                    <div class="order-2 space-y-5 lg:col-span-7">
-                        <p
-                            class="text-xs font-semibold uppercase tracking-[0.25em] text-primary"
-                        >
-                            {causeEyebrow}
-                        </p>
-                        <div
-                            class="flex flex-wrap items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.2em]"
-                        >
-                            <span
-                                class="rounded-sm border border-primary/30 bg-primary/5 px-2 py-0.5 text-primary"
-                            >
-                                {categoryLabel}
-                            </span>
-                            {#if campaign.is_featured}
-                                <span
-                                    class="rounded-sm bg-primary px-2 py-0.5 text-primary-foreground"
-                                >
-                                    Featured
-                                </span>
-                            {/if}
-                            <span
-                                class="rounded-sm border border-border bg-background px-2 py-0.5 text-foreground/70"
-                            >
-                                {stateLabel}
-                            </span>
-                        </div>
-
-                        <h1
-                            class="font-serif text-3xl font-semibold leading-tight lg:text-5xl"
-                        >
-                            {campaign.title}
-                        </h1>
-                        {#if campaign.short_description}
-                            <p
-                                class="max-w-xl text-base leading-relaxed text-muted-foreground lg:text-lg"
-                            >
-                                {campaign.short_description}
-                            </p>
-                        {/if}
-
-                        <div class="flex flex-wrap items-center gap-2 pt-1 text-xs">
-                            <span
-                                class="inline-flex items-center gap-1.5 rounded-sm border border-border bg-ivory px-2.5 py-1 text-foreground/80"
-                            >
-                                <Clock class="h-3.5 w-3.5" aria-hidden="true" />
-                                {dateState.label}
-                            </span>
-                        </div>
-
-                        <div class="flex flex-wrap items-center gap-3 pt-2">
-                            <a
-                                href={donateHref}
-                                class="inline-flex h-11 items-center justify-center whitespace-nowrap rounded-sm bg-primary px-6 text-xs font-semibold uppercase tracking-[0.2em] text-primary-foreground transition-colors hover:bg-accent"
-                            >
-                                <Heart
-                                    class="mr-2 h-4 w-4"
-                                    aria-hidden="true"
-                                />
-                                Donate to this cause
-                                <ArrowRight
-                                    class="ml-2 h-4 w-4"
-                                    aria-hidden="true"
-                                />
-                            </a>
-                            <a
-                                href="/campaigns"
-                                class="inline-flex h-11 items-center justify-center whitespace-nowrap rounded-sm border border-border bg-background px-5 text-xs font-semibold uppercase tracking-[0.2em] text-foreground/80 transition-colors hover:border-primary/40 hover:text-primary"
-                            >
-                                All causes
-                            </a>
-                        </div>
-
-                        <div class="pt-1">
-                            <TrustBadgeRow />
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- ═══ 2. HOW YOUR OFFERING BECOMES SEVA — 3-step guide (moved up — right under the title) ═══ -->
-        <section class="bg-background py-14 lg:py-20">
+        <!-- ═══ 2. ABOUT (with "Why it matters" folded in as the lead) ═══ -->
+        <section class="bg-background py-20 lg:py-28">
             <div class="container">
-                <div class="mx-auto max-w-5xl space-y-10">
-                    <div class="mx-auto max-w-2xl space-y-4 text-center">
+                <div class="mx-auto max-w-3xl space-y-8 text-center">
+                    <p
+                        class="text-xs font-semibold uppercase tracking-[0.3em] text-primary"
+                    >
+                        About this campaign
+                    </p>
+                    <h2
+                        class="font-serif text-3xl font-semibold leading-tight lg:text-4xl"
+                    >
+                        What your offering sustains
+                    </h2>
+
+                    {#if whyItMattersLead}
                         <p
-                            class="text-xs font-semibold uppercase tracking-[0.25em] text-primary"
+                            class="font-serif text-xl leading-relaxed text-foreground/90 lg:text-2xl"
                         >
-                            Three steps
+                            "{whyItMattersLead}"
                         </p>
-                        <h2
-                            class="font-serif text-2xl font-semibold leading-tight lg:text-3xl"
-                        >
-                            How your offering becomes seva
-                        </h2>
+                    {/if}
+
+                    {#if whyItMattersBody}
                         <p
-                            class="text-base leading-relaxed text-muted-foreground"
+                            class="text-base leading-relaxed text-muted-foreground lg:text-lg"
                         >
-                            Giving here follows a simple rhythm — choose,
-                            dedicate, receive. Each step is handled with care,
-                            so the offering stays an offering.
+                            {whyItMattersBody}
                         </p>
+                    {/if}
+
+                    <div
+                        class="space-y-4 pt-2 text-left text-base leading-relaxed text-muted-foreground"
+                    >
+                        {#each aboutParagraphs as para, i (i)}
+                            <p>{para}</p>
+                        {/each}
                     </div>
 
-                    <ol
-                        class="grid grid-cols-1 gap-5 lg:grid-cols-3"
-                        aria-label="The three steps of offering"
-                    >
-                        {#each OFFERING_FLOW as step, i (i)}
-                            <li
-                                class="relative flex h-full flex-col gap-4 rounded-md border border-border/40 bg-ivory p-6 lg:p-7"
-                            >
-                                <div
-                                    class="flex items-center justify-between gap-2"
-                                >
-                                    <span
-                                        class="font-serif text-3xl font-semibold text-primary/40 lg:text-4xl"
-                                        aria-hidden="true"
-                                    >
-                                        {step.number}
-                                    </span>
-                                    <span
-                                        class="inline-flex h-1.5 w-12 rounded-full bg-primary/30"
-                                        aria-hidden="true"
-                                    ></span>
-                                </div>
-                                <h3
-                                    class="font-serif text-lg font-semibold leading-tight lg:text-xl"
-                                >
-                                    {step.title}
-                                </h3>
-                                <p
-                                    class="text-sm leading-relaxed text-muted-foreground"
-                                >
-                                    {step.body}
-                                </p>
-                            </li>
-                        {/each}
-                    </ol>
-
-                    <div class="text-center">
+                    <div class="pt-2">
                         <a
                             href={donateHref}
-                            class="inline-flex h-11 items-center justify-center whitespace-nowrap rounded-sm bg-primary px-6 text-xs font-semibold uppercase tracking-[0.2em] text-primary-foreground transition-colors hover:bg-accent"
+                            class="inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:underline"
                         >
-                            <Heart
-                                class="mr-2 h-4 w-4"
-                                aria-hidden="true"
-                            />
-                            Start your offering
-                            <ArrowRight
-                                class="ml-2 h-4 w-4"
-                                aria-hidden="true"
-                            />
+                            Donate to {campaign.title}
+                            <ArrowRight class="h-4 w-4" aria-hidden="true" />
                         </a>
-                        <p
-                            class="mt-3 text-xs text-muted-foreground"
-                        >
-                            You'll be taken to the donation page for
-                            <span class="text-foreground/80"
-                                >{campaign.title}</span
-                            >.
-                        </p>
                     </div>
                 </div>
             </div>
         </section>
 
-        <!-- ═══ 3. ABOUT THIS CAMPAIGN — text left, supporting cards right ═══ -->
-        <section class="bg-background py-14 lg:py-20">
-            <div class="container">
-                <div class="grid grid-cols-1 items-start gap-10 lg:grid-cols-12 lg:gap-14">
-                    <div class="order-1 space-y-5 lg:col-span-7">
-                        <p
-                            class="text-xs font-semibold uppercase tracking-[0.25em] text-primary"
-                        >
-                            About this campaign
-                        </p>
-                        <h2
-                            class="font-serif text-2xl font-semibold leading-tight lg:text-3xl"
-                        >
-                            What your offering sustains
-                        </h2>
-                        <div
-                            class="space-y-4 text-base leading-relaxed text-muted-foreground"
-                        >
-                            {#each aboutParagraphs as para, i (i)}
-                                <p>{para}</p>
-                            {/each}
-                        </div>
-                        <div class="pt-2">
-                            <a
-                                href={donateHref}
-                                class="inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:underline"
-                            >
-                                Donate to {campaign.title}
-                                <ArrowRight
-                                    class="h-4 w-4"
-                                    aria-hidden="true"
-                                />
-                            </a>
-                        </div>
-                    </div>
-
-                    <div class="order-2 space-y-4 lg:col-span-5">
-                        <div
-                            class="overflow-hidden rounded-md border border-border/40 shadow-sm"
-                        >
-                            <img
-                                src={ABOUT_FEATURE_IMAGE}
-                                alt="A glimpse from the temple"
-                                class="aspect-[4/5] w-full object-cover"
-                                loading="lazy"
-                                decoding="async"
-                            />
-                        </div>
-                        <ul class="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                            {#each fallback.whatItSupports as item, i (i)}
-                                {@const Icon = SUPPORT_ICONS[i % SUPPORT_ICONS.length]}
-                                <li
-                                    class="group flex items-start gap-3 rounded-md border border-border/40 bg-ivory p-4 transition-all hover:border-primary/40 hover:shadow-sm"
-                                >
-                                    <div
-                                        class="flex h-9 w-9 shrink-0 items-center justify-center rounded-sm bg-primary/10 text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground"
-                                    >
-                                        <Icon
-                                            class="h-4 w-4"
-                                            aria-hidden="true"
-                                        />
-                                    </div>
-                                    <p
-                                        class="text-sm font-medium leading-snug text-foreground/90"
-                                    >
-                                        {item}
-                                    </p>
-                                </li>
-                            {/each}
-                        </ul>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- ═══ 3. WHY IT MATTERS — pull-quote + following paragraph ═══ -->
-        <section class="bg-ivory py-16 lg:py-24">
-            <div class="container">
-                <div class="mx-auto max-w-3xl space-y-6 text-center">
-                    <p
-                        class="text-xs font-semibold uppercase tracking-[0.25em] text-primary"
-                    >
-                        Why it matters
-                    </p>
-                    <blockquote
-                        class="font-serif text-xl leading-relaxed text-foreground/90 lg:text-2xl"
-                    >
-                        "{fallback.whyItMatters}"
-                    </blockquote>
-                    <p
-                        class="text-base leading-relaxed text-muted-foreground lg:text-lg"
-                    >
-                        {fallback.whyItMattersBody}
-                    </p>
-                </div>
-            </div>
-        </section>
-
-        <!-- ═══ 4. PROGRESS + INLINE DONATE ═══ -->
-        <section class="bg-background py-16 lg:py-24">
+        <!-- ═══ 3. CAMPAIGN — progress + target + status ═══ -->
+        <section class="bg-ivory py-16 lg:py-20">
             <div class="container">
                 <div class="mx-auto max-w-3xl space-y-6">
                     <div class="flex items-end justify-between gap-4">
                         <div class="space-y-2">
                             <p
-                                class="text-xs font-semibold uppercase tracking-[0.25em] text-primary"
+                                class="text-xs font-semibold uppercase tracking-[0.3em] text-primary"
                             >
                                 Progress
                             </p>
@@ -603,7 +368,7 @@
                         />
                     {:else if isOpenGoal}
                         <div
-                            class="rounded-md border border-dashed border-primary/30 bg-ivory p-8 text-center"
+                            class="rounded-md border border-dashed border-primary/30 bg-background p-8 text-center"
                         >
                             <Sparkles
                                 class="mx-auto mb-3 h-6 w-6 text-primary/60"
@@ -619,7 +384,7 @@
                         </div>
                     {:else}
                         <div
-                            class="rounded-md border border-dashed border-border bg-ivory p-6 text-center"
+                            class="rounded-md border border-dashed border-border bg-background p-6 text-center"
                         >
                             <p class="text-sm text-muted-foreground">
                                 No donations yet for this campaign. Be the
@@ -627,98 +392,20 @@
                             </p>
                         </div>
                     {/if}
-
-                    <div class="flex justify-end pt-2">
-                        <a
-                            href={donateHref}
-                            class="inline-flex h-10 items-center justify-center whitespace-nowrap rounded-sm bg-primary px-5 text-xs font-semibold uppercase tracking-[0.2em] text-primary-foreground transition-colors hover:bg-accent"
-                        >
-                            <Heart
-                                class="mr-2 h-4 w-4"
-                                aria-hidden="true"
-                            />
-                            Donate now
-                            <ArrowRight
-                                class="ml-2 h-4 w-4"
-                                aria-hidden="true"
-                            />
-                        </a>
-                    </div>
                 </div>
             </div>
         </section>
 
-        <!-- ═══ 5. WHERE EVERY RUPEE GOES — banner + accountability note (cards now live beside About) ═══ -->
-        <section class="bg-ivory py-16 lg:py-24">
-            <div class="container">
-                <div class="mx-auto max-w-5xl space-y-8">
-                    <div
-                        class="relative overflow-hidden rounded-md border border-border/40"
-                    >
-                        <img
-                            src={SUPPORTS_HEADER_IMAGE}
-                            alt="Where every rupee goes"
-                            class="aspect-[21/9] w-full object-cover"
-                            loading="lazy"
-                            decoding="async"
-                        />
-                        <div
-                            class="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/65 via-black/20 to-transparent"
-                            aria-hidden="true"
-                        ></div>
-                        <div
-                            class="absolute inset-0 flex items-end justify-between gap-4 p-6 lg:p-10"
-                        >
-                            <div class="space-y-2">
-                                <p
-                                    class="text-xs font-semibold uppercase tracking-[0.25em] text-white/85"
-                                >
-                                    What your offering supports
-                                </p>
-                                <h3
-                                    class="font-serif text-2xl font-semibold leading-tight text-white lg:text-3xl"
-                                >
-                                    Where every rupee goes
-                                </h3>
-                            </div>
-                            <a
-                                href={donateHref}
-                                class="hidden shrink-0 items-center gap-2 rounded-sm bg-white/95 px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.2em] text-primary transition-colors hover:bg-white sm:inline-flex"
-                            >
-                                Donate
-                                <ArrowRight
-                                    class="h-4 w-4"
-                                    aria-hidden="true"
-                                />
-                            </a>
-                        </div>
-                    </div>
-
-                    <p
-                        class="mx-auto max-w-2xl text-center text-sm leading-relaxed text-muted-foreground"
-                    >
-                        Every offering supports {campaign.title}. The trust
-                        publishes how each campaign's funds were spent when
-                        the campaign closes — so the giving stays accountable
-                        to every devotee who contributes.
-                    </p>
-                </div>
-            </div>
-        </section>
-
-        <!-- ═══ 7. CONTRIBUTE CTA — moved up so the guide leads into it ═══ -->
-        <section class="container py-16 lg:py-20">
-            <div class="mx-auto max-w-3xl space-y-4">
+        <!-- ═══ 4. DONATE CTA — single, prominent, with the receipt trust pill ═══ -->
+        <section class="container py-20 lg:py-24">
+            <div class="mx-auto max-w-3xl space-y-5">
                 <div
-                    class="flex items-start gap-3 rounded-md border border-primary/20 bg-ivory p-4"
+                    class="flex items-start gap-3 rounded-md border border-primary/20 bg-rice p-4"
                 >
                     <div
                         class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary"
                     >
-                        <CheckCircle2
-                            class="h-4 w-4"
-                            aria-hidden="true"
-                        />
+                        <CheckCircle2 class="h-4 w-4" aria-hidden="true" />
                     </div>
                     <div class="space-y-0.5">
                         <p class="text-sm font-medium">
@@ -726,48 +413,56 @@
                         </p>
                         <p class="text-xs text-muted-foreground">
                             Tax-deductibility, including 80G certificates where
-                            applicable, is confirmed at the time of each donation
-                            in line with applicable law.
+                            applicable, is confirmed at the time of each
+                            donation in line with applicable law.
                         </p>
                     </div>
                 </div>
 
                 <div
-                    class="relative overflow-hidden rounded-md border border-primary/20 bg-ivory p-8 lg:p-12"
+                    class="relative overflow-hidden rounded-md border border-primary/30 bg-ivory p-8 lg:p-12"
                 >
                     <div
-                        class="pointer-events-none absolute -right-16 -top-16 opacity-[0.08]"
+                        class="pointer-events-none absolute -right-16 -top-16 opacity-[0.10]"
                         aria-hidden="true"
                     >
-                        <MandalaDecoration size={260} tint="gold" />
+                        <svg
+                            viewBox="0 0 200 200"
+                            class="h-56 w-56 text-primary"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="0.5"
+                        >
+                            <circle cx="100" cy="100" r="95" />
+                            <circle cx="100" cy="100" r="75" />
+                            <circle cx="100" cy="100" r="55" />
+                        </svg>
                     </div>
                     <div
                         class="relative flex flex-col items-start gap-6 sm:flex-row sm:items-center sm:justify-between"
                     >
                         <div class="space-y-2">
                             <p
-                                class="text-xs font-semibold uppercase tracking-[0.25em] text-primary"
+                                class="text-xs font-semibold uppercase tracking-[0.3em] text-primary"
                             >
-                                Contribute
+                                Offer your seva
                             </p>
                             <h3
-                                class="font-serif text-2xl font-semibold lg:text-3xl"
+                                class="font-serif text-2xl font-semibold leading-tight lg:text-3xl"
                             >
-                                Offer your seva to {campaign.title}
+                                Contribute to {campaign.title}
                             </h3>
                             <p class="text-sm text-muted-foreground">
                                 Every contribution, of any size, sustains
-                                {categoryLabel} — {causeEyebrow.toLowerCase()}.
+                                {categoryLabel} —
+                                {causeEyebrow.toLowerCase()}.
                             </p>
                         </div>
                         <a
                             href={donateHref}
-                            class="inline-flex h-11 items-center justify-center whitespace-nowrap rounded-sm bg-primary px-6 text-xs font-semibold uppercase tracking-[0.2em] text-primary-foreground transition-colors hover:bg-accent"
+                            class="inline-flex h-12 items-center justify-center whitespace-nowrap rounded-sm bg-primary px-7 text-xs font-semibold uppercase tracking-[0.2em] text-primary-foreground transition-colors hover:bg-accent"
                         >
-                            <Heart
-                                class="mr-2 h-4 w-4"
-                                aria-hidden="true"
-                            />
+                            <Heart class="mr-2 h-4 w-4" aria-hidden="true" />
                             Donate
                             <ArrowRight
                                 class="ml-2 h-4 w-4"
@@ -779,94 +474,105 @@
             </div>
         </section>
 
-        <!-- ═══ 8. FAQ ═══ -->
-        <section class="container pb-16 lg:pb-20">
-            <div class="mx-auto max-w-3xl space-y-5">
-                <p
-                    class="text-xs font-semibold uppercase tracking-[0.25em] text-primary"
-                >
-                    About giving
-                </p>
-                <h2 class="font-serif text-2xl font-semibold lg:text-3xl">
-                    Frequently asked
-                </h2>
-                <ul class="divide-y divide-border/60 rounded-md border border-border/40 bg-background">
-                    {#each DONATION_FAQ as faq, i (i)}
-                        <li>
-                            <button
-                                type="button"
-                                class="flex w-full items-center justify-between gap-4 px-4 py-4 text-left text-sm font-medium transition-colors hover:bg-ivory/50"
-                                aria-expanded={faqOpen[i]}
-                                aria-controls="faq-panel-{i}"
-                                onclick={() => toggleFaq(i)}
-                            >
-                                <span>{faq.question}</span>
-                                <ChevronDown
-                                    class={`h-4 w-4 shrink-0 text-muted-foreground transition-transform ${faqOpen[i] ? 'rotate-180' : ''}`}
-                                    aria-hidden="true"
-                                />
-                            </button>
-                            {#if faqOpen[i]}
-                                <div
-                                    id="faq-panel-{i}"
-                                    class="px-4 pb-4 text-sm leading-relaxed text-muted-foreground"
-                                >
-                                    {faq.answer}
-                                </div>
-                            {/if}
-                        </li>
-                    {/each}
-                </ul>
-            </div>
-        </section>
+        <!-- ═══ 5. SEVA PILL ═══ -->
+        <SevaPill steps={OFFERING_FLOW} />
 
-        <!-- ═══ 9. SHARE ═══ -->
-        <section class="container pb-16 lg:pb-20">
-            <div
-                class="mx-auto flex max-w-3xl flex-wrap items-center justify-between gap-3 rounded-md border border-border/40 bg-ivory px-4 py-3"
-            >
-                <span
-                    class="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground"
+        <!-- ═══ 6. SUPPORTS ROW ═══ -->
+        <SupportsRow items={supportsItems} />
+
+        <!-- ═══ FOOTER: FAQ + SHARE + RELATED ═══ -->
+        <section class="container py-16 lg:py-20">
+            <div class="mx-auto max-w-3xl space-y-12">
+                <!-- FAQ -->
+                <div class="space-y-5">
+                    <div>
+                        <p
+                            class="text-xs font-semibold uppercase tracking-[0.3em] text-primary"
+                        >
+                            About giving
+                        </p>
+                        <h2 class="mt-2 font-serif text-2xl font-semibold lg:text-3xl">
+                            Frequently asked
+                        </h2>
+                    </div>
+                    <ul
+                        class="divide-y divide-border/60 rounded-md border border-border/40 bg-background"
+                    >
+                        {#each DONATION_FAQ as faq, i (i)}
+                            <li>
+                                <button
+                                    type="button"
+                                    class="flex w-full items-center justify-between gap-4 px-4 py-4 text-left text-sm font-medium transition-colors hover:bg-ivory/50"
+                                    aria-expanded={faqOpen[i]}
+                                    aria-controls="faq-panel-{i}"
+                                    onclick={() => toggleFaq(i)}
+                                >
+                                    <span>{faq.question}</span>
+                                    <ChevronDown
+                                        class={`h-4 w-4 shrink-0 text-muted-foreground transition-transform ${faqOpen[i] ? 'rotate-180' : ''}`}
+                                        aria-hidden="true"
+                                    />
+                                </button>
+                                {#if faqOpen[i]}
+                                    <div
+                                        id="faq-panel-{i}"
+                                        class="px-4 pb-4 text-sm leading-relaxed text-muted-foreground"
+                                    >
+                                        {faq.answer}
+                                    </div>
+                                {/if}
+                            </li>
+                        {/each}
+                    </ul>
+                </div>
+
+                <!-- Share -->
+                <div
+                    class="flex flex-wrap items-center justify-between gap-3 rounded-md border border-border/40 bg-ivory px-4 py-3"
                 >
-                    <Share2 class="h-3.5 w-3.5" aria-hidden="true" />
-                    Share this campaign
-                </span>
-                <div class="flex items-center gap-2">
-                    <button
-                        type="button"
-                        onclick={copyLink}
-                        class="inline-flex items-center gap-1.5 rounded-sm border border-border bg-background px-3 py-1.5 text-xs font-medium transition-colors hover:border-primary/40"
+                    <span
+                        class="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground"
                     >
-                        <Copy class="h-3.5 w-3.5" aria-hidden="true" />
-                        {copied ? 'Copied' : 'Copy link'}
-                    </button>
-                    <a
-                        href={whatsappUrl}
-                        target="_blank"
-                        rel="noopener"
-                        class="inline-flex items-center gap-1.5 rounded-sm border border-border bg-background px-3 py-1.5 text-xs font-medium transition-colors hover:border-primary/40"
-                    >
-                        WhatsApp
-                    </a>
-                    <a
-                        href={mailtoUrl}
-                        class="inline-flex items-center gap-1.5 rounded-sm border border-border bg-background px-3 py-1.5 text-xs font-medium transition-colors hover:border-primary/40"
-                    >
-                        <Mail class="h-3.5 w-3.5" aria-hidden="true" />
-                        Email
-                    </a>
+                        <Share2 class="h-3.5 w-3.5" aria-hidden="true" />
+                        Share this campaign
+                    </span>
+                    <div class="flex items-center gap-2">
+                        <button
+                            type="button"
+                            onclick={copyLink}
+                            class="inline-flex items-center gap-1.5 rounded-sm border border-border bg-background px-3 py-1.5 text-xs font-medium transition-colors hover:border-primary/40"
+                        >
+                            <Copy class="h-3.5 w-3.5" aria-hidden="true" />
+                            {copied ? 'Copied' : 'Copy link'}
+                        </button>
+                        <a
+                            href={whatsappUrl}
+                            target="_blank"
+                            rel="noopener"
+                            class="inline-flex items-center gap-1.5 rounded-sm border border-border bg-background px-3 py-1.5 text-xs font-medium transition-colors hover:border-primary/40"
+                        >
+                            WhatsApp
+                        </a>
+                        <a
+                            href={mailtoUrl}
+                            class="inline-flex items-center gap-1.5 rounded-sm border border-border bg-background px-3 py-1.5 text-xs font-medium transition-colors hover:border-primary/40"
+                        >
+                            <Mail class="h-3.5 w-3.5" aria-hidden="true" />
+                            Email
+                        </a>
+                    </div>
                 </div>
             </div>
         </section>
 
-        <!-- ═══ 10. RELATED CAMPAIGNS ═══ -->
+        <!-- Related campaigns -->
         {#if relatedCampaigns.length > 0}
             <section class="bg-ivory py-20 lg:py-28">
                 <div class="container">
                     <div class="mx-auto max-w-5xl space-y-8">
                         <div class="space-y-2">
                             <p
-                                class="text-xs font-semibold uppercase tracking-[0.25em] text-primary"
+                                class="text-xs font-semibold uppercase tracking-[0.3em] text-primary"
                             >
                                 Other causes
                             </p>
