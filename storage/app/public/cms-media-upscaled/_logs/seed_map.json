@@ -1,0 +1,751 @@
+{
+  "canonical_meta": {
+    "campus-gaushala.jpg": {
+      "bytes": 482535,
+      "height": 941,
+      "mime": "image/jpeg",
+      "sha256": "6dea051ac8de45d6a2fd63a727e16b84fe8823e8515614d96b08efbf14688d0a",
+      "storage_path": "cms-media/campus-gaushala.jpg",
+      "width": 1672
+    },
+    "campus-land.jpg": {
+      "bytes": 688122,
+      "height": 2100,
+      "mime": "image/jpeg",
+      "sha256": "8ff8bac2a91fed6de7623fabb68434b0271cd1abfbcb27ed538e0bb7607951b7",
+      "storage_path": "cms-media/campus-land.jpg",
+      "width": 1574
+    },
+    "campus-welfare.jpg": {
+      "bytes": 604285,
+      "height": 941,
+      "mime": "image/jpeg",
+      "sha256": "87b97c175f1a79413cdbd5a3b12a69a5f1505623b8cc5983facf10b1fa9a9505",
+      "storage_path": "cms-media/campus-welfare.jpg",
+      "width": 1672
+    },
+    "edited-photo-02.jpg": {
+      "bytes": 294870,
+      "height": 1026,
+      "mime": "image/jpeg",
+      "sha256": "3e91f4afd0da1f8a4001b58c7ba58c978049882dda2592316d153d98ec109158",
+      "storage_path": "cms-media/edited-photo-02.jpg",
+      "width": 1600
+    },
+    "edited-photo-03-1x1.jpg": {
+      "bytes": 299377,
+      "height": 1600,
+      "mime": "image/jpeg",
+      "sha256": "d518d97154e6ee98d36d4d52afb97d463a8466e5cb05fdfc415c9e15c4b2ab8c",
+      "storage_path": "cms-media/edited-photo-03-1x1.jpg",
+      "width": 1600
+    },
+    "edited-photo-04-16x9.jpg": {
+      "bytes": 227622,
+      "height": 900,
+      "mime": "image/jpeg",
+      "sha256": "7a582dba34bab3cdecb87604ea3f4ca2439af0fbb92844ab7d576d0bf8276e11",
+      "storage_path": "cms-media/edited-photo-04-16x9.jpg",
+      "width": 1600
+    },
+    "edited-photo-04.jpg": {
+      "bytes": 258130,
+      "height": 1600,
+      "mime": "image/jpeg",
+      "sha256": "3245b9e71741dc602c4706644995cfb43f1f34467115b85f67cd2d17e57ad836",
+      "storage_path": "cms-media/edited-photo-04.jpg",
+      "width": 1074
+    },
+    "edited-photo-05-16x9.jpg": {
+      "bytes": 195176,
+      "height": 900,
+      "mime": "image/jpeg",
+      "sha256": "ebde5bdfdb2e11a0f41be77c6273ed45911abcc1b5338e33ee69acac9f51b3cd",
+      "storage_path": "cms-media/edited-photo-05-16x9.jpg",
+      "width": 1600
+    },
+    "edited-photo-05.jpg": {
+      "bytes": 234042,
+      "height": 1050,
+      "mime": "image/jpeg",
+      "sha256": "c79158cfbd9c81784e313af9663e187c8548a19a758a24f72a1cd142e26e953d",
+      "storage_path": "cms-media/edited-photo-05.jpg",
+      "width": 1600
+    },
+    "edited-photo-09.jpg": {
+      "bytes": 413225,
+      "height": 1010,
+      "mime": "image/jpeg",
+      "sha256": "25cf7f5946518511b11f7478ab617c897bc153c4dae4f329c48331fabf2d2f8a",
+      "storage_path": "cms-media/edited-photo-09.jpg",
+      "width": 1600
+    },
+    "edited-photo-12.jpg": {
+      "bytes": 313762,
+      "height": 1085,
+      "mime": "image/jpeg",
+      "sha256": "62a7f8fc27643677d25ad694e430cab5308076a6ff340a9782c2ac972880f8b6",
+      "storage_path": "cms-media/edited-photo-12.jpg",
+      "width": 1600
+    },
+    "edited-photo-13.jpg": {
+      "bytes": 456180,
+      "height": 1143,
+      "mime": "image/jpeg",
+      "sha256": "f2588f66394f44306e3bbe3eac5457fd57047cbb8ee753269d00a190b25be5cc",
+      "storage_path": "cms-media/edited-photo-13.jpg",
+      "width": 1600
+    },
+    "edited-photo-16.jpg": {
+      "bytes": 386458,
+      "height": 1600,
+      "mime": "image/jpeg",
+      "sha256": "a49b01ba32576d81cbc68828c9285c51b803b7b55fb8fc069e6a1092c21a694b",
+      "storage_path": "cms-media/edited-photo-16.jpg",
+      "width": 1081
+    },
+    "edited-photo-18.jpg": {
+      "bytes": 326973,
+      "height": 1023,
+      "mime": "image/jpeg",
+      "sha256": "e6f7dea1034549f865163e94a37d89b746f6753156965cb97024e01a817d62c7",
+      "storage_path": "cms-media/edited-photo-18.jpg",
+      "width": 1600
+    },
+    "edited-photo-20-1x1.jpg": {
+      "bytes": 340849,
+      "height": 1600,
+      "mime": "image/jpeg",
+      "sha256": "f6eef1dbbd8f115ea771260c3a4c22b14a8a6736ce1694a7f1faedec4d63a683",
+      "storage_path": "cms-media/edited-photo-20-1x1.jpg",
+      "width": 1600
+    },
+    "edited-photo-22.jpg": {
+      "bytes": 349904,
+      "height": 1036,
+      "mime": "image/jpeg",
+      "sha256": "6f74936b37cc01351f579dfb80b35f551eba5725f4731633a07cb362fa401cfa",
+      "storage_path": "cms-media/edited-photo-22.jpg",
+      "width": 1600
+    },
+    "edited-photo-25-16x9.jpg": {
+      "bytes": 298551,
+      "height": 900,
+      "mime": "image/jpeg",
+      "sha256": "f3c57c7c5544d44bbb88df0e14b3a0728d6d933304fe34ea31d959af74d47b84",
+      "storage_path": "cms-media/edited-photo-25-16x9.jpg",
+      "width": 1600
+    },
+    "edited-photo-25.jpg": {
+      "bytes": 360396,
+      "height": 1600,
+      "mime": "image/jpeg",
+      "sha256": "ab67f93c55a59947c064c951e6358a22cbcbea620845b04e48b1359955de6d85",
+      "storage_path": "cms-media/edited-photo-25.jpg",
+      "width": 965
+    },
+    "edited-photo-26-3x4.jpg": {
+      "bytes": 403310,
+      "height": 1600,
+      "mime": "image/jpeg",
+      "sha256": "1eda643867ce142b6773daef8656db41084bd95641a01703afc3bf56f17fd601",
+      "storage_path": "cms-media/edited-photo-26-3x4.jpg",
+      "width": 1200
+    },
+    "edited-photo-27-3x4.jpg": {
+      "bytes": 406499,
+      "height": 1600,
+      "mime": "image/jpeg",
+      "sha256": "1d8ed35b935f98c0b842d63f5d06eafbe4678b86b3a4384417cc3bfe733af257",
+      "storage_path": "cms-media/edited-photo-27-3x4.jpg",
+      "width": 1200
+    },
+    "edited-photo-copy.jpg": {
+      "bytes": 246154,
+      "height": 981,
+      "mime": "image/jpeg",
+      "sha256": "baaee27c88b6733e9e0f7304f7021a1ef242ceb0c845723eaa85071f9e712e98",
+      "storage_path": "cms-media/edited-photo-copy.jpg",
+      "width": 1600
+    },
+    "edited-photo-jpg.jpg": {
+      "bytes": 343950,
+      "height": 1048,
+      "mime": "image/jpeg",
+      "sha256": "e1e27cb56e076d66bcf784af9c6bcab32be071b3ed42522413a564c52189a2e2",
+      "storage_path": "cms-media/edited-photo-jpg.jpg",
+      "width": 1600
+    },
+    "edited-photo-png.jpg": {
+      "bytes": 282224,
+      "height": 949,
+      "mime": "image/jpeg",
+      "sha256": "0bd6b850267540834f608cd6a20a269ef87e2758d615fd527d3aaec4e9303f90",
+      "storage_path": "cms-media/edited-photo-png.jpg",
+      "width": 1600
+    },
+    "events-slide-1-ganesh-chaturthi.jpg": {
+      "bytes": 334398,
+      "height": 1600,
+      "mime": "image/jpeg",
+      "sha256": "2d8c062d9c6773635c26354fa834f584f787bc504b32bfc3c9c7c879a1115b2c",
+      "storage_path": "cms-media/events-slide-1-ganesh-chaturthi.jpg",
+      "width": 1204
+    },
+    "events-slide-2-varalakshmi.jpg": {
+      "bytes": 440486,
+      "height": 1600,
+      "mime": "image/jpeg",
+      "sha256": "ac6f348479bf038f3752049f5a29299dd95ce5816f5d6e104dacbbe78b8b2fed",
+      "storage_path": "cms-media/events-slide-2-varalakshmi.jpg",
+      "width": 1204
+    },
+    "events-slide-3-sandhyavandanam.jpg": {
+      "bytes": 482936,
+      "height": 1600,
+      "mime": "image/jpeg",
+      "sha256": "cfa0ba0b8129f0dddd79760f07bec1b3f2fe0acda1e8d37f6827858823cd0d8e",
+      "storage_path": "cms-media/events-slide-3-sandhyavandanam.jpg",
+      "width": 1204
+    },
+    "events-slide-4-nivedanam.jpg": {
+      "bytes": 458672,
+      "height": 1600,
+      "mime": "image/jpeg",
+      "sha256": "4df9cbdfb20b491ad330ff88188f92ca2722608d69aba1d6698cdc4026ab0ada",
+      "storage_path": "cms-media/events-slide-4-nivedanam.jpg",
+      "width": 1204
+    },
+    "events-slide-5-kumbhabhishekam.jpg": {
+      "bytes": 318437,
+      "height": 1600,
+      "mime": "image/jpeg",
+      "sha256": "98aa1e48748e7e36e504dd785f61ca46e10a3844fe6f4fb32bb18e24ae8506f9",
+      "storage_path": "cms-media/events-slide-5-kumbhabhishekam.jpg",
+      "width": 1204
+    },
+    "events-slide-6-kalyanam.jpg": {
+      "bytes": 310985,
+      "height": 1600,
+      "mime": "image/jpeg",
+      "sha256": "b9f12154123f5dee5f6c17e2c063ea624495d3b67394adae698d7608bc671b95",
+      "storage_path": "cms-media/events-slide-6-kalyanam.jpg",
+      "width": 1204
+    },
+    "events-slide-7-cultural-evenings.jpg": {
+      "bytes": 544389,
+      "height": 1212,
+      "mime": "image/jpeg",
+      "sha256": "b9df8feeb6e515661e37d3a0c55197044d984b847de9b5e22ce888f167aa5071",
+      "storage_path": "cms-media/events-slide-7-cultural-evenings.jpg",
+      "width": 1920
+    },
+    "events-slide-8-brahmotsavam.jpg": {
+      "bytes": 415291,
+      "height": 1228,
+      "mime": "image/jpeg",
+      "sha256": "bb4410a601a0d667b942f8e10514f16c77a9801767c248e7c8f8a7e5b888abb8",
+      "storage_path": "cms-media/events-slide-8-brahmotsavam.jpg",
+      "width": 1920
+    },
+    "gallery-dance-girls-a.png": {
+      "bytes": 2683265,
+      "height": 993,
+      "mime": "image/png",
+      "sha256": "3ff2edd27b517c4a7ce973b81fb45baf3c7d7f2199517aa88386a1cde4549d90",
+      "storage_path": "cms-media/gallery-dance-girls-a.png",
+      "width": 1583
+    },
+    "gallery-dance-girls-b.png": {
+      "bytes": 2683265,
+      "height": 993,
+      "mime": "image/png",
+      "sha256": "3ff2edd27b517c4a7ce973b81fb45baf3c7d7f2199517aa88386a1cde4549d90",
+      "storage_path": "cms-media/gallery-dance-girls-b.png",
+      "width": 1583
+    },
+    "gallery-dance-girls-c.png": {
+      "bytes": 2371398,
+      "height": 1016,
+      "mime": "image/png",
+      "sha256": "a926589f0cf2e7f38ebb0c4424a85deba368f86d585968322e7578837735699f",
+      "storage_path": "cms-media/gallery-dance-girls-c.png",
+      "width": 1548
+    },
+    "hero-home.jpg": {
+      "bytes": 189323,
+      "height": 899,
+      "mime": "image/jpeg",
+      "sha256": "d0d298dd183071697514e332e17643badd82b8951ea5e06ea212db3095e1ad0a",
+      "storage_path": "cms-media/hero-home.jpg",
+      "width": 1600
+    },
+    "hero-lineage.png": {
+      "bytes": 1788563,
+      "height": 768,
+      "mime": "image/png",
+      "sha256": "cfed8a6a922edb7d9cc6f2b63d588a23855b5d1f6ba623505974f51a0f179be4",
+      "storage_path": "cms-media/hero-lineage.png",
+      "width": 1360
+    },
+    "hero-mandapa-mobile.png": {
+      "bytes": 2088853,
+      "height": 1360,
+      "mime": "image/png",
+      "sha256": "76d9381721508cded92454111841c94e0858f365c2de6b136403aa59d5b88fd8",
+      "storage_path": "cms-media/hero-mandapa-mobile.png",
+      "width": 768
+    },
+    "hero-seva.png": {
+      "bytes": 1810444,
+      "height": 768,
+      "mime": "image/png",
+      "sha256": "3ee98ffcdf18469b09ac700faa83da5ae581b3835e542e91acb92cd502cff11d",
+      "storage_path": "cms-media/hero-seva.png",
+      "width": 1360
+    },
+    "hero-sustain.png": {
+      "bytes": 2029067,
+      "height": 768,
+      "mime": "image/png",
+      "sha256": "eaf960594a733378eeb3df83ad857138c61d43c88da82549674f849b8e68c445",
+      "storage_path": "cms-media/hero-sustain.png",
+      "width": 1360
+    },
+    "journal-awards-01-chaganti.jpg": {
+      "bytes": 310403,
+      "height": 1007,
+      "mime": "image/jpeg",
+      "sha256": "63cd9cb7da8dc6434d59326cb37f69ec731c2fe5902875bafc4f06569d4319b9",
+      "storage_path": "cms-media/journal-awards-01-chaganti.jpg",
+      "width": 1600
+    },
+    "journal-awards-02-vivekananda.jpg": {
+      "bytes": 364113,
+      "height": 971,
+      "mime": "image/jpeg",
+      "sha256": "d96c1d6f26816162d6b16e9c01bd2d202a134d69e76fcdf3cba5948db02d2007",
+      "storage_path": "cms-media/journal-awards-02-vivekananda.jpg",
+      "width": 1600
+    },
+    "journal-awards-03-shishya-celebration.jpg": {
+      "bytes": 379696,
+      "height": 1072,
+      "mime": "image/jpeg",
+      "sha256": "ea91f6b9d322e8193c18b9c20e3b37ca65239250f073b80e929569f1f9a0bbd3",
+      "storage_path": "cms-media/journal-awards-03-shishya-celebration.jpg",
+      "width": 1600
+    },
+    "journal-awards-04-sarvabhouma.jpg": {
+      "bytes": 317301,
+      "height": 1041,
+      "mime": "image/jpeg",
+      "sha256": "81c82bcc7ff848e1bdec0f9c5fa863fe19c29fc66912a7fe645394e5f17ecbfa",
+      "storage_path": "cms-media/journal-awards-04-sarvabhouma.jpg",
+      "width": 1600
+    },
+    "journal-awards-05-south-indian.jpg": {
+      "bytes": 365401,
+      "height": 965,
+      "mime": "image/jpeg",
+      "sha256": "e40d2df44ba768feb2e2058675ab735e94de34a9bb19eb97e91a62d428ce833b",
+      "storage_path": "cms-media/journal-awards-05-south-indian.jpg",
+      "width": 1600
+    },
+    "journal-awards-06-ganap-sachidananda.jpg": {
+      "bytes": 245641,
+      "height": 1202,
+      "mime": "image/jpeg",
+      "sha256": "f2d1d65752483b478f4676ee6255acf1f3a84af24c3b0e5a5102890a050502cf",
+      "storage_path": "cms-media/journal-awards-06-ganap-sachidananda.jpg",
+      "width": 1600
+    },
+    "journal-community-02-ceremony-with-priest.jpg": {
+      "bytes": 271886,
+      "height": 1090,
+      "mime": "image/jpeg",
+      "sha256": "aeda867db2c14bd037417074d33fb461694bfe6c084fd88c6df0f687a017757b",
+      "storage_path": "cms-media/journal-community-02-ceremony-with-priest.jpg",
+      "width": 1600
+    },
+    "journal-community-03-ashram-boys.jpg": {
+      "bytes": 329853,
+      "height": 940,
+      "mime": "image/jpeg",
+      "sha256": "149f61bb051b63504e41544e8a68a8c07b634c00cce54524dbff5e1da716b24e",
+      "storage_path": "cms-media/journal-community-03-ashram-boys.jpg",
+      "width": 1600
+    },
+    "journal-community-04-ashram-adults.jpg": {
+      "bytes": 357983,
+      "height": 1037,
+      "mime": "image/jpeg",
+      "sha256": "b26d18b4f6874ad1d0543ffbc2784330a0a9134a76fe8a42926a7a6bc0569294",
+      "storage_path": "cms-media/journal-community-04-ashram-adults.jpg",
+      "width": 1600
+    },
+    "journal-community-05-villagers.jpg": {
+      "bytes": 396158,
+      "height": 1062,
+      "mime": "image/jpeg",
+      "sha256": "0324b96126b5e93d0404653ae42d4aaed424776a1320271f681200b278d0786d",
+      "storage_path": "cms-media/journal-community-05-villagers.jpg",
+      "width": 1600
+    },
+    "journal-community-06-booklets.jpg": {
+      "bytes": 428870,
+      "height": 1089,
+      "mime": "image/jpeg",
+      "sha256": "a9e9f0617ffbca559133b6827f25fa9a88b9a8819dfff36c89497f6d4209549d",
+      "storage_path": "cms-media/journal-community-06-booklets.jpg",
+      "width": 1600
+    },
+    "journal-cultural-01-bharatanatyam-tribute.jpg": {
+      "bytes": 324769,
+      "height": 1600,
+      "mime": "image/jpeg",
+      "sha256": "8105a4169326a9a3001ee80b6fcc3ac3f631395c63f108e8e350c7140a205bb5",
+      "storage_path": "cms-media/journal-cultural-01-bharatanatyam-tribute.jpg",
+      "width": 970
+    },
+    "journal-cultural-02-bharatanatyam-guru.jpg": {
+      "bytes": 416072,
+      "height": 1019,
+      "mime": "image/jpeg",
+      "sha256": "c700f87de48455d879ba12c5eb9cd460650d78befa6cf2ae7241aa77bb0f6d1e",
+      "storage_path": "cms-media/journal-cultural-02-bharatanatyam-guru.jpg",
+      "width": 1600
+    },
+    "journal-cultural-03-bharatanatyam-hyderabad.jpg": {
+      "bytes": 390698,
+      "height": 984,
+      "mime": "image/jpeg",
+      "sha256": "598f32e71273e02fc9fb9abd82e8b36c48e75cf0508587b88934e48d469014cc",
+      "storage_path": "cms-media/journal-cultural-03-bharatanatyam-hyderabad.jpg",
+      "width": 1600
+    },
+    "journal-cultural-04-literary-tribute.jpg": {
+      "bytes": 309444,
+      "height": 1048,
+      "mime": "image/jpeg",
+      "sha256": "093418dea58d95bb64db46bdd79dc13e661eea18c3743fc087b05a67bdd9cab4",
+      "storage_path": "cms-media/journal-cultural-04-literary-tribute.jpg",
+      "width": 1600
+    },
+    "journal-cultural-05-sangam-collage.jpg": {
+      "bytes": 385732,
+      "height": 1081,
+      "mime": "image/jpeg",
+      "sha256": "a730b137779d7d7d32c6b7ce814e79638baaca17d72eb0f5e24d53cde198f36e",
+      "storage_path": "cms-media/journal-cultural-05-sangam-collage.jpg",
+      "width": 1600
+    },
+    "journal-festivals-01-girija-kalyana.jpg": {
+      "bytes": 298092,
+      "height": 1026,
+      "mime": "image/jpeg",
+      "sha256": "52f760eee46df7a938cd2a14b06f00ba023bf9b3973c7dea0a48a7d659be86fa",
+      "storage_path": "cms-media/journal-festivals-01-girija-kalyana.jpg",
+      "width": 1600
+    },
+    "journal-festivals-03-ganesh-chaturthi.jpg": {
+      "bytes": 334398,
+      "height": 1600,
+      "mime": "image/jpeg",
+      "sha256": "2d8c062d9c6773635c26354fa834f584f787bc504b32bfc3c9c7c879a1115b2c",
+      "storage_path": "cms-media/journal-festivals-03-ganesh-chaturthi.jpg",
+      "width": 1204
+    },
+    "journal-indoor-01.jpg": {
+      "bytes": 243421,
+      "height": 981,
+      "mime": "image/jpeg",
+      "sha256": "941005a3909565093ca27c5732219abeb3b34e5fd3dc92f2297bfcf90929b4c8",
+      "storage_path": "cms-media/journal-indoor-01.jpg",
+      "width": 1600
+    },
+    "journal-kalyanam-01.jpg": {
+      "bytes": 310985,
+      "height": 1600,
+      "mime": "image/jpeg",
+      "sha256": "b9f12154123f5dee5f6c17e2c063ea624495d3b67394adae698d7608bc671b95",
+      "storage_path": "cms-media/journal-kalyanam-01.jpg",
+      "width": 1204
+    },
+    "journal-kalyanam-02.jpg": {
+      "bytes": 303854,
+      "height": 1102,
+      "mime": "image/jpeg",
+      "sha256": "8b2f43d389f92617110dac02ac9abd47d4165122bf41a8e9bae09cbc46d879b1",
+      "storage_path": "cms-media/journal-kalyanam-02.jpg",
+      "width": 1600
+    },
+    "journal-kalyanam-03.jpg": {
+      "bytes": 261812,
+      "height": 1074,
+      "mime": "image/jpeg",
+      "sha256": "5d39c03144a4cf855389557a6efae7b800c95d5f5abead4b0ef586186c83e600",
+      "storage_path": "cms-media/journal-kalyanam-03.jpg",
+      "width": 1600
+    },
+    "journal-kumbhabhishekam-01.jpg": {
+      "bytes": 318437,
+      "height": 1600,
+      "mime": "image/jpeg",
+      "sha256": "98aa1e48748e7e36e504dd785f61ca46e10a3844fe6f4fb32bb18e24ae8506f9",
+      "storage_path": "cms-media/journal-kumbhabhishekam-01.jpg",
+      "width": 1204
+    },
+    "journal-pooja-01-sandhyavandanam.jpg": {
+      "bytes": 482936,
+      "height": 1600,
+      "mime": "image/jpeg",
+      "sha256": "cfa0ba0b8129f0dddd79760f07bec1b3f2fe0acda1e8d37f6827858823cd0d8e",
+      "storage_path": "cms-media/journal-pooja-01-sandhyavandanam.jpg",
+      "width": 1204
+    },
+    "journal-pooja-02-nivedanam.jpg": {
+      "bytes": 458672,
+      "height": 1600,
+      "mime": "image/jpeg",
+      "sha256": "4df9cbdfb20b491ad330ff88188f92ca2722608d69aba1d6698cdc4026ab0ada",
+      "storage_path": "cms-media/journal-pooja-02-nivedanam.jpg",
+      "width": 1204
+    },
+    "journal-pooja-03-procession.jpg": {
+      "bytes": 461650,
+      "height": 1107,
+      "mime": "image/jpeg",
+      "sha256": "24263ce0e14fb3e183f8c8d71ec9147f51756c7bae724915e8223d4d65bca6fb",
+      "storage_path": "cms-media/journal-pooja-03-procession.jpg",
+      "width": 1600
+    },
+    "journal-pooja-04-sacred-post.jpg": {
+      "bytes": 485049,
+      "height": 1075,
+      "mime": "image/jpeg",
+      "sha256": "7918af759e9b2355da7e07616ad8fec539d1d4a1dfb98ea68197840781cbc96a",
+      "storage_path": "cms-media/journal-pooja-04-sacred-post.jpg",
+      "width": 1600
+    },
+    "journal-pooja-05-temple-entrance.jpg": {
+      "bytes": 425720,
+      "height": 1133,
+      "mime": "image/jpeg",
+      "sha256": "881fbbd381f360c4bf323151138bf894b2ff6017dfcbaaeb0f0d6f1b36b22849",
+      "storage_path": "cms-media/journal-pooja-05-temple-entrance.jpg",
+      "width": 1600
+    },
+    "portrait-01.jpg": {
+      "bytes": 341310,
+      "height": 1600,
+      "mime": "image/jpeg",
+      "sha256": "3870181eca25d0f80fb056c5bfd2f0fa5abc9724e013f36d310fc1d49d431a35",
+      "storage_path": "cms-media/portrait-01.jpg",
+      "width": 1204
+    },
+    "portrait-02.jpg": {
+      "bytes": 398732,
+      "height": 1600,
+      "mime": "image/jpeg",
+      "sha256": "4286c4f113d3ead3d180187babe91681d32ed9bcdc18db81ca8633f6d979457a",
+      "storage_path": "cms-media/portrait-02.jpg",
+      "width": 1204
+    },
+    "portrait-03.jpg": {
+      "bytes": 441954,
+      "height": 1600,
+      "mime": "image/jpeg",
+      "sha256": "cd83dc94665ae253aa241d1b9dc9388a652d75ea63007c0682460c3405863c8d",
+      "storage_path": "cms-media/portrait-03.jpg",
+      "width": 1204
+    },
+    "portrait-04.jpg": {
+      "bytes": 417295,
+      "height": 1600,
+      "mime": "image/jpeg",
+      "sha256": "6eaaba40d1fb1c77f80698e49bbb80e50551e73cdc72e5d7f2a7255f42a7cbc0",
+      "storage_path": "cms-media/portrait-04.jpg",
+      "width": 1204
+    },
+    "portrait-05.jpg": {
+      "bytes": 321242,
+      "height": 1600,
+      "mime": "image/jpeg",
+      "sha256": "8ba63e4a75b6a46e1222ffc69638bdb2a5652d88a3b2f9d8fc79434f8d996c9c",
+      "storage_path": "cms-media/portrait-05.jpg",
+      "width": 1204
+    },
+    "portrait-06.jpg": {
+      "bytes": 315603,
+      "height": 1600,
+      "mime": "image/jpeg",
+      "sha256": "55a9bf1d561b11d4efdd45a6fd5d1fee6a2b7977e5b0ce80bfd0e8ab8788beff",
+      "storage_path": "cms-media/portrait-06.jpg",
+      "width": 1204
+    },
+    "reference-01.png": {
+      "bytes": 1250686,
+      "height": 738,
+      "mime": "image/png",
+      "sha256": "f04e05fbf681a961c25551d1ad698332646b655e1e3b6c923ce83c2d247cb9ce",
+      "storage_path": "cms-media/reference-01.png",
+      "width": 820
+    },
+    "reference-02.png": {
+      "bytes": 1202364,
+      "height": 736,
+      "mime": "image/png",
+      "sha256": "317c422ecbeae03d02106ad29b6aa4af88a584ade51bf7e2460e94c17cbf051c",
+      "storage_path": "cms-media/reference-02.png",
+      "width": 826
+    },
+    "reference-03.png": {
+      "bytes": 1411849,
+      "height": 738,
+      "mime": "image/png",
+      "sha256": "c24bfe8ef2671871b1ae9546ec47c6260adfa3a9e647d62e431bae6678b63755",
+      "storage_path": "cms-media/reference-03.png",
+      "width": 856
+    },
+    "reference-04.png": {
+      "bytes": 552079,
+      "height": 678,
+      "mime": "image/png",
+      "sha256": "1e045e1c28903586c37efcca0150460802820286b8fbb610c7a596248ea1f7f2",
+      "storage_path": "cms-media/reference-04.png",
+      "width": 426
+    },
+    "reference-05.png": {
+      "bytes": 481409,
+      "height": 666,
+      "mime": "image/png",
+      "sha256": "83cad263a22b0140f9baf6eab2497efb6cb1fcc68d77c83d4ef6acede6f4b1e0",
+      "storage_path": "cms-media/reference-05.png",
+      "width": 366
+    },
+    "trust-logo.jpg": {
+      "bytes": 925213,
+      "height": 1728,
+      "mime": "image/jpeg",
+      "sha256": "bbab5f4fd9038d63fc3209c50ba827167553be8a11aa107aba6807faebe796a1",
+      "storage_path": "cms-media/trust-logo.jpg",
+      "width": 2304
+    },
+    "trustee-portrait-3x4.jpg": {
+      "bytes": 328835,
+      "height": 1600,
+      "mime": "image/jpeg",
+      "sha256": "daa89152d39eb0e8a2fc39d47bacc29332947b66b5b63051e09ee8ffa2d742b4",
+      "storage_path": "cms-media/trustee-portrait-3x4.jpg",
+      "width": 1200
+    },
+    "trustee-portrait.jpg": {
+      "bytes": 423385,
+      "height": 2118,
+      "mime": "image/jpeg",
+      "sha256": "063047efdd3f79e7ccba9cb7f1f70f2848c0fee410b3fc97c4f0530861eb77b4",
+      "storage_path": "cms-media/trustee-portrait.jpg",
+      "width": 1179
+    }
+  },
+  "source_to_canonical": {
+    "49f8d3d7-1a57-473b-9978-36fda745bdc0.jpg": "portrait-01.jpg",
+    "4aabf6d1-2712-4722-b9ec-1cecfbb281c3.jpg": "portrait-02.jpg",
+    "68cfd1ef-7cc9-4547-b82b-b7bc14d7ed6f.jpg": "portrait-03.jpg",
+    "8af17d99-6b22-4d29-979b-9a1d89505c2a.jpg": "portrait-04.jpg",
+    "908ed207-411e-43a2-8f8e-1092f662609a.jpg": "portrait-05.jpg",
+    "ChatGPT Image 22 Sept 2026, 17_26_39.png": "gallery-dance-girls-a.png",
+    "ChatGPT Image 22 Sept 2026, 17_33_48.png": "gallery-dance-girls-c.png",
+    "GAUSHALA.jpg": "campus-gaushala.jpg",
+    "IMG_generated_hero_pass_03.png": "hero-sustain.png",
+    "IMG_generated_mandapa_hero.png": "hero-seva.png",
+    "IMG_generated_mandapa_mobile.png": "hero-mandapa-mobile.png",
+    "IMG_generated_pillar-hall_hero.png": "hero-lineage.png",
+    "LAND.jpg": "campus-land.jpg",
+    "Screenshot 2026-09-22 at 7.10.44\u202fAM.png": "reference-01.png",
+    "Screenshot 2026-09-22 at 7.10.50\u202fAM.png": "reference-02.png",
+    "Screenshot 2026-09-22 at 7.10.57\u202fAM.png": "reference-03.png",
+    "Screenshot 2026-09-22 at 7.11.11\u202fAM.png": "reference-04.png",
+    "Screenshot 2026-09-22 at 7.11.18\u202fAM.png": "reference-05.png",
+    "WELFARE.jpg": "campus-welfare.jpg",
+    "b7fc0a19-0055-47d5-abc9-b96ab83b5472.jpg": "portrait-06.jpg",
+    "dance-girls.png": "gallery-dance-girls-b.png",
+    "edited-photo-02.jpg.jpg": "edited-photo-02.jpg",
+    "edited-photo-03.jpg.1x1.jpg": "edited-photo-03-1x1.jpg",
+    "edited-photo-04.jpg.16x9.jpg": "edited-photo-04-16x9.jpg",
+    "edited-photo-04.jpg.jpg": "edited-photo-04.jpg",
+    "edited-photo-05.jpg.16x9.jpg": "edited-photo-05-16x9.jpg",
+    "edited-photo-05.jpg.jpg": "edited-photo-05.jpg",
+    "edited-photo-06.jpg.jpg": "journal-kalyanam-02.jpg",
+    "edited-photo-07.jpg.jpg": "journal-awards-01-chaganti.jpg",
+    "edited-photo-08.jpg.jpg": "journal-cultural-04-literary-tribute.jpg",
+    "edited-photo-09.jpg.jpg": "edited-photo-09.jpg",
+    "edited-photo-10.jpg.jpg": "journal-cultural-01-bharatanatyam-tribute.jpg",
+    "edited-photo-11.jpg.jpg": "journal-awards-02-vivekananda.jpg",
+    "edited-photo-12.jpg.jpg": "edited-photo-12.jpg",
+    "edited-photo-13.jpg.jpg": "edited-photo-13.jpg",
+    "edited-photo-14.jpg.jpg": "journal-community-03-ashram-boys.jpg",
+    "edited-photo-15.jpg.jpg": "journal-cultural-02-bharatanatyam-guru.jpg",
+    "edited-photo-16.jpg.jpg": "edited-photo-16.jpg",
+    "edited-photo-17.jpg.jpg": "journal-community-02-ceremony-with-priest.jpg",
+    "edited-photo-18.jpg.jpg": "edited-photo-18.jpg",
+    "edited-photo-19.jpg.jpg": "journal-awards-03-shishya-celebration.jpg",
+    "edited-photo-20.jpg.1x1.jpg": "edited-photo-20-1x1.jpg",
+    "edited-photo-20.jpg.jpg": "journal-awards-04-sarvabhouma.jpg",
+    "edited-photo-21.jpg.jpg": "journal-pooja-03-procession.jpg",
+    "edited-photo-22.jpg.jpg": "edited-photo-22.jpg",
+    "edited-photo-23.jpg.jpg": "journal-community-05-villagers.jpg",
+    "edited-photo-24.jpg.jpg": "journal-pooja-04-sacred-post.jpg",
+    "edited-photo-25.jpg.16x9.jpg": "edited-photo-25-16x9.jpg",
+    "edited-photo-25.jpg.jpg": "edited-photo-25.jpg",
+    "edited-photo-26.jpg.3x4.jpg": "edited-photo-26-3x4.jpg",
+    "edited-photo-26.jpg.jpg": "journal-pooja-05-temple-entrance.jpg",
+    "edited-photo-27.jpg.3x4.jpg": "edited-photo-27-3x4.jpg",
+    "edited-photo-27.jpg.jpg": "journal-community-06-booklets.jpg",
+    "edited-photo-28.jpg.jpg": "journal-cultural-03-bharatanatyam-hyderabad.jpg",
+    "edited-photo-copy.jpg.jpg": "edited-photo-copy.jpg",
+    "edited-photo.jpg.jpg": "edited-photo-jpg.jpg",
+    "edited-photo.png.jpg": "edited-photo-png.jpg",
+    "events-slide-1-ganesh-chaturthi.jpg": "events-slide-1-ganesh-chaturthi.jpg",
+    "events-slide-2-varalakshmi.jpg": "events-slide-2-varalakshmi.jpg",
+    "events-slide-3-sandhyavandanam.jpg": "events-slide-3-sandhyavandanam.jpg",
+    "events-slide-4-nivedanam.jpg": "events-slide-4-nivedanam.jpg",
+    "events-slide-5-kumbhabhishekam.jpg": "events-slide-5-kumbhabhishekam.jpg",
+    "events-slide-6-kalyanam.jpg": "events-slide-6-kalyanam.jpg",
+    "events-slide-7-cultural-evenings.jpg": "events-slide-7-cultural-evenings.jpg",
+    "events-slide-8-brahmotsavam.jpg": "events-slide-8-brahmotsavam.jpg",
+    "home-page-header.png.jpg": "hero-home.jpg",
+    "journal-awards-01-chaganti.jpg": "journal-awards-01-chaganti.jpg",
+    "journal-awards-02-vivekananda.jpg": "journal-awards-02-vivekananda.jpg",
+    "journal-awards-03-shishya-celebration.jpg": "journal-awards-03-shishya-celebration.jpg",
+    "journal-awards-04-sarvabhouma.jpg": "journal-awards-04-sarvabhouma.jpg",
+    "journal-awards-05-south-indian.jpg": "journal-awards-05-south-indian.jpg",
+    "journal-awards-06-ganap-sachidananda.jpg": "journal-awards-06-ganap-sachidananda.jpg",
+    "journal-community-02-ceremony-with-priest.jpg": "journal-community-02-ceremony-with-priest.jpg",
+    "journal-community-03-ashram-boys.jpg": "journal-community-03-ashram-boys.jpg",
+    "journal-community-04-ashram-adults.jpg": "journal-community-04-ashram-adults.jpg",
+    "journal-community-05-villagers.jpg": "journal-community-05-villagers.jpg",
+    "journal-community-06-booklets.jpg": "journal-community-06-booklets.jpg",
+    "journal-cultural-01-bharatanatyam-tribute.jpg": "journal-cultural-01-bharatanatyam-tribute.jpg",
+    "journal-cultural-02-bharatanatyam-guru.jpg": "journal-cultural-02-bharatanatyam-guru.jpg",
+    "journal-cultural-03-bharatanatyam-hyderabad.jpg": "journal-cultural-03-bharatanatyam-hyderabad.jpg",
+    "journal-cultural-04-literary-tribute.jpg": "journal-cultural-04-literary-tribute.jpg",
+    "journal-cultural-05-sangam-collage.jpg": "journal-cultural-05-sangam-collage.jpg",
+    "journal-festivals-01-girija-kalyana.jpg": "journal-festivals-01-girija-kalyana.jpg",
+    "journal-festivals-03-ganesh-chaturthi.jpg": "journal-festivals-03-ganesh-chaturthi.jpg",
+    "journal-indoor-01.jpg": "journal-indoor-01.jpg",
+    "journal-kalyanam-01.jpg": "journal-kalyanam-01.jpg",
+    "journal-kalyanam-02.jpg": "journal-kalyanam-02.jpg",
+    "journal-kalyanam-03.jpg": "journal-kalyanam-03.jpg",
+    "journal-kumbhabhishekam-01.jpg": "journal-kumbhabhishekam-01.jpg",
+    "journal-pooja-01-sandhyavandanam.jpg": "journal-pooja-01-sandhyavandanam.jpg",
+    "journal-pooja-02-nivedanam.jpg": "journal-pooja-02-nivedanam.jpg",
+    "journal-pooja-03-procession.jpg": "journal-pooja-03-procession.jpg",
+    "journal-pooja-04-sacred-post.jpg": "journal-pooja-04-sacred-post.jpg",
+    "journal-pooja-05-temple-entrance.jpg": "journal-pooja-05-temple-entrance.jpg",
+    "logo.jpg": "trust-logo.jpg",
+    "trustee-photo.jpg": "trustee-portrait.jpg",
+    "trustee-photo.jpg.3x4.jpg": "trustee-portrait-3x4.jpg"
+  }
+}

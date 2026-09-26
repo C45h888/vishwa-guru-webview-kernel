@@ -1,0 +1,681 @@
+{
+  "49f8d3d7-1a57-473b-9978-36fda745bdc0.jpg": {
+    "bytes": 341310,
+    "merged_into": null,
+    "sha256": "3870181eca25d0f80fb056c5bfd2f0fa5abc9724e013f36d310fc1d49d431a35",
+    "source": "49f8d3d7-1a57-473b-9978-36fda745bdc0.jpg",
+    "target": "portrait-01.jpg"
+  },
+  "4aabf6d1-2712-4722-b9ec-1cecfbb281c3.jpg": {
+    "bytes": 398732,
+    "merged_into": null,
+    "sha256": "4286c4f113d3ead3d180187babe91681d32ed9bcdc18db81ca8633f6d979457a",
+    "source": "4aabf6d1-2712-4722-b9ec-1cecfbb281c3.jpg",
+    "target": "portrait-02.jpg"
+  },
+  "68cfd1ef-7cc9-4547-b82b-b7bc14d7ed6f.jpg": {
+    "bytes": 441954,
+    "merged_into": null,
+    "sha256": "cd83dc94665ae253aa241d1b9dc9388a652d75ea63007c0682460c3405863c8d",
+    "source": "68cfd1ef-7cc9-4547-b82b-b7bc14d7ed6f.jpg",
+    "target": "portrait-03.jpg"
+  },
+  "8af17d99-6b22-4d29-979b-9a1d89505c2a.jpg": {
+    "bytes": 417295,
+    "merged_into": null,
+    "sha256": "6eaaba40d1fb1c77f80698e49bbb80e50551e73cdc72e5d7f2a7255f42a7cbc0",
+    "source": "8af17d99-6b22-4d29-979b-9a1d89505c2a.jpg",
+    "target": "portrait-04.jpg"
+  },
+  "908ed207-411e-43a2-8f8e-1092f662609a.jpg": {
+    "bytes": 321242,
+    "merged_into": null,
+    "sha256": "8ba63e4a75b6a46e1222ffc69638bdb2a5652d88a3b2f9d8fc79434f8d996c9c",
+    "source": "908ed207-411e-43a2-8f8e-1092f662609a.jpg",
+    "target": "portrait-05.jpg"
+  },
+  "ChatGPT Image 22 Sept 2026, 17_26_39.png": {
+    "bytes": 2683265,
+    "merged_into": null,
+    "sha256": "3ff2edd27b517c4a7ce973b81fb45baf3c7d7f2199517aa88386a1cde4549d90",
+    "source": "ChatGPT Image 22 Sept 2026, 17_26_39.png",
+    "target": "gallery-dance-girls-a.png"
+  },
+  "ChatGPT Image 22 Sept 2026, 17_33_48.png": {
+    "bytes": 2371398,
+    "merged_into": null,
+    "sha256": "a926589f0cf2e7f38ebb0c4424a85deba368f86d585968322e7578837735699f",
+    "source": "ChatGPT Image 22 Sept 2026, 17_33_48.png",
+    "target": "gallery-dance-girls-c.png"
+  },
+  "GAUSHALA.jpg": {
+    "bytes": 482535,
+    "merged_into": null,
+    "sha256": "6dea051ac8de45d6a2fd63a727e16b84fe8823e8515614d96b08efbf14688d0a",
+    "source": "GAUSHALA.jpg",
+    "target": "campus-gaushala.jpg"
+  },
+  "IMG_generated_hero_pass_03.png": {
+    "bytes": 2029067,
+    "merged_into": null,
+    "sha256": "eaf960594a733378eeb3df83ad857138c61d43c88da82549674f849b8e68c445",
+    "source": "IMG_generated_hero_pass_03.png",
+    "target": "hero-sustain.png"
+  },
+  "IMG_generated_mandapa_hero.png": {
+    "bytes": 1810444,
+    "merged_into": null,
+    "sha256": "3ee98ffcdf18469b09ac700faa83da5ae581b3835e542e91acb92cd502cff11d",
+    "source": "IMG_generated_mandapa_hero.png",
+    "target": "hero-seva.png"
+  },
+  "IMG_generated_mandapa_mobile.png": {
+    "bytes": 2088853,
+    "merged_into": null,
+    "sha256": "76d9381721508cded92454111841c94e0858f365c2de6b136403aa59d5b88fd8",
+    "source": "IMG_generated_mandapa_mobile.png",
+    "target": "hero-mandapa-mobile.png"
+  },
+  "IMG_generated_pillar-hall_hero.png": {
+    "bytes": 1788563,
+    "merged_into": null,
+    "sha256": "cfed8a6a922edb7d9cc6f2b63d588a23855b5d1f6ba623505974f51a0f179be4",
+    "source": "IMG_generated_pillar-hall_hero.png",
+    "target": "hero-lineage.png"
+  },
+  "LAND.jpg": {
+    "bytes": 688122,
+    "merged_into": null,
+    "sha256": "8ff8bac2a91fed6de7623fabb68434b0271cd1abfbcb27ed538e0bb7607951b7",
+    "source": "LAND.jpg",
+    "target": "campus-land.jpg"
+  },
+  "Screenshot 2026-09-22 at 7.10.44\u202fAM.png": {
+    "bytes": 1250686,
+    "merged_into": null,
+    "sha256": "f04e05fbf681a961c25551d1ad698332646b655e1e3b6c923ce83c2d247cb9ce",
+    "source": "Screenshot 2026-09-22 at 7.10.44\u202fAM.png",
+    "target": "reference-01.png"
+  },
+  "Screenshot 2026-09-22 at 7.10.50\u202fAM.png": {
+    "bytes": 1202364,
+    "merged_into": null,
+    "sha256": "317c422ecbeae03d02106ad29b6aa4af88a584ade51bf7e2460e94c17cbf051c",
+    "source": "Screenshot 2026-09-22 at 7.10.50\u202fAM.png",
+    "target": "reference-02.png"
+  },
+  "Screenshot 2026-09-22 at 7.10.57\u202fAM.png": {
+    "bytes": 1411849,
+    "merged_into": null,
+    "sha256": "c24bfe8ef2671871b1ae9546ec47c6260adfa3a9e647d62e431bae6678b63755",
+    "source": "Screenshot 2026-09-22 at 7.10.57\u202fAM.png",
+    "target": "reference-03.png"
+  },
+  "Screenshot 2026-09-22 at 7.11.11\u202fAM.png": {
+    "bytes": 552079,
+    "merged_into": null,
+    "sha256": "1e045e1c28903586c37efcca0150460802820286b8fbb610c7a596248ea1f7f2",
+    "source": "Screenshot 2026-09-22 at 7.11.11\u202fAM.png",
+    "target": "reference-04.png"
+  },
+  "Screenshot 2026-09-22 at 7.11.18\u202fAM.png": {
+    "bytes": 481409,
+    "merged_into": null,
+    "sha256": "83cad263a22b0140f9baf6eab2497efb6cb1fcc68d77c83d4ef6acede6f4b1e0",
+    "source": "Screenshot 2026-09-22 at 7.11.18\u202fAM.png",
+    "target": "reference-05.png"
+  },
+  "WELFARE.jpg": {
+    "bytes": 604285,
+    "merged_into": null,
+    "sha256": "87b97c175f1a79413cdbd5a3b12a69a5f1505623b8cc5983facf10b1fa9a9505",
+    "source": "WELFARE.jpg",
+    "target": "campus-welfare.jpg"
+  },
+  "b7fc0a19-0055-47d5-abc9-b96ab83b5472.jpg": {
+    "bytes": 315603,
+    "merged_into": null,
+    "sha256": "55a9bf1d561b11d4efdd45a6fd5d1fee6a2b7977e5b0ce80bfd0e8ab8788beff",
+    "source": "b7fc0a19-0055-47d5-abc9-b96ab83b5472.jpg",
+    "target": "portrait-06.jpg"
+  },
+  "dance-girls.png": {
+    "bytes": 2683265,
+    "merged_into": null,
+    "sha256": "3ff2edd27b517c4a7ce973b81fb45baf3c7d7f2199517aa88386a1cde4549d90",
+    "source": "dance-girls.png",
+    "target": "gallery-dance-girls-b.png"
+  },
+  "edited-photo-02.jpg.jpg": {
+    "bytes": 294870,
+    "merged_into": null,
+    "sha256": "3e91f4afd0da1f8a4001b58c7ba58c978049882dda2592316d153d98ec109158",
+    "source": "edited-photo-02.jpg.jpg",
+    "target": "edited-photo-02.jpg"
+  },
+  "edited-photo-03.jpg.1x1.jpg": {
+    "bytes": 299377,
+    "merged_into": null,
+    "sha256": "d518d97154e6ee98d36d4d52afb97d463a8466e5cb05fdfc415c9e15c4b2ab8c",
+    "source": "edited-photo-03.jpg.1x1.jpg",
+    "target": "edited-photo-03-1x1.jpg"
+  },
+  "edited-photo-04.jpg.16x9.jpg": {
+    "bytes": 227622,
+    "merged_into": null,
+    "sha256": "7a582dba34bab3cdecb87604ea3f4ca2439af0fbb92844ab7d576d0bf8276e11",
+    "source": "edited-photo-04.jpg.16x9.jpg",
+    "target": "edited-photo-04-16x9.jpg"
+  },
+  "edited-photo-04.jpg.jpg": {
+    "bytes": 258130,
+    "merged_into": null,
+    "sha256": "3245b9e71741dc602c4706644995cfb43f1f34467115b85f67cd2d17e57ad836",
+    "source": "edited-photo-04.jpg.jpg",
+    "target": "edited-photo-04.jpg"
+  },
+  "edited-photo-05.jpg.16x9.jpg": {
+    "bytes": 195176,
+    "merged_into": null,
+    "sha256": "ebde5bdfdb2e11a0f41be77c6273ed45911abcc1b5338e33ee69acac9f51b3cd",
+    "source": "edited-photo-05.jpg.16x9.jpg",
+    "target": "edited-photo-05-16x9.jpg"
+  },
+  "edited-photo-05.jpg.jpg": {
+    "bytes": 234042,
+    "merged_into": null,
+    "sha256": "c79158cfbd9c81784e313af9663e187c8548a19a758a24f72a1cd142e26e953d",
+    "source": "edited-photo-05.jpg.jpg",
+    "target": "edited-photo-05.jpg"
+  },
+  "edited-photo-06.jpg.jpg": {
+    "bytes": 303854,
+    "merged_into": null,
+    "sha256": "8b2f43d389f92617110dac02ac9abd47d4165122bf41a8e9bae09cbc46d879b1",
+    "source": "edited-photo-06.jpg.jpg",
+    "target": "journal-kalyanam-02.jpg"
+  },
+  "edited-photo-07.jpg.jpg": {
+    "bytes": 310403,
+    "merged_into": null,
+    "sha256": "63cd9cb7da8dc6434d59326cb37f69ec731c2fe5902875bafc4f06569d4319b9",
+    "source": "edited-photo-07.jpg.jpg",
+    "target": "journal-awards-01-chaganti.jpg"
+  },
+  "edited-photo-08.jpg.jpg": {
+    "bytes": 309444,
+    "merged_into": null,
+    "sha256": "093418dea58d95bb64db46bdd79dc13e661eea18c3743fc087b05a67bdd9cab4",
+    "source": "edited-photo-08.jpg.jpg",
+    "target": "journal-cultural-04-literary-tribute.jpg"
+  },
+  "edited-photo-09.jpg.jpg": {
+    "bytes": 413225,
+    "merged_into": null,
+    "sha256": "25cf7f5946518511b11f7478ab617c897bc153c4dae4f329c48331fabf2d2f8a",
+    "source": "edited-photo-09.jpg.jpg",
+    "target": "edited-photo-09.jpg"
+  },
+  "edited-photo-10.jpg.jpg": {
+    "bytes": 324769,
+    "merged_into": null,
+    "sha256": "8105a4169326a9a3001ee80b6fcc3ac3f631395c63f108e8e350c7140a205bb5",
+    "source": "edited-photo-10.jpg.jpg",
+    "target": "journal-cultural-01-bharatanatyam-tribute.jpg"
+  },
+  "edited-photo-11.jpg.jpg": {
+    "bytes": 364113,
+    "merged_into": null,
+    "sha256": "d96c1d6f26816162d6b16e9c01bd2d202a134d69e76fcdf3cba5948db02d2007",
+    "source": "edited-photo-11.jpg.jpg",
+    "target": "journal-awards-02-vivekananda.jpg"
+  },
+  "edited-photo-12.jpg.jpg": {
+    "bytes": 313762,
+    "merged_into": null,
+    "sha256": "62a7f8fc27643677d25ad694e430cab5308076a6ff340a9782c2ac972880f8b6",
+    "source": "edited-photo-12.jpg.jpg",
+    "target": "edited-photo-12.jpg"
+  },
+  "edited-photo-13.jpg.jpg": {
+    "bytes": 456180,
+    "merged_into": null,
+    "sha256": "f2588f66394f44306e3bbe3eac5457fd57047cbb8ee753269d00a190b25be5cc",
+    "source": "edited-photo-13.jpg.jpg",
+    "target": "edited-photo-13.jpg"
+  },
+  "edited-photo-14.jpg.jpg": {
+    "bytes": 329853,
+    "merged_into": null,
+    "sha256": "149f61bb051b63504e41544e8a68a8c07b634c00cce54524dbff5e1da716b24e",
+    "source": "edited-photo-14.jpg.jpg",
+    "target": "journal-community-03-ashram-boys.jpg"
+  },
+  "edited-photo-15.jpg.jpg": {
+    "bytes": 416072,
+    "merged_into": null,
+    "sha256": "c700f87de48455d879ba12c5eb9cd460650d78befa6cf2ae7241aa77bb0f6d1e",
+    "source": "edited-photo-15.jpg.jpg",
+    "target": "journal-cultural-02-bharatanatyam-guru.jpg"
+  },
+  "edited-photo-16.jpg.jpg": {
+    "bytes": 386458,
+    "merged_into": null,
+    "sha256": "a49b01ba32576d81cbc68828c9285c51b803b7b55fb8fc069e6a1092c21a694b",
+    "source": "edited-photo-16.jpg.jpg",
+    "target": "edited-photo-16.jpg"
+  },
+  "edited-photo-17.jpg.jpg": {
+    "bytes": 271886,
+    "merged_into": null,
+    "sha256": "aeda867db2c14bd037417074d33fb461694bfe6c084fd88c6df0f687a017757b",
+    "source": "edited-photo-17.jpg.jpg",
+    "target": "journal-community-02-ceremony-with-priest.jpg"
+  },
+  "edited-photo-18.jpg.jpg": {
+    "bytes": 326973,
+    "merged_into": null,
+    "sha256": "e6f7dea1034549f865163e94a37d89b746f6753156965cb97024e01a817d62c7",
+    "source": "edited-photo-18.jpg.jpg",
+    "target": "edited-photo-18.jpg"
+  },
+  "edited-photo-19.jpg.jpg": {
+    "bytes": 379696,
+    "merged_into": null,
+    "sha256": "ea91f6b9d322e8193c18b9c20e3b37ca65239250f073b80e929569f1f9a0bbd3",
+    "source": "edited-photo-19.jpg.jpg",
+    "target": "journal-awards-03-shishya-celebration.jpg"
+  },
+  "edited-photo-20.jpg.1x1.jpg": {
+    "bytes": 340849,
+    "merged_into": null,
+    "sha256": "f6eef1dbbd8f115ea771260c3a4c22b14a8a6736ce1694a7f1faedec4d63a683",
+    "source": "edited-photo-20.jpg.1x1.jpg",
+    "target": "edited-photo-20-1x1.jpg"
+  },
+  "edited-photo-20.jpg.jpg": {
+    "bytes": 317301,
+    "merged_into": null,
+    "sha256": "81c82bcc7ff848e1bdec0f9c5fa863fe19c29fc66912a7fe645394e5f17ecbfa",
+    "source": "edited-photo-20.jpg.jpg",
+    "target": "journal-awards-04-sarvabhouma.jpg"
+  },
+  "edited-photo-21.jpg.jpg": {
+    "bytes": 461650,
+    "merged_into": null,
+    "sha256": "24263ce0e14fb3e183f8c8d71ec9147f51756c7bae724915e8223d4d65bca6fb",
+    "source": "edited-photo-21.jpg.jpg",
+    "target": "journal-pooja-03-procession.jpg"
+  },
+  "edited-photo-22.jpg.jpg": {
+    "bytes": 349904,
+    "merged_into": null,
+    "sha256": "6f74936b37cc01351f579dfb80b35f551eba5725f4731633a07cb362fa401cfa",
+    "source": "edited-photo-22.jpg.jpg",
+    "target": "edited-photo-22.jpg"
+  },
+  "edited-photo-23.jpg.jpg": {
+    "bytes": 396158,
+    "merged_into": null,
+    "sha256": "0324b96126b5e93d0404653ae42d4aaed424776a1320271f681200b278d0786d",
+    "source": "edited-photo-23.jpg.jpg",
+    "target": "journal-community-05-villagers.jpg"
+  },
+  "edited-photo-24.jpg.jpg": {
+    "bytes": 485049,
+    "merged_into": null,
+    "sha256": "7918af759e9b2355da7e07616ad8fec539d1d4a1dfb98ea68197840781cbc96a",
+    "source": "edited-photo-24.jpg.jpg",
+    "target": "journal-pooja-04-sacred-post.jpg"
+  },
+  "edited-photo-25.jpg.16x9.jpg": {
+    "bytes": 298551,
+    "merged_into": null,
+    "sha256": "f3c57c7c5544d44bbb88df0e14b3a0728d6d933304fe34ea31d959af74d47b84",
+    "source": "edited-photo-25.jpg.16x9.jpg",
+    "target": "edited-photo-25-16x9.jpg"
+  },
+  "edited-photo-25.jpg.jpg": {
+    "bytes": 360396,
+    "merged_into": null,
+    "sha256": "ab67f93c55a59947c064c951e6358a22cbcbea620845b04e48b1359955de6d85",
+    "source": "edited-photo-25.jpg.jpg",
+    "target": "edited-photo-25.jpg"
+  },
+  "edited-photo-26.jpg.3x4.jpg": {
+    "bytes": 403310,
+    "merged_into": null,
+    "sha256": "1eda643867ce142b6773daef8656db41084bd95641a01703afc3bf56f17fd601",
+    "source": "edited-photo-26.jpg.3x4.jpg",
+    "target": "edited-photo-26-3x4.jpg"
+  },
+  "edited-photo-26.jpg.jpg": {
+    "bytes": 425720,
+    "merged_into": null,
+    "sha256": "881fbbd381f360c4bf323151138bf894b2ff6017dfcbaaeb0f0d6f1b36b22849",
+    "source": "edited-photo-26.jpg.jpg",
+    "target": "journal-pooja-05-temple-entrance.jpg"
+  },
+  "edited-photo-27.jpg.3x4.jpg": {
+    "bytes": 406499,
+    "merged_into": null,
+    "sha256": "1d8ed35b935f98c0b842d63f5d06eafbe4678b86b3a4384417cc3bfe733af257",
+    "source": "edited-photo-27.jpg.3x4.jpg",
+    "target": "edited-photo-27-3x4.jpg"
+  },
+  "edited-photo-27.jpg.jpg": {
+    "bytes": 428870,
+    "merged_into": null,
+    "sha256": "a9e9f0617ffbca559133b6827f25fa9a88b9a8819dfff36c89497f6d4209549d",
+    "source": "edited-photo-27.jpg.jpg",
+    "target": "journal-community-06-booklets.jpg"
+  },
+  "edited-photo-28.jpg.jpg": {
+    "bytes": 390698,
+    "merged_into": null,
+    "sha256": "598f32e71273e02fc9fb9abd82e8b36c48e75cf0508587b88934e48d469014cc",
+    "source": "edited-photo-28.jpg.jpg",
+    "target": "journal-cultural-03-bharatanatyam-hyderabad.jpg"
+  },
+  "edited-photo-copy.jpg.jpg": {
+    "bytes": 246154,
+    "merged_into": null,
+    "sha256": "baaee27c88b6733e9e0f7304f7021a1ef242ceb0c845723eaa85071f9e712e98",
+    "source": "edited-photo-copy.jpg.jpg",
+    "target": "edited-photo-copy.jpg"
+  },
+  "edited-photo.jpg.jpg": {
+    "bytes": 343950,
+    "merged_into": null,
+    "sha256": "e1e27cb56e076d66bcf784af9c6bcab32be071b3ed42522413a564c52189a2e2",
+    "source": "edited-photo.jpg.jpg",
+    "target": "edited-photo-jpg.jpg"
+  },
+  "edited-photo.png.jpg": {
+    "bytes": 282224,
+    "merged_into": null,
+    "sha256": "0bd6b850267540834f608cd6a20a269ef87e2758d615fd527d3aaec4e9303f90",
+    "source": "edited-photo.png.jpg",
+    "target": "edited-photo-png.jpg"
+  },
+  "events-slide-1-ganesh-chaturthi.jpg": {
+    "bytes": 334398,
+    "merged_into": null,
+    "sha256": "2d8c062d9c6773635c26354fa834f584f787bc504b32bfc3c9c7c879a1115b2c",
+    "source": "events-slide-1-ganesh-chaturthi.jpg",
+    "target": "events-slide-1-ganesh-chaturthi.jpg"
+  },
+  "events-slide-2-varalakshmi.jpg": {
+    "bytes": 440486,
+    "merged_into": null,
+    "sha256": "ac6f348479bf038f3752049f5a29299dd95ce5816f5d6e104dacbbe78b8b2fed",
+    "source": "events-slide-2-varalakshmi.jpg",
+    "target": "events-slide-2-varalakshmi.jpg"
+  },
+  "events-slide-3-sandhyavandanam.jpg": {
+    "bytes": 482936,
+    "merged_into": null,
+    "sha256": "cfa0ba0b8129f0dddd79760f07bec1b3f2fe0acda1e8d37f6827858823cd0d8e",
+    "source": "events-slide-3-sandhyavandanam.jpg",
+    "target": "events-slide-3-sandhyavandanam.jpg"
+  },
+  "events-slide-4-nivedanam.jpg": {
+    "bytes": 458672,
+    "merged_into": null,
+    "sha256": "4df9cbdfb20b491ad330ff88188f92ca2722608d69aba1d6698cdc4026ab0ada",
+    "source": "events-slide-4-nivedanam.jpg",
+    "target": "events-slide-4-nivedanam.jpg"
+  },
+  "events-slide-5-kumbhabhishekam.jpg": {
+    "bytes": 318437,
+    "merged_into": null,
+    "sha256": "98aa1e48748e7e36e504dd785f61ca46e10a3844fe6f4fb32bb18e24ae8506f9",
+    "source": "events-slide-5-kumbhabhishekam.jpg",
+    "target": "events-slide-5-kumbhabhishekam.jpg"
+  },
+  "events-slide-6-kalyanam.jpg": {
+    "bytes": 310985,
+    "merged_into": null,
+    "sha256": "b9f12154123f5dee5f6c17e2c063ea624495d3b67394adae698d7608bc671b95",
+    "source": "events-slide-6-kalyanam.jpg",
+    "target": "events-slide-6-kalyanam.jpg"
+  },
+  "events-slide-7-cultural-evenings.jpg": {
+    "bytes": 544389,
+    "merged_into": null,
+    "sha256": "b9df8feeb6e515661e37d3a0c55197044d984b847de9b5e22ce888f167aa5071",
+    "source": "events-slide-7-cultural-evenings.jpg",
+    "target": "events-slide-7-cultural-evenings.jpg"
+  },
+  "events-slide-8-brahmotsavam.jpg": {
+    "bytes": 415291,
+    "merged_into": null,
+    "sha256": "bb4410a601a0d667b942f8e10514f16c77a9801767c248e7c8f8a7e5b888abb8",
+    "source": "events-slide-8-brahmotsavam.jpg",
+    "target": "events-slide-8-brahmotsavam.jpg"
+  },
+  "home-page-header.png.jpg": {
+    "bytes": 189323,
+    "merged_into": null,
+    "sha256": "d0d298dd183071697514e332e17643badd82b8951ea5e06ea212db3095e1ad0a",
+    "source": "home-page-header.png.jpg",
+    "target": "hero-home.jpg"
+  },
+  "journal-awards-01-chaganti.jpg": {
+    "bytes": 310403,
+    "merged_into": "journal-awards-01-chaganti.jpg",
+    "sha256": "63cd9cb7da8dc6434d59326cb37f69ec731c2fe5902875bafc4f06569d4319b9",
+    "source": "journal-awards-01-chaganti.jpg",
+    "target": "journal-awards-01-chaganti.jpg"
+  },
+  "journal-awards-02-vivekananda.jpg": {
+    "bytes": 364113,
+    "merged_into": "journal-awards-02-vivekananda.jpg",
+    "sha256": "d96c1d6f26816162d6b16e9c01bd2d202a134d69e76fcdf3cba5948db02d2007",
+    "source": "journal-awards-02-vivekananda.jpg",
+    "target": "journal-awards-02-vivekananda.jpg"
+  },
+  "journal-awards-03-shishya-celebration.jpg": {
+    "bytes": 379696,
+    "merged_into": "journal-awards-03-shishya-celebration.jpg",
+    "sha256": "ea91f6b9d322e8193c18b9c20e3b37ca65239250f073b80e929569f1f9a0bbd3",
+    "source": "journal-awards-03-shishya-celebration.jpg",
+    "target": "journal-awards-03-shishya-celebration.jpg"
+  },
+  "journal-awards-04-sarvabhouma.jpg": {
+    "bytes": 317301,
+    "merged_into": "journal-awards-04-sarvabhouma.jpg",
+    "sha256": "81c82bcc7ff848e1bdec0f9c5fa863fe19c29fc66912a7fe645394e5f17ecbfa",
+    "source": "journal-awards-04-sarvabhouma.jpg",
+    "target": "journal-awards-04-sarvabhouma.jpg"
+  },
+  "journal-awards-05-south-indian.jpg": {
+    "bytes": 365401,
+    "merged_into": null,
+    "sha256": "e40d2df44ba768feb2e2058675ab735e94de34a9bb19eb97e91a62d428ce833b",
+    "source": "journal-awards-05-south-indian.jpg",
+    "target": "journal-awards-05-south-indian.jpg"
+  },
+  "journal-awards-06-ganap-sachidananda.jpg": {
+    "bytes": 245641,
+    "merged_into": null,
+    "sha256": "f2d1d65752483b478f4676ee6255acf1f3a84af24c3b0e5a5102890a050502cf",
+    "source": "journal-awards-06-ganap-sachidananda.jpg",
+    "target": "journal-awards-06-ganap-sachidananda.jpg"
+  },
+  "journal-community-02-ceremony-with-priest.jpg": {
+    "bytes": 271886,
+    "merged_into": "journal-community-02-ceremony-with-priest.jpg",
+    "sha256": "aeda867db2c14bd037417074d33fb461694bfe6c084fd88c6df0f687a017757b",
+    "source": "journal-community-02-ceremony-with-priest.jpg",
+    "target": "journal-community-02-ceremony-with-priest.jpg"
+  },
+  "journal-community-03-ashram-boys.jpg": {
+    "bytes": 329853,
+    "merged_into": "journal-community-03-ashram-boys.jpg",
+    "sha256": "149f61bb051b63504e41544e8a68a8c07b634c00cce54524dbff5e1da716b24e",
+    "source": "journal-community-03-ashram-boys.jpg",
+    "target": "journal-community-03-ashram-boys.jpg"
+  },
+  "journal-community-04-ashram-adults.jpg": {
+    "bytes": 357983,
+    "merged_into": null,
+    "sha256": "b26d18b4f6874ad1d0543ffbc2784330a0a9134a76fe8a42926a7a6bc0569294",
+    "source": "journal-community-04-ashram-adults.jpg",
+    "target": "journal-community-04-ashram-adults.jpg"
+  },
+  "journal-community-05-villagers.jpg": {
+    "bytes": 396158,
+    "merged_into": "journal-community-05-villagers.jpg",
+    "sha256": "0324b96126b5e93d0404653ae42d4aaed424776a1320271f681200b278d0786d",
+    "source": "journal-community-05-villagers.jpg",
+    "target": "journal-community-05-villagers.jpg"
+  },
+  "journal-community-06-booklets.jpg": {
+    "bytes": 428870,
+    "merged_into": "journal-community-06-booklets.jpg",
+    "sha256": "a9e9f0617ffbca559133b6827f25fa9a88b9a8819dfff36c89497f6d4209549d",
+    "source": "journal-community-06-booklets.jpg",
+    "target": "journal-community-06-booklets.jpg"
+  },
+  "journal-cultural-01-bharatanatyam-tribute.jpg": {
+    "bytes": 324769,
+    "merged_into": "journal-cultural-01-bharatanatyam-tribute.jpg",
+    "sha256": "8105a4169326a9a3001ee80b6fcc3ac3f631395c63f108e8e350c7140a205bb5",
+    "source": "journal-cultural-01-bharatanatyam-tribute.jpg",
+    "target": "journal-cultural-01-bharatanatyam-tribute.jpg"
+  },
+  "journal-cultural-02-bharatanatyam-guru.jpg": {
+    "bytes": 416072,
+    "merged_into": "journal-cultural-02-bharatanatyam-guru.jpg",
+    "sha256": "c700f87de48455d879ba12c5eb9cd460650d78befa6cf2ae7241aa77bb0f6d1e",
+    "source": "journal-cultural-02-bharatanatyam-guru.jpg",
+    "target": "journal-cultural-02-bharatanatyam-guru.jpg"
+  },
+  "journal-cultural-03-bharatanatyam-hyderabad.jpg": {
+    "bytes": 390698,
+    "merged_into": "journal-cultural-03-bharatanatyam-hyderabad.jpg",
+    "sha256": "598f32e71273e02fc9fb9abd82e8b36c48e75cf0508587b88934e48d469014cc",
+    "source": "journal-cultural-03-bharatanatyam-hyderabad.jpg",
+    "target": "journal-cultural-03-bharatanatyam-hyderabad.jpg"
+  },
+  "journal-cultural-04-literary-tribute.jpg": {
+    "bytes": 309444,
+    "merged_into": "journal-cultural-04-literary-tribute.jpg",
+    "sha256": "093418dea58d95bb64db46bdd79dc13e661eea18c3743fc087b05a67bdd9cab4",
+    "source": "journal-cultural-04-literary-tribute.jpg",
+    "target": "journal-cultural-04-literary-tribute.jpg"
+  },
+  "journal-cultural-05-sangam-collage.jpg": {
+    "bytes": 385732,
+    "merged_into": null,
+    "sha256": "a730b137779d7d7d32c6b7ce814e79638baaca17d72eb0f5e24d53cde198f36e",
+    "source": "journal-cultural-05-sangam-collage.jpg",
+    "target": "journal-cultural-05-sangam-collage.jpg"
+  },
+  "journal-festivals-01-girija-kalyana.jpg": {
+    "bytes": 298092,
+    "merged_into": null,
+    "sha256": "52f760eee46df7a938cd2a14b06f00ba023bf9b3973c7dea0a48a7d659be86fa",
+    "source": "journal-festivals-01-girija-kalyana.jpg",
+    "target": "journal-festivals-01-girija-kalyana.jpg"
+  },
+  "journal-festivals-03-ganesh-chaturthi.jpg": {
+    "bytes": 334398,
+    "merged_into": null,
+    "sha256": "2d8c062d9c6773635c26354fa834f584f787bc504b32bfc3c9c7c879a1115b2c",
+    "source": "journal-festivals-03-ganesh-chaturthi.jpg",
+    "target": "journal-festivals-03-ganesh-chaturthi.jpg"
+  },
+  "journal-indoor-01.jpg": {
+    "bytes": 243421,
+    "merged_into": null,
+    "sha256": "941005a3909565093ca27c5732219abeb3b34e5fd3dc92f2297bfcf90929b4c8",
+    "source": "journal-indoor-01.jpg",
+    "target": "journal-indoor-01.jpg"
+  },
+  "journal-kalyanam-01.jpg": {
+    "bytes": 310985,
+    "merged_into": null,
+    "sha256": "b9f12154123f5dee5f6c17e2c063ea624495d3b67394adae698d7608bc671b95",
+    "source": "journal-kalyanam-01.jpg",
+    "target": "journal-kalyanam-01.jpg"
+  },
+  "journal-kalyanam-02.jpg": {
+    "bytes": 303854,
+    "merged_into": "journal-kalyanam-02.jpg",
+    "sha256": "8b2f43d389f92617110dac02ac9abd47d4165122bf41a8e9bae09cbc46d879b1",
+    "source": "journal-kalyanam-02.jpg",
+    "target": "journal-kalyanam-02.jpg"
+  },
+  "journal-kalyanam-03.jpg": {
+    "bytes": 261812,
+    "merged_into": null,
+    "sha256": "5d39c03144a4cf855389557a6efae7b800c95d5f5abead4b0ef586186c83e600",
+    "source": "journal-kalyanam-03.jpg",
+    "target": "journal-kalyanam-03.jpg"
+  },
+  "journal-kumbhabhishekam-01.jpg": {
+    "bytes": 318437,
+    "merged_into": null,
+    "sha256": "98aa1e48748e7e36e504dd785f61ca46e10a3844fe6f4fb32bb18e24ae8506f9",
+    "source": "journal-kumbhabhishekam-01.jpg",
+    "target": "journal-kumbhabhishekam-01.jpg"
+  },
+  "journal-pooja-01-sandhyavandanam.jpg": {
+    "bytes": 482936,
+    "merged_into": null,
+    "sha256": "cfa0ba0b8129f0dddd79760f07bec1b3f2fe0acda1e8d37f6827858823cd0d8e",
+    "source": "journal-pooja-01-sandhyavandanam.jpg",
+    "target": "journal-pooja-01-sandhyavandanam.jpg"
+  },
+  "journal-pooja-02-nivedanam.jpg": {
+    "bytes": 458672,
+    "merged_into": null,
+    "sha256": "4df9cbdfb20b491ad330ff88188f92ca2722608d69aba1d6698cdc4026ab0ada",
+    "source": "journal-pooja-02-nivedanam.jpg",
+    "target": "journal-pooja-02-nivedanam.jpg"
+  },
+  "journal-pooja-03-procession.jpg": {
+    "bytes": 461650,
+    "merged_into": "journal-pooja-03-procession.jpg",
+    "sha256": "24263ce0e14fb3e183f8c8d71ec9147f51756c7bae724915e8223d4d65bca6fb",
+    "source": "journal-pooja-03-procession.jpg",
+    "target": "journal-pooja-03-procession.jpg"
+  },
+  "journal-pooja-04-sacred-post.jpg": {
+    "bytes": 485049,
+    "merged_into": "journal-pooja-04-sacred-post.jpg",
+    "sha256": "7918af759e9b2355da7e07616ad8fec539d1d4a1dfb98ea68197840781cbc96a",
+    "source": "journal-pooja-04-sacred-post.jpg",
+    "target": "journal-pooja-04-sacred-post.jpg"
+  },
+  "journal-pooja-05-temple-entrance.jpg": {
+    "bytes": 425720,
+    "merged_into": "journal-pooja-05-temple-entrance.jpg",
+    "sha256": "881fbbd381f360c4bf323151138bf894b2ff6017dfcbaaeb0f0d6f1b36b22849",
+    "source": "journal-pooja-05-temple-entrance.jpg",
+    "target": "journal-pooja-05-temple-entrance.jpg"
+  },
+  "logo.jpg": {
+    "bytes": 925213,
+    "merged_into": null,
+    "sha256": "bbab5f4fd9038d63fc3209c50ba827167553be8a11aa107aba6807faebe796a1",
+    "source": "logo.jpg",
+    "target": "trust-logo.jpg"
+  },
+  "trustee-photo.jpg": {
+    "bytes": 423385,
+    "merged_into": null,
+    "sha256": "063047efdd3f79e7ccba9cb7f1f70f2848c0fee410b3fc97c4f0530861eb77b4",
+    "source": "trustee-photo.jpg",
+    "target": "trustee-portrait.jpg"
+  },
+  "trustee-photo.jpg.3x4.jpg": {
+    "bytes": 328835,
+    "merged_into": null,
+    "sha256": "daa89152d39eb0e8a2fc39d47bacc29332947b66b5b63051e09ee8ffa2d742b4",
+    "source": "trustee-photo.jpg.3x4.jpg",
+    "target": "trustee-portrait-3x4.jpg"
+  }
+}
