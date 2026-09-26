@@ -27,6 +27,7 @@
         releaseBodyScrollLock,
         trapFocus,
         releaseFocusTrap,
+        portal,
     } from '$shared/lib/runtime/mobile';
 
     const links = [
@@ -194,12 +195,22 @@
 {/if}
 
 <!-- Mobile menu dialog. Renders whenever the menu is `opening`/`open`/`closing`
-     so the close transition (M2) has a frame to play. The dialog itself is a
-     child of the SiteHeader DOM tree but visually escapes via `fixed inset-0`. -->
+     so the close transition (M2) has a frame to play.
+
+     IMPORTANT — `use:portal={'body'}`:
+       The dialog uses `fixed inset-0` to cover the viewport. However, the
+       SiteHeader's inner strip applies `backdrop-blur-md`, and any ancestor
+       with `backdrop-filter` (or `transform`, `filter`, `perspective`,
+       `contain: paint`) becomes the containing block for `position: fixed`
+       descendants. Without the portal, the dialog would be clipped to the
+       ~80px-tall header strip and the menu would be inaccessible. The
+       portal moves the dialog to `document.body` so `fixed` positions
+       against the viewport as authored. -->
 {#if mobileMenu.isVisible}
     <div
         id="site-nav-dialog"
         bind:this={dialogEl}
+        use:portal={'body'}
         class="fixed inset-0 z-50 flex flex-col bg-background"
         role="dialog"
         aria-modal="true"

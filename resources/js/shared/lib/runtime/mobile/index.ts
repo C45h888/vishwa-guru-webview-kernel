@@ -24,4 +24,7 @@ export {
 	releaseFocusTrap,
 } from './overlays';
 
+export { portal } from './portal';
+export type { PortalTarget } from './portal';
+
 export { viewport } from './viewport.svelte';
