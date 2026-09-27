@@ -96,7 +96,7 @@ final class AboutController
 
         if (is_array($aboutContent) && isset($aboutContent['story']) && is_array($aboutContent['story'])) {
             $aboutContent['story'] = $media->enrich(
-                $aboutContent['story'],
+                $aboutContent['story],
                 'image_file_id',
                 'image',
             );

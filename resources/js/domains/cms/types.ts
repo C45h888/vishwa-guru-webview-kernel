@@ -122,8 +122,11 @@ export interface ContactPointProps {
 
 export interface ContactPageProps extends AppPageProps {
     contactPoints: ContactPointProps[];
-    /** OpenStreetMap iframe URL centered on the primary office address. */
-    mapEmbedUrl: string | null;
+    /** OpenStreetMap raster tiles around the primary office address. */
+    mapTiles: Array<{ url: string; row: number; column: number }>;
+    /** Tile pixel offsets that keep the office pin centered in the map frame. */
+    mapTileOffsetX: number;
+    mapTileOffsetY: number;
     /** Plain-text address used to label the map, for the aria-title. */
     mapAddress: string | null;
     /** Human-facing Google Maps directions link (the consumer site, not the iframe). */
@@ -134,6 +137,7 @@ export interface AboutPageProps extends AppPageProps {
     page: StaticPageSummary;
     aboutContent: AboutPageContentProps | null;
     heroBanners: HeroBannerProps[];
+    featuredGalleries: HomeFeaturedGallery[];
     html: string;
     resolvedAt: string;
 }

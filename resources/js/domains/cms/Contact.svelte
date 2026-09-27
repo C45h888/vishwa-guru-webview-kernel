@@ -15,7 +15,9 @@
 
     let {
         contactPoints,
-        mapEmbedUrl,
+        mapTiles,
+        mapTileOffsetX,
+        mapTileOffsetY,
         mapAddress,
         mapOpenUrl,
         appName,
@@ -167,23 +169,49 @@
                         </div>
                     </div>
 
-                    <!-- Map supplied by the contact record, with a direct
-                         directions link for browsers where the embed fails. -->
+                    <!-- OSM Mapnik tiles keep the location visible in this
+                         surface; Google Maps remains the directions action. -->
                     <div
-                        class="aspect-[3/2] overflow-hidden rounded-md border border-border/40 bg-ivory"
+                        class="relative aspect-[3/2] overflow-hidden rounded-md border border-border/40 bg-ivory"
+                        role="img"
                         aria-label={mapAddress
-                            ? `Map of ${mapAddress}`
+                            ? `OpenStreetMap view of ${mapAddress}`
                             : 'Map placeholder'}
                     >
-                        {#if mapEmbedUrl}
-                            <iframe
-                                src={mapEmbedUrl}
-                                title={`Map of ${mapAddress ?? 'temple office'}`}
-                                class="h-full w-full border-0"
-                                loading="eager"
-                                referrerpolicy="strict-origin-when-cross-origin"
-                                allowfullscreen
-                            ></iframe>
+                        {#if mapTiles.length > 0}
+                            <div
+                                class="absolute grid h-[1280px] w-[1280px] grid-cols-5 grid-rows-5"
+                                style={`left:calc(50% - ${mapTileOffsetX}px);top:calc(50% - ${mapTileOffsetY}px)`}
+                                aria-hidden="true"
+                            >
+                                {#each mapTiles as tile (`${tile.row}-${tile.column}`)}
+                                    <img
+                                        src={tile.url}
+                                        alt=""
+                                        width="256"
+                                        height="256"
+                                        loading="eager"
+                                        referrerpolicy="strict-origin-when-cross-origin"
+                                        class="h-64 w-64 select-none"
+                                        draggable="false"
+                                    />
+                                {/each}
+                            </div>
+                            <span
+                                class="pointer-events-none absolute left-1/2 top-1/2 z-10 -translate-x-1/2 -translate-y-full drop-shadow"
+                                aria-hidden="true"
+                            >
+                                <MapPin class="h-8 w-8 fill-primary text-white" />
+                            </span>
+                            <a
+                                href="https://www.openstreetmap.org/copyright"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                class="absolute bottom-1 right-1 z-20 rounded bg-white/90 px-1.5 py-0.5 text-[10px] font-medium text-foreground underline-offset-2 hover:underline"
+                                aria-label="OpenStreetMap contributors and licence"
+                            >
+                                © OpenStreetMap contributors
+                            </a>
                         {:else}
                             <div
                                 class="flex h-full flex-col items-center justify-center gap-1 text-xs text-muted-foreground"

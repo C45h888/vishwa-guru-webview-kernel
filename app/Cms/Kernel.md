@@ -90,6 +90,18 @@ component, plus the generic `/{slug}` whitelist for content-only pages:
 - `/about` — `cms.about` → `AboutController` (carries `about_page_content`)
 - `/legal` — `cms.legal` → `LegalController` (carries `legal_page_content`)
 
+### About-page featured galleries (DB-driven)
+
+The "Three windows into the trust" section on `/about` is wired to
+`App\Gallery\Contracts\GalleryQueryContract::listFeatured(3)`. The
+controller enriches the result via `PublicMediaPresentationService`
+and passes it as the `featuredGalleries` Inertia prop. The Svelte
+component (`cms/About.svelte`) renders one card per gallery with the
+real cover image; the hardcoded slug list that previously lived in
+the component (and pointed at the now-archived `sacred-festivals`
+row) has been removed. Adding a row to `galleries` with
+`is_featured=true` propagates automatically.
+
 ### Home-page image slots (decoupled)
 
 The `static_pages.homepage_content` JSONB carries two image references

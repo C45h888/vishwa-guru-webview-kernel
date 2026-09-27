@@ -13,10 +13,8 @@ use Inertia\Response;
  *
  * Reads all non-archived contact points from ContactInformationService
  * and derives the canonical map embed URL from the primary address row
- * (contact_type='address'). The map uses Google's supported Embed API
- * when a restricted embed key is configured; otherwise it embeds
- * OpenStreetMap. The directions link always opens Google Maps and does
- * not require an API key.
+ * (contact_type='address'). Mapnik tiles from OpenStreetMap form the
+ * inline map; the directions link opens Google Maps.
  *
  * Center is driven by APP_MAP_CENTER_LAT / APP_MAP_CENTER_LON env vars
  * (default: 12.331205, 76.666993 — the canonical temple office pin
@@ -41,9 +39,11 @@ final class ContactController
             $contacts->listAll(),
         );
 
-        // Build a bounded OSM iframe and universal Google Maps URL from
-        // the configured office pin. Google Maps URLs need no API key.
-        $mapEmbedUrl = null;
+        // Use only the OSM tiles that make up the currently visible map
+        // frame. The Google Maps directions URL is a separate client action.
+        $mapTiles = [];
+        $mapTileOffsetX = 0.0;
+        $mapTileOffsetY = 0.0;
         $mapAddress = null;
         $mapOpenUrl = null;
         foreach ($points as $p) {
@@ -51,25 +51,30 @@ final class ContactController
                 $mapAddress = (string) $p['value'];
                 $lat = (float) env('APP_MAP_CENTER_LAT', '12.331205');
                 $lon = (float) env('APP_MAP_CENTER_LON', '76.666993');
-                $bbox = implode(',', [
-                    number_format($lon - 0.012, 6, '.', ''),
-                    number_format($lat - 0.008, 6, '.', ''),
-                    number_format($lon + 0.012, 6, '.', ''),
-                    number_format($lat + 0.008, 6, '.', ''),
-                ]);
+                $zoom = 15;
+                $tileCount = 2 ** $zoom;
+                $latitudeRadians = deg2rad($lat);
+                $worldX = (($lon + 180.0) / 360.0) * $tileCount;
+                $worldY = ((1.0 - asinh(tan($latitudeRadians)) / M_PI) / 2.0) * $tileCount;
+                $centerTileX = (int) floor($worldX);
+                $centerTileY = (int) floor($worldY);
+                $mapTileOffsetX = 512.0 + (($worldX - $centerTileX) * 256.0);
+                $mapTileOffsetY = 512.0 + (($worldY - $centerTileY) * 256.0);
+
+                for ($row = 0; $row < 5; $row++) {
+                    for ($column = 0; $column < 5; $column++) {
+                        $tileX = ($centerTileX + $column - 2 + $tileCount) % $tileCount;
+                        $tileY = max(0, min($tileCount - 1, $centerTileY + $row - 2));
+                        $mapTiles[] = [
+                            'url' => "https://tile.openstreetmap.org/{$zoom}/{$tileX}/{$tileY}.png",
+                            'row' => $row,
+                            'column' => $column,
+                        ];
+                    }
+                }
+
                 $marker = number_format($lat, 6, '.', '').','
                     .number_format($lon, 6, '.', '');
-                $googleEmbedKey = config('services.google_maps.embed_api_key');
-                if (is_string($googleEmbedKey) && $googleEmbedKey !== '') {
-                    $mapEmbedUrl = 'https://www.google.com/maps/embed/v1/place?'
-                        .http_build_query([
-                            'key' => $googleEmbedKey,
-                            'q' => $marker,
-                        ], '', '&', PHP_QUERY_RFC3986);
-                } else {
-                    $mapEmbedUrl = 'https://www.openstreetmap.org/export/embed.html?bbox='
-                        .rawurlencode($bbox).'&layer=mapnik&marker='.rawurlencode($marker);
-                }
                 $mapOpenUrl = 'https://www.google.com/maps/dir/?api=1&destination='
                     .rawurlencode($marker);
                 break;
@@ -78,7 +83,9 @@ final class ContactController
 
         return Inertia::render('cms/Contact', [
             'contactPoints' => $points,
-            'mapEmbedUrl' => $mapEmbedUrl,
+            'mapTiles' => $mapTiles,
+            'mapTileOffsetX' => $mapTileOffsetX,
+            'mapTileOffsetY' => $mapTileOffsetY,
             'mapAddress' => $mapAddress,
             'mapOpenUrl' => $mapOpenUrl,
             'appName' => (string) config('app.name', 'Temple Trust'),

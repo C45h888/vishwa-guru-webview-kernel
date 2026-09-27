@@ -20,8 +20,14 @@
     import { FALLBACK_ABOUT_PAGE_CONTENT } from './about-fallbacks';
     import type { AboutPageProps } from './types';
 
-    let { page, aboutContent, heroBanners, html, appName }: AboutPageProps =
-        $props();
+    let {
+        page,
+        aboutContent,
+        heroBanners,
+        featuredGalleries,
+        html,
+        appName,
+    }: AboutPageProps = $props();
 
     const sourceContent = $derived(
         aboutContent === null ? FALLBACK_ABOUT_PAGE_CONTENT : aboutContent,
@@ -88,6 +94,7 @@
     const timeline = $derived(content.timeline);
     const hasValuesImage = $derived(content.values.image !== null);
     const hasStoryImage = $derived(content.story.image !== null);
+    const hasFeaturedGalleries = $derived(featuredGalleries.length > 0);
 
     // Icon mapping: V2 grammar vocabulary → lucide-svelte component.
     // Unknown keys fall back to Sparkles so the page never breaks on a new key.
@@ -543,59 +550,84 @@
         </div>
     </section>
 
-    <!-- ═══ SACRED VISUALS STRIP ═══ -->
-    <section class="bg-muted/30 py-20 lg:py-28">
-        <div class="container">
-            <div class="mx-auto max-w-2xl space-y-4 text-center">
-                <p
-                    class="text-xs font-semibold uppercase tracking-[0.25em] text-primary"
-                >
-                    From the gallery
-                </p>
-                <h2 class="font-serif text-3xl font-semibold lg:text-4xl">
-                    Three windows into the trust
-                </h2>
-                <p class="text-base text-muted-foreground">
-                    Each gallery gathers a different part of the trust\u2019s work
-                    \u2014 the daily, the festive, and the people who carry both.
-                </p>
-            </div>
-
-            <div class="mx-auto mt-12 grid max-w-5xl grid-cols-1 gap-6 sm:grid-cols-3">
-                {#each [
-                    { slug: 'sacred-rituals', title: 'Sacred Rituals', subtitle: 'School life and daily annadanam' },
-                    { slug: 'sacred-festivals', title: 'Sacred Festivals', subtitle: 'Community moments across the year' },
-                    { slug: 'community-cultural', title: 'Community & Cultural', subtitle: 'People and the work they do' },
-                ] as card (card.slug)}
-                    <a
-                        href={`/gallery/${card.slug}`}
-                        class="group flex flex-col"
-                        aria-label={`Open the ${card.title} gallery`}
+    <!-- ═══ THREE WINDOWS — featured galleries ═══ -->
+    {@const windows = (featuredGalleries ?? []).slice(0, 3)}
+    {#if windows.length > 0}
+        <section class="bg-muted/30 py-20 lg:py-28">
+            <div class="container">
+                <div class="mx-auto max-w-2xl space-y-4 text-center">
+                    <p
+                        class="text-xs font-semibold uppercase tracking-[0.25em] text-primary"
                     >
-                        <div
-                            class="aspect-square w-full overflow-hidden rounded-md border border-border/40 bg-ivory transition group-hover:border-primary/40"
+                        From the gallery
+                    </p>
+                    <h2 class="font-serif text-3xl font-semibold lg:text-4xl">
+                        {windows.length === 3
+                        ? 'Three windows into the trust'
+                        : 'Windows into the trust'}
+                    </h2>
+                    <p class="text-base text-muted-foreground">
+                        Each gallery gathers a different part of the
+                        trust’s work — the daily, the festive, and the
+                        people who carry both.
+                    </p>
+                </div>
+
+                <div class="mx-auto mt-12 grid max-w-5xl grid-cols-1 gap-6 sm:grid-cols-3">
+                    {#each windows as gallery (gallery.id)}
+                        <a
+                            href={`/gallery/${gallery.slug}`}
+                            class="group flex flex-col focus:outline-none focus:ring-2 focus:ring-primary/40"
+                            aria-label={`Open the ${gallery.title} gallery`}
                         >
                             <div
-                                class="flex h-full w-full items-center justify-center bg-gradient-to-br from-primary/15 via-ivory to-primary/10"
+                                class="aspect-square w-full overflow-hidden rounded-md border border-border/40 bg-ivory transition group-hover:border-primary/40"
                             >
-                                <MandalaDecoration size={200} tint="gold" />
+                                {#if gallery.cover_image}
+                                    <PublicMediaImage
+                                        media={gallery.cover_image}
+                                        alt={gallery.cover_image.alt_text ??
+                                            gallery.title}
+                                        class="h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.04]"
+                                        loading="lazy"
+                                        fetchpriority="low"
+                                    />
+                                {:else}
+                                    <div
+                                        class="flex h-full w-full items-center justify-center bg-gradient-to-br from-primary/15 via-ivory to-primary/10"
+                                    >
+                                        <MandalaDecoration
+                                            size={200}
+                                            tint="gold"
+                                        />
+                                    </div>
+                                {/if}
                             </div>
-                        </div>
-                        <p
-                            class="mt-4 text-xs font-semibold uppercase tracking-[0.18em] text-primary"
-                        >
-                            {card.subtitle}
-                        </p>
-                        <h3
-                            class="mt-1 font-serif text-xl font-semibold lg:text-2xl"
-                        >
-                            {card.title}
-                        </h3>
-                    </a>
-                {/each}
+                            <p
+                                class="mt-4 text-xs font-semibold uppercase tracking-[0.18em] text-primary"
+                            >
+                                {gallery.image_count} image{gallery.image_count === 1
+                                    ? ''
+                                    : 's'}
+                            </p>
+                            <h3
+                                class="mt-1 font-serif text-xl font-semibold lg:text-2xl"
+                            >
+                                {gallery.title}
+                            </h3>
+                            {#if gallery.short_description}
+                                <p
+                                    class="mt-1 text-sm leading-relaxed text-muted-foreground"
+                                >
+                                    {gallery.short_description}
+                                </p>
+                            {/if}
+                        </a>
+                    {/each}
+                </div>
             </div>
-        </div>
-    </section>
+        </section>
+    {/if}
 
     <!-- ═══ PLAN YOUR VISIT ═══ -->
     <section class="container py-20 lg:py-28">
