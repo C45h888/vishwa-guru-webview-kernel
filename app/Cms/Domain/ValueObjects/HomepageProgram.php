@@ -13,6 +13,16 @@ use InvalidArgumentException;
  * The key is a closed enum (pooja | annadanam | temple_care). The
  * HomepageContent value object enforces both the count (3) and the
  * canonical order of the program list.
+ *
+ * Two image slots (mirroring the HomepageStory decoupling):
+ *   - image_file_id         — the program-card image (the Annadanam
+ *                             card on the homepage, the Pooja card, etc.)
+ *   - pillar_image_file_id  — optional dedicated image for the matching
+ *                             Pillar-Triad card (program[1] maps to
+ *                             card 2). Lets the program card carry one
+ *                             image while the Pillar-Triad card carries
+ *                             another. Null falls back to image_file_id
+ *                             in the presentation layer (Home.svelte).
  */
 final readonly class HomepageProgram
 {
@@ -33,6 +43,7 @@ final readonly class HomepageProgram
         private string $body,
         private ?EntityId $imageFileId,
         private ?string $altText,
+        private ?EntityId $pillarImageFileId = null,
     ) {
         if (! in_array($key, self::ALLOWED_KEYS, true)) {
             throw new InvalidArgumentException(
@@ -81,6 +92,11 @@ final readonly class HomepageProgram
         return $this->imageFileId;
     }
 
+    public function pillarImageFileId(): ?EntityId
+    {
+        return $this->pillarImageFileId;
+    }
+
     public function altText(): ?string
     {
         return $this->altText;
@@ -97,6 +113,7 @@ final readonly class HomepageProgram
             'title' => $this->title,
             'body' => $this->body,
             'image_file_id' => $this->imageFileId?->value(),
+            'pillar_image_file_id' => $this->pillarImageFileId?->value(),
             'alt_text' => $this->altText,
         ];
     }
@@ -111,6 +128,11 @@ final readonly class HomepageProgram
             $imageFileId = EntityId::fromString((string) $row['image_file_id']);
         }
 
+        $pillarImageFileId = null;
+        if (isset($row['pillar_image_file_id']) && $row['pillar_image_file_id'] !== null && $row['pillar_image_file_id'] !== '') {
+            $pillarImageFileId = EntityId::fromString((string) $row['pillar_image_file_id']);
+        }
+
         return new self(
             key: (string) ($row['key'] ?? ''),
             eyebrow: (string) ($row['eyebrow'] ?? ''),
@@ -118,6 +140,7 @@ final readonly class HomepageProgram
             body: (string) ($row['body'] ?? ''),
             imageFileId: $imageFileId,
             altText: isset($row['alt_text']) ? (string) $row['alt_text'] : null,
+            pillarImageFileId: $pillarImageFileId,
         );
     }
 }

@@ -31,7 +31,11 @@ final class FormController
 
         $campaignsList = array_map(
             static fn ($dto) => $dto->toArray(),
-            $paged->items,
+            array_values(array_filter(
+                $paged->items,
+                static fn ($dto) => $dto->state === 'active'
+                    && $dto->id === config('campaigns.donation_pool_campaign_id'),
+            )),
         );
 
         // Default currency comes from the first campaign or 'INR'.

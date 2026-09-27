@@ -31,10 +31,14 @@
 
 <div class="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-sm {inkClass} sm:justify-start">
     {#each signals as label, i (label)}
-        <span class="inline-flex items-center gap-1.5">
+        <a
+            href="/legal"
+            class="inline-flex items-center gap-1.5 rounded-sm transition-opacity hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
+            aria-label={`${label} — view trust legal information`}
+        >
             <Shield class="h-3.5 w-3.5 {iconClass}" aria-hidden="true" />
             <span>{label}</span>
-        </span>
+        </a>
         {#if i < signals.length - 1}
             <span class="{dividerClass}" aria-hidden="true">·</span>
         {/if}

@@ -89,34 +89,35 @@
      * a short editorial block beneath. Clicking just scrolls to the grid
      * below; the user picks the campaign they want from there.
      *
-     * These canonical campaign images are staged in the public CMS media
-     * directory. They are intentionally kept full-frame; the existing
-     * square presentation handles the responsive slot without destructive
-     * source cropping.
+     * The three images are mapped explicitly to the manually prepared
+     * canonical files. This keeps each image paired with the cause it
+     * explains even when older public-media records point at stale assets.
      */
-    const PILLARS = [
+    const PILLAR_COPY = [
         {
-            src: '/storage/cms-media/LAND.jpg',
+            src: '/storage/cms-media-upscaled/canonical/kids-event.png',
             alt: 'Daily annadanam at the schools',
             eyebrow: 'Ongoing \u00b7 daily',
             title: 'Sustain the schools: food, water, events',
             body: 'Every school day the trust provides daily annadanam for children in need of care — including blind and deaf pupils on free education. Contributions sustain meals, drinking water, and school events.',
         },
         {
-            src: '/storage/cms-media/GAUSHALA.jpg',
-            alt: 'The land fund for the proposed campus',
-            eyebrow: 'Parallel aim \u00b7 land fund',
+            src: '/storage/cms-media-upscaled/canonical/LAND.jpg',
+            alt: 'Open land near the proposed campus site',
+            eyebrow: 'Campus · land acquisition',
             title: 'Acquire the land for the new campus',
             body: 'Alongside the schools, the trust is raising funds to acquire land near Nanjangud, outside Mysore, for the proposed healing and service campus. The land is under discussion; construction begins after it is secured.',
         },
         {
-            src: '/storage/cms-media/WELFARE.jpg',
-            alt: 'The planned Gaushala, temple, and cow care',
-            eyebrow: 'Planned \u00b7 Stage 2+',
+            src: '/storage/cms-media-upscaled/canonical/GAUSHALA.jpg',
+            alt: 'Illustrative concept for a future Gaushala and temple campus',
+            eyebrow: 'Campus · future stage',
             title: 'Build the Gaushala, temple, and cow care',
-            body: 'On the secured land, the trust intends to build a Gaushala, a simple Shiva temple, and a disciplined healing environment — then the long-term care of the resident cows. This stage opens after the land fund closes.',
+            body: 'The pooled fund includes the planned Gaushala, a simple Shiva temple, a disciplined healing environment, and long-term cow care as the campus stages proceed.',
         },
     ];
+
+    const PILLARS = PILLAR_COPY;
 </script>
 
 <svelte:head>
@@ -135,7 +136,7 @@
 
         <div class="container relative py-12 lg:py-20">
             <ul
-                class="grid grid-cols-1 gap-6 sm:grid-cols-3 sm:gap-5 lg:gap-8"
+                class="grid grid-cols-1 gap-6 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3 lg:gap-8"
                 aria-label="What the campaigns sustain"
             >
                 {#each PILLARS as pillar, i (i)}
@@ -153,6 +154,12 @@
                                     class="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.04]"
                                     loading="lazy"
                                     decoding="async"
+                                    onerror={(event) => {
+                                        const fallback = PILLAR_COPY[i].src;
+                                        if (event.currentTarget.src !== new URL(fallback, window.location.href).href) {
+                                            event.currentTarget.src = fallback;
+                                        }
+                                    }}
                                 />
                                 <div
                                     class="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/55 via-black/10 to-transparent opacity-90"
@@ -188,7 +195,9 @@
                                 <span
                                     class="inline-flex items-center gap-1 pt-1 text-sm font-medium text-primary transition-transform group-hover:translate-x-0.5"
                                 >
-                                    Browse all causes
+                                    {pillar.eyebrow.startsWith('Campus · future')
+                                        ? 'See future campus stage'
+                                        : 'Explore pooled fund'}
                                     <ArrowRight
                                         class="h-3.5 w-3.5"
                                         aria-hidden="true"
@@ -235,33 +244,29 @@
                 <h1
                     class="font-serif text-3xl font-semibold leading-tight lg:text-4xl"
                 >
-                    A campaign is a specific call to action
+                    One pooled fund, several stages of service
                 </h1>
                 <div
                     class="space-y-4 text-base leading-relaxed text-muted-foreground lg:text-lg"
                 >
                     <p>
-                        Every campaign at {appName} names a specific cause —
-                        daily annadanam at the schools, the land fund for the
-                        proposed campus, its construction, or the long-term
-                        care of the cows. The two current causes are the
-                        schools\u2019 daily operations and the land fund. Each
-                        campaign has a clear goal, a clear timeline, and a
-                        clear use for every rupee given.
+                        Donations go to one pooled fund across daily school
+                        operations and the proposed campus programme, including
+                        land acquisition, planned Gaushala and temple work, the
+                        healing environment, and cow care as those stages
+                        proceed.
                     </p>
                     <p>
-                        Your offering goes to the campaign you choose, not to
-                        a general fund. The trust treats each campaign as its
-                        own ledger, with progress visible on every page. When
-                        a campaign closes, the trust publishes how the
-                        offerings were spent \u2014 so the giving stays accountable
-                        and the next stage can begin.
+                        The fund is pooled rather than split into separate
+                        stage-specific donation options. The cards below explain
+                        the different parts of the work; every contribution uses
+                        the same giving destination.
                     </p>
                 </div>
 
                 <div class="pt-3">
                     <Button href="/donate" size="lg" variant="outline">
-                        Donate to any cause
+                        View donation options
                         <ArrowRight
                             class="ml-2 h-4 w-4"
                             aria-hidden="true"

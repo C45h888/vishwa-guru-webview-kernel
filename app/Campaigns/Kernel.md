@@ -61,6 +61,21 @@ read-only — no Shape A bridges in or out. The Phase 3 UI consumes this
 contract directly via the Cms module's `dependencies()` list (CMS bridges
 into Campaigns).
 
+## Surfaces
+
+Public read surface: `/campaigns` (`Public\Campaigns\IndexController` →
+`campaigns/Index`) and `/campaigns/{slug}` (`ShowController` →
+`campaigns/Show`). Admin authoring under `/admin/campaigns/*`.
+
+The campaigns index renders three static editorial "pillar" cards above the
+grid. The card **copy** is Svelte-local; the card **images** are canonical
+public-media assets hydrated server-side into the `pillarMedia` prop. Their
+media ids are declared once in `config/campaigns.php` and seeded idempotently
+by `align_campaign_images.php` (canonical files under
+`storage/app/public/cms-media-upscaled/canonical/`). `index.php`-time
+resolution goes through Cms `PublicMediaPresentationService`, so the images
+serve via `/media/{id}` like every other public media surface.
+
 ## Tests
 
 - `tests/Unit/Campaigns/Domain/` — entity + value-object unit tests

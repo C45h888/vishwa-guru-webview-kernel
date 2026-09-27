@@ -14,6 +14,18 @@ use InvalidArgumentException;
  * reference. The image_file_id is parsed as an EntityId so downstream
  * consumers receive a typed value; the existence check against
  * cms_media_assets is delegated to HomepageContent::fromArray().
+ *
+ * Two image slots:
+ *   - image_file_id         — the Trust-Story block image (also the
+ *                             first Pillar-Triad card by historical
+ *                             derivation).
+ *   - pillar_image_file_id  — optional dedicated image for the first
+ *                             Pillar-Triad card, so the pillar card
+ *                             caption ("The schools, running today")
+ *                             can carry a distinct image from the
+ *                             Trust-Story heading block above it.
+ *                             Null falls back to image_file_id in the
+ *                             presentation layer (Home.svelte).
  */
 final readonly class HomepageStory
 {
@@ -25,6 +37,7 @@ final readonly class HomepageStory
         private ?string $ctaUrl,
         private ?EntityId $imageFileId,
         private ?string $altText,
+        private ?EntityId $pillarImageFileId = null,
     ) {
         if (trim($eyebrow) === '') {
             throw new InvalidArgumentException('HomepageStory eyebrow cannot be empty');
@@ -83,6 +96,11 @@ final readonly class HomepageStory
         return $this->imageFileId;
     }
 
+    public function pillarImageFileId(): ?EntityId
+    {
+        return $this->pillarImageFileId;
+    }
+
     public function altText(): ?string
     {
         return $this->altText;
@@ -100,6 +118,7 @@ final readonly class HomepageStory
             'cta_label' => $this->ctaLabel,
             'cta_url' => $this->ctaUrl,
             'image_file_id' => $this->imageFileId?->value(),
+            'pillar_image_file_id' => $this->pillarImageFileId?->value(),
             'alt_text' => $this->altText,
         ];
     }
@@ -110,8 +129,13 @@ final readonly class HomepageStory
     public static function fromArray(array $row): self
     {
         $imageFileId = null;
-        if (isset($row['image_file_id']) && $row['image_file_id'] !== null) {
+        if (isset($row['image_file_id']) && $row['image_file_id'] !== null && $row['image_file_id'] !== '') {
             $imageFileId = EntityId::fromString((string) $row['image_file_id']);
+        }
+
+        $pillarImageFileId = null;
+        if (isset($row['pillar_image_file_id']) && $row['pillar_image_file_id'] !== null && $row['pillar_image_file_id'] !== '') {
+            $pillarImageFileId = EntityId::fromString((string) $row['pillar_image_file_id']);
         }
 
         return new self(
@@ -122,6 +146,7 @@ final readonly class HomepageStory
             ctaUrl: isset($row['cta_url']) ? (string) $row['cta_url'] : null,
             imageFileId: $imageFileId,
             altText: isset($row['alt_text']) ? (string) $row['alt_text'] : null,
+            pillarImageFileId: $pillarImageFileId,
         );
     }
 }

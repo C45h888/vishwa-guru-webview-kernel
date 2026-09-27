@@ -84,10 +84,18 @@ final readonly class HomepageContent
         if ($story !== null) {
             $ids[] = $story;
         }
+        $storyPillar = $this->story->pillarImageFileId();
+        if ($storyPillar !== null) {
+            $ids[] = $storyPillar;
+        }
         foreach ($this->programs as $program) {
             $programId = $program->imageFileId();
             if ($programId !== null) {
                 $ids[] = $programId;
+            }
+            $programPillar = $program->pillarImageFileId();
+            if ($programPillar !== null) {
+                $ids[] = $programPillar;
             }
         }
 
@@ -200,6 +208,10 @@ final readonly class HomepageContent
             && $story['image_file_id'] !== '') {
             $ids[] = $story['image_file_id'];
         }
+        if (is_array($story) && isset($story['pillar_image_file_id']) && is_string($story['pillar_image_file_id'])
+            && $story['pillar_image_file_id'] !== '') {
+            $ids[] = $story['pillar_image_file_id'];
+        }
 
         $programs = $row['programs'] ?? [];
         if (is_array($programs)) {
@@ -209,6 +221,12 @@ final readonly class HomepageContent
                     && is_string($raw['image_file_id'])
                     && $raw['image_file_id'] !== '') {
                     $ids[] = $raw['image_file_id'];
+                }
+                if (is_array($raw)
+                    && isset($raw['pillar_image_file_id'])
+                    && is_string($raw['pillar_image_file_id'])
+                    && $raw['pillar_image_file_id'] !== '') {
+                    $ids[] = $raw['pillar_image_file_id'];
                 }
             }
         }

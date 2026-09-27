@@ -11,6 +11,11 @@
         CardContent,
     } from '$shared/ui/card';
     import type { CampaignSummaryProps } from '$shared/lib/inertia';
+    import {
+        POOLED_FUND_SHORT_DESCRIPTION,
+        POOLED_FUND_TITLE,
+        isPooledFund,
+    } from '$shared/lib/pooled-fund';
 
     /**
      * Campaign card used on the index page and the home "featured"
@@ -52,6 +57,13 @@
     const target = $derived(campaign.target_amount_minor ?? null);
     const raised = $derived(campaign.raised_amount_minor ?? null);
     const donors = $derived(campaign.donor_count ?? null);
+    const pooledFund = $derived(isPooledFund(campaign));
+    const title = $derived(pooledFund ? POOLED_FUND_TITLE : campaign.title);
+    const description = $derived(
+        pooledFund
+            ? POOLED_FUND_SHORT_DESCRIPTION
+            : campaign.short_description,
+    );
 
     const percent = $derived.by(() => {
         if (target === null || raised === null) return null;
@@ -59,14 +71,24 @@
         return Math.min(100, Math.round((raised / target) * 100));
     });
 
+    const plannedCategories = [
+        'construction',
+        'gaushala_build',
+        'operations',
+        'cow_care_future',
+    ];
     const stateLabel = $derived(
-        campaign.state.charAt(0).toUpperCase() + campaign.state.slice(1),
+        plannedCategories.includes(campaign.category)
+            ? 'Planned · not fundraising'
+            : campaign.state === 'active'
+              ? 'Accepting donations'
+              : campaign.state.charAt(0).toUpperCase() + campaign.state.slice(1),
     );
 
     const CATEGORY_LABELS: Record<string, string> = {
-        general: 'Schools + Campus Fund',
-        school_annadanam: 'Schools · Daily Annadanam',
-        land_acquisition: 'Campus · Land Fund',
+        general: 'Pooled Fund',
+        school_annadanam: 'Pooled Fund',
+        land_acquisition: 'Campus · In pooled fund',
         construction: 'Campus · Planned Build',
         gaushala_build: 'Campus · Planned Build',
         operations: 'Campus · Planned Cow Care',
@@ -126,7 +148,7 @@
 
 <Card class={`group relative h-full overflow-hidden transition-all hover:border-primary/40 hover:shadow-md ${className}`}>
     {#if adminEditHref}
-        <AdminEditOverlay href={adminEditHref} srLabel={`Edit campaign: ${campaign.title}`} />
+        <AdminEditOverlay href={adminEditHref} srLabel={`Edit campaign: ${title}`} />
     {/if}
     <a
         {href}
@@ -137,7 +159,7 @@
             <div class="aspect-[16/9] overflow-hidden bg-ivory">
                 <img
                     src={campaign.cover_image.url}
-                    alt={campaign.cover_image.alt_text ?? campaign.title}
+                    alt={campaign.cover_image.alt_text ?? title}
                     class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
                     loading="lazy"
                 />
@@ -171,12 +193,12 @@
             </div>
 
             <CardTitle id={titleId} class="line-clamp-2 text-lg lg:text-xl">
-                {campaign.title}
+                {title}
             </CardTitle>
 
-            {#if campaign.short_description}
+            {#if description}
                 <CardDescription class="line-clamp-2">
-                    {campaign.short_description}
+                    {description}
                 </CardDescription>
             {/if}
         </CardHeader>
@@ -184,7 +206,7 @@
         <CardContent class="mt-auto space-y-3 text-sm">
             <div class="flex items-baseline justify-between gap-2">
                 <span class="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-                    State
+                    Status
                 </span>
                 <span class="text-xs font-medium text-foreground/80">
                     {stateLabel}

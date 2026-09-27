@@ -90,6 +90,35 @@ component, plus the generic `/{slug}` whitelist for content-only pages:
 - `/about` — `cms.about` → `AboutController` (carries `about_page_content`)
 - `/legal` — `cms.legal` → `LegalController` (carries `legal_page_content`)
 
+### Home-page image slots (decoupled)
+
+The `static_pages.homepage_content` JSONB carries two image references
+on both the `story` block and each `programs[]` entry:
+
+- `image_file_id` — the section image (Trust-Story section, Annadanam
+  program card, etc.).
+- `pillar_image_file_id` — optional dedicated image for the matching
+  Pillar-Triad card. For `story`, this is the first pillar card ("The
+  schools, running today"). For `programs[i]`, this is the (i+1)th
+  pillar card. When null, the presentation layer (`Home.svelte`) falls
+  back to `image`. This decoupling lets a program card carry one image
+  while the matching pillar card carries another (mirrors the Pass 1
+  story↔pillar split, extended to programs in Pass 4).
+
+The Pillar-Triad's three cards derive as:
+1. `story.pillar_image_file_id ?? story.image_file_id`
+2. `programs[1].pillar_image_file_id ?? programs[1].image_file_id`
+3. `featuredGalleries[0].cover_image`
+
+Public media resolves through `/media/{id}`
+(`Public\CmsMedia\ShowController` → `PublicMediaQuery`):
+`cms_media_assets.id` → `file_assets.storage_disk` +`storage_path`.
+Public-disk paths are relative to `storage/app/public/`. The home-page
+canonical images are served directly from
+`storage/app/public/cms-media-upscaled/canonical/` — the DB surface is
+aligned to that filesystem state by the idempotent maintenance script
+`align_home_images.php` (supports `--dry-run`).
+
 `/legal` is content-only: no hero banner editor surface exists, so the
 page intentionally carries no `heroBanners` payload. The structured
 certificate content lives in `static_pages.legal_page_content` (JSONB)

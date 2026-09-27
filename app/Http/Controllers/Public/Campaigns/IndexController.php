@@ -63,6 +63,7 @@ final class IndexController
 
         return Inertia::render('campaigns/Index', [
             'campaigns' => $enriched,
+            'pillarMedia' => $this->resolvePillarMedia($media),
             'pagination' => [
                 'page' => $paged->page,
                 'per_page' => $paged->perPage,
@@ -76,6 +77,37 @@ final class IndexController
             'appName' => config('app.name', 'Temple Trust'),
             'appUrl' => config('app.url'),
         ]);
+    }
+
+    /**
+     * Hydrate the three static editorial pillar images on the campaigns
+     * page from their canonical public-media assets. Ids are declared in
+     * `config/campaigns.php` and seeded by `align_campaign_images.php`.
+     * Order is preserved; a missing/unpublished asset yields null and the
+     * Svelte layer falls back to the canonical storage path.
+     *
+     * @return list<array<string, mixed>|null>
+     */
+    private function resolvePillarMedia(PublicMediaPresentationService $media): array
+    {
+        $config = config('campaigns.pillars', []);
+        if (! is_array($config) || $config === []) {
+            return [];
+        }
+
+        $items = $media->enrichMany(
+            array_map(
+                static fn (array $entry): array => ['cms_media_id' => $entry['cms_media_id'] ?? null],
+                $config,
+            ),
+            'cms_media_id',
+            'media',
+        );
+
+        return array_values(array_map(
+            static fn (array $entry) => $entry['media'] ?? null,
+            $items,
+        ));
     }
 
     /**

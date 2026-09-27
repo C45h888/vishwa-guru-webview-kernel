@@ -28,18 +28,18 @@
     const cards = $derived<Card[]>([
         {
             image: firstImage,
-            alt: 'Children at the trust\u2019s schools',
-            copy: 'The schools, running today',
+            alt: 'Guru blessing — years of dedication to the right causes',
+            copy: 'Years of dedication to the right causes',
         },
         {
             image: secondImage,
-            alt: 'Daily annadanam at the schools',
-            copy: 'Daily annadanam for the children',
+            alt: 'Children dancing — harbouring and grace',
+            copy: 'Harbouring and grace in ones which were abondoned',
         },
         {
             image: thirdImage,
             alt: 'The proposed campus near Nanjangud',
-            copy: 'The campus fund, growing alongside',
+            copy: 'Devoting our resources to the divine for the bettermnet of the community',
         },
     ]);
 </script>

@@ -23,9 +23,62 @@
     let { page, aboutContent, heroBanners, html, appName }: AboutPageProps =
         $props();
 
-    const content = $derived(
+    const sourceContent = $derived(
         aboutContent === null ? FALLBACK_ABOUT_PAGE_CONTENT : aboutContent,
     );
+
+    // Keep the CMS-managed layout and imagery, but carry the approved pooled
+    // allocation rule through this page even when its stored copy is older.
+    const content = $derived.by(() => ({
+        ...sourceContent,
+        story: {
+            ...sourceContent.story,
+            body: 'Sri Vishwaguru Sri Sri Sriram Shishyavrundham Mahasamsthanam (VSRSMS) is a charitable trust led by Sri Ram Ram Das Guruji. Guruji came from a teaching background and became a respected ritual and spiritual guide in Mysore. In 2012, he received Power of Attorney for the trust and began the service endeavour that has shaped its public work since then. Since 2007 the trust has schooled children in need of care — including blind and deaf pupils who receive free education — with schooling, life skills, and cultural training including Bharatanatyam. The schools run today, sustained by daily annadanam. The next chapter is a proposed three-acre healing and service campus near Nanjangud. Donations enter one pooled Schools & Campus Fund for daily school operations and the staged campus programme, including land acquisition and planned Gaushala, temple, healing-environment, and cow-care work. A gift is not restricted to one sub-project.',
+        },
+        stats: sourceContent.stats.map((stat) => stat.number === 'Daily'
+            ? { ...stat, description: 'Every school day the trust provides meals, drinking water, and events for the children in its care. These daily needs are supported through the pooled fund alongside the staged campus programme.' }
+            : stat),
+        programs: sourceContent.programs.map((program, index) => {
+            if (index === 0) return {
+                ...program,
+                body: 'The trust runs schools where children in need of care — including blind and deaf pupils — receive free education, with cultural training including Bharatanatyam. The schools run today. Their daily needs — food, water, and events — are supported through the pooled Schools & Campus Fund.',
+            };
+            if (index === 1) return {
+                ...program,
+                body: 'Every school day the trust provides meals, drinking water, and events for the children in its care. These daily needs are supported through one pooled fund alongside the staged campus programme; this is not a separate donation destination.',
+            };
+            if (index === 2) return {
+                ...program,
+                eyebrow: 'Campus · land acquisition',
+                body: 'The pooled fund supports land acquisition near Nanjangud for the proposed three-acre campus, alongside daily school operations and planned later stages. The land is under discussion; construction follows once it is secured. Gifts are not restricted to land acquisition alone.',
+            };
+            return {
+                ...program,
+                eyebrow: 'Campus · future stage',
+                body: 'The pooled fund includes the planned Gaushala, simple Shiva temple, healing environment, and long-term cow care as the proposed campus stages proceed. These are planned uses within one shared donation pool, not separate fundraising options.',
+            };
+        }),
+        timeline: sourceContent.timeline.map((entry) => entry.year === 2026
+            ? {
+                ...entry,
+                title: 'Schools and campus pooled fund',
+                description: 'The trust consolidates daily school support and the staged proposed campus programme into one pooled fund, including land acquisition, planned Gaushala and temple work, the healing environment, and cow care.',
+            }
+            : entry),
+        visit: {
+            ...sourceContent.visit,
+            title: 'Trust office in Mysore · schools and proposed campus near Nanjangud',
+            body: 'The trust office is in Mysore. The schools and proposed campus are near Nanjangud; contact the office in advance to coordinate a visit and confirm current hours.',
+            address: 'Trust office\nNo. 19/B, 2nd Cross, A.G. Block, N.R. Mohalla, Mysore — 570 007\nSchools and proposed campus: near Nanjangud, Karnataka',
+        },
+        donate_cta: {
+            ...sourceContent.donate_cta,
+            eyebrow: 'One pooled fund · schools and campus',
+            title: 'Support the Schools & Campus Pooled Fund',
+            body: 'One pooled fund supports daily school operations and the staged campus programme near Nanjangud, including land acquisition, planned Gaushala and temple work, the healing environment, and cow care. Your gift is not restricted to a single sub-project and is acknowledged with an official receipt.',
+            cta_label: 'Support the pooled fund',
+        },
+    }));
 
     const trustees = $derived(content.trustees);
     const hasTrustees = $derived(trustees.length > 0);
@@ -103,6 +156,12 @@
                     <div class="pt-2">
                         <TrustBadgeRow />
                     </div>
+                    <p class="max-w-2xl text-sm leading-relaxed text-muted-foreground">
+                        Donations are pooled through one Schools &amp; Campus Fund
+                        across daily school support and the staged campus programme,
+                        including land acquisition and planned Gaushala work. Gifts
+                        are not restricted to a single sub-project.
+                    </p>
                 </div>
 
                 <div class="relative lg:col-span-5">
@@ -248,6 +307,18 @@
             </p>
         </div>
 
+        {#if hasValuesImage && content.values.image}
+            <div
+                class="relative mx-auto mt-14 max-w-4xl overflow-hidden rounded-md border border-border/40 bg-ivory"
+            >
+                <PublicMediaImage
+                    media={content.values.image}
+                    alt={imageAlt(content.values.image, content.values.title)}
+                    class="aspect-video w-full object-cover"
+                />
+            </div>
+        {/if}
+
         {#if pillars.length > 0}
             <div class="mx-auto mt-14 grid max-w-5xl grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
                 {#each pillars as pillar (pillar.name)}
@@ -288,10 +359,12 @@
                 Ongoing work and planned stages, told honestly
             </h2>
             <p class="text-base text-muted-foreground">
-                Each stage has its own scope, its own people, and its own
-                ledger. The schools run today on daily annadanam, the land
-                fund grows alongside, and the planned stages are the campus
-                construction and the cow care.
+                Daily school operations and the proposed campus stages are
+                supported through one pooled Schools &amp; Campus Fund. Land
+                acquisition, planned Gaushala and temple work, the healing
+                environment, and cow care are included as the programme
+                progresses; donations are not split into separate campaign
+                destinations.
             </p>
         </div>
 

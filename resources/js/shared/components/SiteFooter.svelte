@@ -18,24 +18,19 @@
         { href: '/contact', label: 'Contact' },
     ];
 
-    // Social destinations are intentionally unlinked until the trust
-    // confirms which channels are active. The labels remain visible so
-    // visitors know where the trust is eventually going to be, but the
-    // href="#" + aria-disabled + rel="nofollow" pattern is honest about
-    // the fact that these are not yet live destinations.
+    // Social destinations remain plain text until the trust confirms
+    // which channels are active, so coming-soon labels are not tabbable links.
     const social = [
-        { href: '#', label: 'Facebook', ariaLabel: 'Facebook (coming soon)' },
-        { href: '#', label: 'X', ariaLabel: 'X (coming soon)' },
-        { href: '#', label: 'Instagram', ariaLabel: 'Instagram (coming soon)' },
-        { href: '#', label: 'YouTube', ariaLabel: 'YouTube (coming soon)' },
+        { label: 'Facebook', ariaLabel: 'Facebook (coming soon)' },
+        { label: 'X', ariaLabel: 'X (coming soon)' },
+        { label: 'Instagram', ariaLabel: 'Instagram (coming soon)' },
+        { label: 'YouTube', ariaLabel: 'YouTube (coming soon)' },
     ];
 
-    // Legal page displays the trust's regulatory certificates (80G, 12A,
-    // POA, TAN). Terms & Privacy is still a placeholder — its dedicated
-    // page will be added separately.
+    // Legal and terms content use the existing public CMS routes.
     const legal = [
         { href: '/legal', label: 'Legal' },
-        { href: '/contact', label: 'Terms & Privacy' },
+        { href: '/terms', label: 'Terms & Privacy' },
     ];
 </script>
 
@@ -56,9 +51,9 @@
                     Since 2007 the trust has schooled children in need of
                     care — including blind and deaf pupils receiving free
                     education — with daily annadanam of food, water, and
-                    school events. Donations also support the proposed
-                    healing and service campus near Nanjangud, outside
-                    Mysore.
+                    school events. Donations enter one pooled Schools &amp;
+                    Campus Fund for daily school operations and the staged
+                    proposed campus programme near Nanjangud, outside Mysore.
                 </p>
             </div>
 
@@ -92,8 +87,8 @@
                     class="space-y-2 text-sm not-italic text-foreground/80"
                 >
                     <p>
-                        {appName}<br />
-                        Nanjangud, Karnataka (outside Mysore)
+                        School work and proposed campus near Nanjangud.<br />
+                        <a href="/contact" class="underline-offset-2 hover:underline">Trust office address and directions</a>
                     </p>
                     <p>
                         <a
@@ -137,15 +132,13 @@
                     <ul class="flex flex-wrap gap-x-4 gap-y-2 text-sm">
                         {#each social as link (link.label)}
                             <li>
-                                <a
-                                    href={link.href}
+                                <span
                                     aria-label={link.ariaLabel}
                                     aria-disabled="true"
-                                    rel="nofollow"
-                                    class="cursor-not-allowed text-foreground/40 transition-colors hover:text-foreground/60"
+                                    class="text-foreground/40"
                                 >
                                     {link.label}
-                                </a>
+                                </span>
                             </li>
                         {/each}
                     </ul>

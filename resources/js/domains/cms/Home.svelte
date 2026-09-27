@@ -29,12 +29,58 @@
         appName,
     }: HomePageProps = $props();
 
-    const content = $derived(
+    const sourceContent = $derived(
         homepageContent === null ? FALLBACK_HOMEPAGE_CONTENT : homepageContent,
     );
 
+    // The live CMS row can predate the pooled-fund decision. Keep its
+    // approved editorial images and structure, while making every public
+    // donation explanation agree with the single checkout destination.
+    const content = $derived.by(() => ({
+        ...sourceContent,
+        story: {
+            ...sourceContent.story,
+            body: 'Sri Vishwaguru Sri Sri Sriram Shishyavrundham Mahasamsthanam (VSRSMS) is a charitable trust led by Sri Ram Ram Das Guruji. Since 2007 the trust has schooled children in need of care — including blind and deaf pupils who receive free education. Daily life at the schools is sustained by annadanam: food, water, and events for the children. The schools run today, while a proposed three-acre healing and service campus near Nanjangud is being prepared. Donations enter one pooled Schools & Campus Fund for daily school operations and the staged campus programme, including land acquisition and planned Gaushala, temple, healing-environment, and cow-care work. A gift is not restricted to one sub-project.',
+        },
+        programs: [
+            {
+                ...sourceContent.programs[0],
+                body: 'The trust runs schools where children in need of care — including blind and deaf pupils — receive free education. The schools run today. Their daily needs, including food, water, and events, are supported through the pooled Schools & Campus Fund alongside the staged campus programme.',
+            },
+            {
+                ...sourceContent.programs[1],
+                body: 'Every school day the trust provides meals, drinking water, and events for the children in its care. These ongoing school needs are supported through the same pooled fund as the proposed campus stages; donors do not select separate school and campus destinations.',
+            },
+            {
+                ...sourceContent.programs[2],
+                eyebrow: 'Campus · pooled fund',
+                body: 'The pooled fund supports land acquisition near Nanjangud for the proposed three-acre campus, alongside daily school operations and planned later stages. The land is under discussion; construction follows once it is secured. Gifts are not restricted to land acquisition alone.',
+            },
+        ],
+        trust_panel: {
+            ...sourceContent.trust_panel,
+            registration: 'Sri Vishwaguru Sri Sri Sriram Shishyavrundham Mahasamsthanam is a charitable trust registered in India. Donations are pooled across daily school operations and the staged campus programme near Nanjangud, including land acquisition and planned Gaushala, temple, healing-environment, and cow-care work. A gift is not restricted to one sub-project.',
+        },
+        donate_cta: {
+            ...sourceContent.donate_cta,
+            eyebrow: 'One pooled fund · schools and campus',
+            title: 'Support the Schools & Campus Pooled Fund',
+            body: 'One pooled fund supports daily school operations and the staged campus programme near Nanjangud, including land acquisition, planned Gaushala and temple work, the healing environment, and cow care. Your gift is not restricted to a single sub-project and is acknowledged with an official receipt.',
+            cta_label: 'Support the pooled fund',
+        },
+    }));
+
     const hasCause = $derived(featuredCampaigns.length > 0);
     const hasGallery = $derived(featuredGalleries.length > 0);
+
+    const publicHeroBanners = $derived(heroBanners.map((banner, index) =>
+        index === 0
+            ? {
+                ...banner,
+                subtitle: 'Since 2007 the trust has schooled children in need of care, sustained by daily annadanam. One pooled Schools & Campus Fund supports daily school operations and the staged campus programme near Nanjangud.',
+            }
+            : banner,
+    ));
 
     const storyCtaVisible = $derived(
         content.story.cta_label !== null
@@ -43,9 +89,11 @@
             && content.story.cta_url !== '',
     );
 
-    const pillarFirst = $derived(content.story.image);
+    const pillarFirst = $derived(
+        content.story.pillar_image ?? content.story.image,
+    );
     const pillarSecond = $derived(
-        content.programs[1]?.image ?? featuredEvents[0]?.banner_image ?? null,
+        content.programs[1]?.pillar_image ?? content.programs[1]?.image ?? featuredEvents[0]?.banner_image ?? null,
     );
     const pillarThird = $derived(
         featuredGalleries[0]?.cover_image ?? null,
@@ -61,7 +109,7 @@
 
 <PublicLayout>
     <!-- ═══ 1. HERO SLIDESHOW ═══ -->
-    <HeroSlideshow {page} {heroBanners} />
+    <HeroSlideshow {page} heroBanners={publicHeroBanners} />
 
     <!-- ═══ 2. PILLAR TRIAD — 3 image cards, no labels ═══ -->
     <PillarTriad
@@ -169,10 +217,10 @@
                     What we're doing today
                 </h2>
                 <p class="text-base text-muted-foreground">
-                    The schools run today on daily annadanam — food, water,
-                    and events for the children — while the land fund for the
-                    proposed campus near Nanjangud grows alongside. Donations
-                    sustain both.
+                    One pooled fund supports daily school operations and the
+                    staged campus programme near Nanjangud, including land
+                    acquisition and planned Gaushala, temple, healing, and
+                    cow-care work as the stages proceed.
                 </p>
                 <div class="pt-1">
                     <Button

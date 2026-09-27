@@ -16,6 +16,10 @@
     import { toE164, countryByCode } from '$shared/lib/phone';
     import { validateEmail, emailErrorMessage } from '$shared/lib/validate';
     import PhoneInput from '$shared/ui/phone-input/PhoneInput.svelte';
+    import {
+        POOLED_FUND_DESCRIPTION,
+        POOLED_FUND_TITLE,
+    } from '$shared/lib/pooled-fund';
 
     // Razorpay environment: shared via HandleInertiaRequests. When 'test',
     // the donate flow surfaces a "Test mode" badge so anyone in the
@@ -40,7 +44,9 @@
     }> = $props();
 
     let selectedCampaign = $state<string>(
-        preselectSlug ?? campaigns[0]?.slug ?? '',
+        campaigns.find((campaign) => campaign.slug === preselectSlug)?.slug
+            ?? campaigns[0]?.slug
+            ?? '',
     );
     let amountRupees = $state<string>(preselectAmountRupees ?? '1000');
     let isAnonymous = $state<boolean>(preselectAnonymous);
@@ -297,10 +303,10 @@
 </script>
 
 <svelte:head>
-<title>Support the Schools and Campus Fund — {appName}</title>
+<title>{POOLED_FUND_TITLE} — {appName}</title>
 <meta
     name="description"
-    content="Sustain daily annadanam at the trust\u2019s schools — food, water, and events for children in need of care — and support the land fund for the proposed healing and service campus near Nanjangud. Secure payments via Razorpay."
+    content="Give through one pooled fund for daily school support and the staged campus programme, including land acquisition and planned Gaushala, temple, healing-environment, and cow-care work. Secure payments via Razorpay."
 />
 </svelte:head>
 
@@ -327,22 +333,22 @@
                     <p
                         class="text-xs font-semibold uppercase tracking-[0.25em] text-primary"
                     >
-                        Support the schools and the campus
+                        One pooled fund
                     </p>
                     <h1
                         class="font-serif text-3xl font-semibold leading-tight lg:text-5xl"
                     >
-                        Donate to daily annadanam and the campus fund
+                        Support schools and the campus programme
                     </h1>
                     <p
                         class="max-w-md text-base leading-relaxed text-muted-foreground lg:text-lg"
                     >
-                        The schools run today on daily annadanam — food,
-                        water, and events for children in need of care,
-                        including blind and deaf pupils on free education.
-                        Alongside, the land fund for the proposed three-acre
-                        healing and service campus near Nanjangud grows. Pick
-                        a campaign below to direct your offering.
+                        Donations are pooled by the trust across daily school
+                        operations and the staged campus programme near
+                        Nanjangud. The fund includes land acquisition and
+                        planned Gaushala, temple, healing-environment, and
+                        cow-care work as those stages proceed. A gift is not
+                        restricted to one sub-project.
                     </p>
                     <div
                         class="flex items-center gap-2 pt-2 text-xs text-muted-foreground"
@@ -373,29 +379,25 @@
                         <form onsubmit={submit} class="space-y-6">
                             <Card>
                                 <CardHeader>
-                                    <CardTitle>Choose a campaign</CardTitle>
+                                    <CardTitle>Giving destination</CardTitle>
                                     <CardDescription>
-                                        Pick where your donation should go.
+                                        One pooled fund supports the schools and
+                                        campus programme.
                                     </CardDescription>
                                 </CardHeader>
                                 <CardContent class="space-y-3">
-                                    <Label for="campaign">Campaign</Label>
-                                    <select
-                                        id="campaign"
-                                        bind:value={selectedCampaign}
-                                        class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                                    >
-                                        {#each campaigns as campaign (campaign.id)}
-                                            <option value={campaign.slug}
-                                                >{campaign.title}</option
-                                            >
-                                        {/each}
-                                    </select>
+                                    <Label>Fund</Label>
                                     {#if selectedCampaignData}
+                                        <p class="font-medium text-foreground">
+                                            {POOLED_FUND_TITLE}
+                                        </p>
                                         <p
                                             class="text-xs text-muted-foreground"
                                         >
                                             Currency: {selectedCampaignData.currency_code}
+                                        </p>
+                                        <p class="text-sm leading-relaxed text-foreground/80">
+                                            {POOLED_FUND_DESCRIPTION}
                                         </p>
                                     {/if}
                                 </CardContent>
@@ -426,12 +428,13 @@
                                 <CardHeader>
                                     <CardTitle>Donor information</CardTitle>
                                     <CardDescription>
-                                        Optional. An official receipt is
-                                        issued for every donation.
-                                        Tax-deductibility, including 80G
-                                        certificates where applicable, is
-                                        confirmed at the time of each donation
-                                        in line with applicable law.
+                                        Name, email, and phone are required for
+                                        an identified donation. Choose
+                                        anonymous giving to leave those details
+                                        out. Receipt and tax-deductibility
+                                        details, including 80G where applicable,
+                                        are confirmed under the trust’s current
+                                        status and applicable law.
                                     </CardDescription>
                                 </CardHeader>
                                 <CardContent class="space-y-3">
@@ -447,7 +450,7 @@
                                     </label>
 
                                     <div class="space-y-2">
-                                        <Label for="name">Name</Label>
+                                        <Label for="name">Name{#if !isAnonymous} (required){/if}</Label>
                                         <Input
                                             id="name"
                                             type="text"
@@ -455,11 +458,12 @@
                                             bind:value={donorName}
                                             placeholder="Your full name"
                                             disabled={isAnonymous}
+                                            required={!isAnonymous}
                                         />
                                     </div>
 
                                     <div class="space-y-2">
-                                        <Label for="email">Email</Label>
+                                        <Label for="email">Email{#if !isAnonymous} (required){/if}</Label>
                                         <Input
                                             id="email"
                                             type="email"
@@ -468,6 +472,7 @@
                                             oninput={() => (emailTouched = true)}
                                             placeholder="you@example.com"
                                             disabled={isAnonymous}
+                                            required={!isAnonymous}
                                             aria-invalid={emailError ? 'true' : undefined}
                                             aria-describedby={emailError ? 'email-error' : undefined}
                                             class={emailError ? 'border-destructive' : ''}

@@ -195,11 +195,23 @@ final class HomeController
             'image',
         );
 
+        // Dedicated Pillar-Triad image (first card). Falls back to the
+        // story image in the presentation layer when null.
+        $payload['story'] = $media->enrich(
+            $payload['story'],
+            'pillar_image_file_id',
+            'pillar_image',
+        );
+
         $payload['programs'] = array_values(array_map(
             static fn (array $program): array => $media->enrich(
-                $program,
-                'image_file_id',
-                'image',
+                $media->enrich(
+                    $program,
+                    'image_file_id',
+                    'image',
+                ),
+                'pillar_image_file_id',
+                'pillar_image',
             ),
             $payload['programs'],
         ));

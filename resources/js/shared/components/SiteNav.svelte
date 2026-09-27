@@ -40,7 +40,7 @@
     ];
 
     const authUser = $derived($page.props.authUser);
-    const isDesktop = $derived(viewport.isMd);
+    const isDesktop = $derived(viewport.isLg);
 
     /** Bound to the dialog root. Used by `trapFocus`. */
     let dialogEl: HTMLDivElement | undefined = $state();
@@ -100,20 +100,20 @@
     /**
      * If the viewport crosses into the desktop range while the dialog is
      * still open (e.g. device rotation on a tablet, or browser window
-     * resized past the md breakpoint), hard-close so the user doesn't end
+     * resized past the lg breakpoint), hard-close so the user doesn't end
      * up with a fixed overlay covering the desktop nav.
      */
     $effect(() => {
-        if (mobileMenu.isVisible && viewport.isMd) {
+        if (mobileMenu.isVisible && viewport.isLg) {
             mobileMenu.forceClosed();
         }
     });
 </script>
 
-<!-- Desktop nav + donate CTA (≥ md). Rendered as a single cluster so the
+<!-- Desktop nav + donate CTA (≥ lg). Rendered as a single cluster so the
      header can flex-align it next to the logo. -->
 {#if isDesktop}
-    <div class="hidden items-center gap-7 text-sm font-medium md:flex">
+    <div class="hidden items-center gap-7 text-sm font-medium lg:flex">
         <ul class="flex items-center gap-7">
             {#each links as link (link.href)}
                 <li>
@@ -158,7 +158,7 @@
 {#if !isDesktop}
     <button
         type="button"
-        class="md:hidden inline-flex h-10 w-10 items-center justify-center rounded-sm border border-border/60 text-foreground transition-colors hover:border-primary hover:text-primary"
+        class="lg:hidden inline-flex h-10 w-10 items-center justify-center rounded-sm border border-border/60 text-foreground transition-colors hover:border-primary hover:text-primary"
         aria-label={mobileMenu.isOpen ? 'Close menu' : 'Open menu'}
         aria-expanded={mobileMenu.isOpen}
         aria-controls="site-nav-dialog"

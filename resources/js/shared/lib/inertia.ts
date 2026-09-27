@@ -305,8 +305,11 @@ export interface HomepageStoryProps {
     cta_label: string | null;
     cta_url: string | null;
     image_file_id: string | null;
+    /** Dedicated Pillar-Triad first-card image; falls back to `image`. */
+    pillar_image_file_id: string | null;
     alt_text: string | null;
     image: PublicMediaProps | null;
+    pillar_image: PublicMediaProps | null;
 }
 
 export interface HomepageMissionQuoteProps {
@@ -321,8 +324,11 @@ export interface HomepageProgramProps {
     title: string;
     body: string;
     image_file_id: string | null;
+    /** Dedicated Pillar-Triad image; falls back to `image`. */
+    pillar_image_file_id: string | null;
     alt_text: string | null;
     image: PublicMediaProps | null;
+    pillar_image: PublicMediaProps | null;
 }
 
 export interface HomepageTrustPanelProps {

@@ -1,46 +1,27 @@
 <script lang="ts">
     import PublicLayout from '$shared/components/PublicLayout.svelte';
     import EventHeroSlideshow from '$shared/components/EventHeroSlideshow.svelte';
+    import EventCard from '$shared/components/EventCard.svelte';
     import BottomCtaBand from '$shared/components/BottomCtaBand.svelte';
     import { EVENT_SLIDES } from '$domains/events/event-slides';
-import { Pencil } from 'lucide-svelte';
-import { page } from '@inertiajs/svelte';
-    import type { AppPageProps } from '$shared/lib/inertia';
-
-    interface PastArticleCard {
-        slug: string;
-        category: string;
-        category_label: string;
-        eyebrow: string;
-        title: string;
-        excerpt: string;
-        image: string;
-        image_alt: string;
-    }
+    import { Pencil } from 'lucide-svelte';
+    import { page } from '@inertiajs/svelte';
+    import type { AppPageProps, EventSummaryProps } from '$shared/lib/inertia';
 
     let {
-        pastArticles,
+        upcoming,
+        past,
+        pagination,
         appName,
     }: AppPageProps<{
-        pastArticles: PastArticleCard[];
+        upcoming: EventSummaryProps[];
+        past: EventSummaryProps[];
+        pagination: { page: number; per_page: number; total: number; has_more: boolean };
     }> = $props();
 
-    const hasArticles = $derived(pastArticles.length > 0);
-
-    // Current events: the recurring featured entries from the journal
-    // catalog (the three that anchor the hero slideshow).
-    const currentSlugs = [
-        'varalakshmi-vratam',
-        'bharatanatyam-vrinda-samsthanam',
-        'brahmotsavam',
-    ];
-    const currentArticles = $derived(
-        currentSlugs
-            .map((slug) => pastArticles.find((a) => a.slug === slug))
-            .filter((a): a is PastArticleCard => a !== undefined),
-    );
-    const hasCurrent = $derived(currentArticles.length > 0);
-const isAdmin = $derived($page.props.authUser?.role === 'admin');
+    const hasUpcoming = $derived(upcoming.length > 0);
+    const hasPast = $derived(past.length > 0);
+    const isAdmin = $derived($page.props.authUser?.role === 'admin');
 </script>
 
 <svelte:head>
@@ -70,138 +51,47 @@ const isAdmin = $derived($page.props.authUser?.role === 'admin');
     {/if}
     <EventHeroSlideshow slides={EVENT_SLIDES} />
 
-    {#if hasCurrent}
+    {#if hasUpcoming}
         <section class="container space-y-6 py-12 lg:py-16">
-            <div class="flex items-end justify-between gap-4">
-                <div class="space-y-2">
-                    <p
-                        class="text-xs font-semibold uppercase tracking-[0.25em] text-primary"
-                    >
-                        School and temple gatherings
-                    </p>
-                    <h2 class="font-serif text-3xl font-semibold lg:text-4xl">
-                        Moments across the year
-                    </h2>
-                </div>
-                <a
-                    href="/events/journal"
-                    class="inline-flex items-center gap-1 text-sm font-medium text-primary transition-transform hover:translate-x-0.5"
-                >
-                    Read the events journal
-                    <span aria-hidden="true">→</span>
-                </a>
+            <div class="space-y-2">
+                <p class="text-xs font-semibold uppercase tracking-[0.25em] text-primary">
+                    What's ahead
+                </p>
+                <h2 class="font-serif text-3xl font-semibold lg:text-4xl">
+                    Upcoming events
+                </h2>
             </div>
 
-            <div class="space-y-4">
-                {#each currentArticles as article (article.slug)}
-                    <a
-                        href={`/events/journal/${article.slug}`}
-                        class="group block overflow-hidden rounded-md border border-border/60 bg-background transition-colors hover:border-primary/40"
-                    >
-                        <div class="grid grid-cols-1 sm:grid-cols-12">
-                            <div class="sm:col-span-4">
-                                <div
-                                    class="aspect-[4/3] w-full overflow-hidden sm:aspect-auto sm:h-full"
-                                >
-                                    <img
-                                        src={article.image}
-                                        alt={article.image_alt}
-                                        class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
-                                        loading="lazy"
-                                        decoding="async"
-                                    />
-                                </div>
-                            </div>
-                            <div class="space-y-2 p-5 sm:col-span-8 sm:p-6">
-                                <p
-                                    class="text-xs font-semibold uppercase tracking-[0.25em] text-primary"
-                                >
-                                    {article.eyebrow} · {article.category_label}
-                                </p>
-                                <h3
-                                    class="font-serif text-xl font-semibold leading-tight transition-colors group-hover:text-primary lg:text-2xl"
-                                >
-                                    {article.title}
-                                </h3>
-                                <p
-                                    class="text-sm leading-relaxed text-muted-foreground"
-                                >
-                                    {article.excerpt}
-                                </p>
-                                <span
-                                    class="inline-flex items-center gap-1 pt-1 text-sm font-medium text-primary transition-transform group-hover:translate-x-0.5"
-                                >
-                                    Read the entry
-                                    <span aria-hidden="true">→</span>
-                                </span>
-                            </div>
-                        </div>
-                    </a>
+            <div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+                {#each upcoming as event (event.id)}
+                    <EventCard
+                        {event}
+                        href={`/events/${event.slug}`}
+                        adminEditHref={isAdmin ? `/admin/events/${event.id}/edit` : null}
+                    />
                 {/each}
             </div>
         </section>
     {/if}
 
     <section class="container space-y-6 py-12 lg:py-16">
-        <div class="flex items-end justify-between gap-4">
+        <div class="space-y-2">
+            <p class="text-xs font-semibold uppercase tracking-[0.25em] text-primary">
+                Past gatherings
+            </p>
             <h2 class="font-serif text-3xl font-semibold lg:text-4xl">
                 Past events
             </h2>
-            <a
-                href="/events/journal"
-                class="inline-flex items-center gap-1 text-sm font-medium text-primary transition-transform hover:translate-x-0.5"
-            >
-                Read the events journal
-                <span aria-hidden="true">→</span>
-            </a>
         </div>
 
-        {#if hasArticles}
-            <div class="space-y-4">
-                {#each pastArticles as article (article.slug)}
-                    <a
-                        href={`/events/journal/${article.slug}`}
-                        class="group block overflow-hidden rounded-md border border-border/60 bg-background transition-colors hover:border-primary/40"
-                    >
-                        <div class="grid grid-cols-1 sm:grid-cols-12">
-                            <div class="sm:col-span-4">
-                                <div
-                                    class="aspect-[4/3] w-full overflow-hidden sm:aspect-auto sm:h-full"
-                                >
-                                    <img
-                                        src={article.image}
-                                        alt={article.image_alt}
-                                        class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
-                                        loading="lazy"
-                                        decoding="async"
-                                    />
-                                </div>
-                            </div>
-                            <div class="space-y-2 p-5 sm:col-span-8 sm:p-6">
-                                <p
-                                    class="text-xs font-semibold uppercase tracking-[0.25em] text-primary"
-                                >
-                                    {article.eyebrow} · {article.category_label}
-                                </p>
-                                <h3
-                                    class="font-serif text-xl font-semibold leading-tight transition-colors group-hover:text-primary lg:text-2xl"
-                                >
-                                    {article.title}
-                                </h3>
-                                <p
-                                    class="text-sm leading-relaxed text-muted-foreground"
-                                >
-                                    {article.excerpt}
-                                </p>
-                                <span
-                                    class="inline-flex items-center gap-1 pt-1 text-sm font-medium text-primary transition-transform group-hover:translate-x-0.5"
-                                >
-                                    Read the entry
-                                    <span aria-hidden="true">→</span>
-                                </span>
-                            </div>
-                        </div>
-                    </a>
+        {#if hasPast}
+            <div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+                {#each past as event (event.id)}
+                    <EventCard
+                        {event}
+                        href={`/events/${event.slug}`}
+                        adminEditHref={isAdmin ? `/admin/events/${event.id}/edit` : null}
+                    />
                 {/each}
             </div>
         {:else}

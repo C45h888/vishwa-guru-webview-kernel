@@ -2,13 +2,19 @@
  * EventHeroSlideshow — slide config.
  *
  * The events page is the "asset class" that showcases what the temple does
- * over the year. Three slides cover the breadth: a daily rhythm, a major
- * festival, and an annual celebration. Kept short to avoid visual repetition
- * between near-identical ceremony shots.
+ * over the year. Three slides cover the breadth: cultural evenings, a
+ * wedding ritual, and an indoor community gathering.
  *
- * No backend coupling. When the events table is populated, this config
- * can be replaced by a server-driven slide list without changing the
- * component contract (the prop is `{ src, eyebrow, title, body, alt }[]`).
+ * All three picks are landscape (≈ 16:9 to 16:10) so they fill the
+ * hero container cleanly under object-cover without the portrait-crop
+ * artefact that the previous portrait picks caused on mobile.
+ *
+ * Images load directly from storage/app/public/cms-media-upscaled/canonical/.
+ *
+ * No backend coupling. When the events table is populated and the
+ * EventsController can serve a server-driven slide list, this config can be
+ * replaced by DB-backed slides without changing the component contract
+ * (the prop is `{ src, eyebrow, title, body, alt }[]`).
  */
 export interface EventSlide {
     src: string;
@@ -18,26 +24,28 @@ export interface EventSlide {
     body: string;
 }
 
+const CANON = '/storage/cms-media-upscaled/canonical';
+
 export const EVENT_SLIDES: EventSlide[] = [
     {
-        src: '/storage/cms-media/events-slide-2-varalakshmi.webp',
-        alt: 'Daily life at the trust\u2019s schools',
-        eyebrow: 'Ongoing \u00b7 schools',
-        title: 'The schools run today',
-        body: 'Children in need of care — including blind and deaf pupils on free education — study, eat, and gather daily. Annadanam covers food, water, and school events; donations sustain these daily operations.',
+        src: `${CANON}/journal-cultural-04-literary-tribute.jpg`,
+        alt: 'Cultural evening — literary tribute at the temple',
+        eyebrow: 'Annual · cultural',
+        title: 'Cultural evenings and literary tributes',
+        body: 'The trust hosts cultural evenings and literary tributes throughout the year — classical performances, poetry readings, and the recognition of writers who sustain the temple’s cultural work.',
     },
     {
-        src: '/storage/cms-media/events-slide-7-cultural-evenings.webp',
-        alt: 'The proposed campus near Nanjangud',
-        eyebrow: 'Current \u00b7 Stage 1',
-        title: 'Acquiring the land',
-        body: 'The trust is raising funds to acquire land near Nanjangud, outside Mysore, for the proposed three-acre healing and service campus.',
+        src: `${CANON}/journal-kalyanam-03.jpg`,
+        alt: 'Kalyanam — temple wedding ritual',
+        eyebrow: 'Annual · weddings',
+        title: 'Kalyanams at the temple',
+        body: 'The temple hosts wedding rituals for the families of the surrounding villages. The kalyanam is a full-day affair — kalasham, deepam, the procession around the temple, and the dinner that follows.',
     },
     {
-        src: '/storage/cms-media/events-slide-8-brahmotsavam.webp',
-        alt: 'The planned Gaushala, temple, and healing environment',
-        eyebrow: 'Planned \u00b7 Stage 2',
-        title: 'Build the campus',
-        body: 'On the secured land, the trust intends to build a Gaushala, a simple Shiva temple, and a disciplined healing environment. Construction begins after the land is acquired.',
+        src: `${CANON}/journal-indoor-01.jpg`,
+        alt: 'Indoor gathering — community at the temple hall',
+        eyebrow: 'Community · indoor',
+        title: 'The hall gathers the community',
+        body: 'Indoor events — school gatherings, community meetings, anniversary observances — fill the temple hall across the year. The trust provides the staging, the food, and the support that lets the hall host them.',
     },
 ];

@@ -96,6 +96,36 @@ final class HomepageContentTest extends TestCase
         $this->assertSame($programId, $content->programs()[0]->imageFileId()->value());
     }
 
+    public function test_it_round_trips_a_decoupled_pillar_image_reference(): void
+    {
+        $storyId = EntityId::generate('cms_media_asset')->value();
+        $pillarId = EntityId::generate('cms_media_asset')->value();
+
+        $payload = $this->validPayload();
+        $payload['story']['image_file_id'] = $storyId;
+        $payload['story']['pillar_image_file_id'] = $pillarId;
+
+        // The referenced-set enforcement covers the pillar slot too.
+        $content = HomepageContent::fromArray($payload, [$storyId, $pillarId]);
+
+        $this->assertSame($storyId, $content->story()->imageFileId()->value());
+        $this->assertSame($pillarId, $content->story()->pillarImageFileId()->value());
+        $this->assertSame($payload, $content->toArray());
+    }
+
+    public function test_it_rejects_a_pillar_image_id_not_in_existing_media_ids(): void
+    {
+        $pillarId = EntityId::generate('cms_media_asset')->value();
+
+        $payload = $this->validPayload();
+        $payload['story']['pillar_image_file_id'] = $pillarId;
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('does not exist in cms_media_assets');
+
+        HomepageContent::fromArray($payload, []);
+    }
+
     public function test_it_rejects_unsupported_versions(): void
     {
         $payload = $this->validPayload();
@@ -164,6 +194,7 @@ final class HomepageContentTest extends TestCase
                 'cta_label' => 'Read more about the trust',
                 'cta_url' => '/about',
                 'image_file_id' => null,
+                'pillar_image_file_id' => null,
                 'alt_text' => 'Temple and sacred grounds',
             ],
             'mission_quote' => [
@@ -178,6 +209,7 @@ final class HomepageContentTest extends TestCase
                     'title' => 'Daily Pooja',
                     'body' => 'The rhythm of pooja — at sunrise, noon, and sunset.',
                     'image_file_id' => null,
+                    'pillar_image_file_id' => null,
                     'alt_text' => 'Daily pooja',
                 ],
                 [
@@ -186,6 +218,7 @@ final class HomepageContentTest extends TestCase
                     'title' => 'Annadanam',
                     'body' => 'Free meals served daily to all who visit the temple.',
                     'image_file_id' => null,
+                    'pillar_image_file_id' => null,
                     'alt_text' => 'Annadanam service',
                 ],
                 [
@@ -194,6 +227,7 @@ final class HomepageContentTest extends TestCase
                     'title' => 'Temple Care',
                     'body' => 'The temple structure and the surrounding grounds.',
                     'image_file_id' => null,
+                    'pillar_image_file_id' => null,
                     'alt_text' => 'Temple care',
                 ],
             ],

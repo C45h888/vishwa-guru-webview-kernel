@@ -34,7 +34,11 @@
 
     interface Props {
         campaign: CampaignDetailProps;
-        donateHref: string;
+        donateHref?: string;
+        donateLabel?: string;
+        donateUnavailableLabel?: string;
+        displayTitle?: string;
+        displayShortDescription?: string | null;
         categoryLabel: string;
         causeEyebrow: string;
         stateLabel: string;
@@ -45,6 +49,10 @@
     let {
         campaign,
         donateHref,
+        donateLabel = 'Donate to this cause',
+        donateUnavailableLabel = 'This campaign is closed',
+        displayTitle = campaign.title,
+        displayShortDescription = campaign.short_description,
         categoryLabel,
         causeEyebrow,
         stateLabel,
@@ -158,32 +166,38 @@
                 <h1
                     class="font-serif text-4xl font-semibold leading-[1.05] tracking-tight lg:text-6xl"
                 >
-                    {campaign.title}
+                    {displayTitle}
                 </h1>
 
-                {#if campaign.short_description}
+                {#if displayShortDescription}
                     <p
                         class="max-w-2xl text-base leading-relaxed text-white/85 lg:text-lg"
                     >
-                        {campaign.short_description}
+                        {displayShortDescription}
                     </p>
                 {/if}
 
                 <div class="flex flex-wrap items-center gap-3 pt-2">
-                    <a
-                        href={donateHref}
-                        class="inline-flex h-12 items-center justify-center whitespace-nowrap rounded-sm bg-primary px-7 text-xs font-semibold uppercase tracking-[0.2em] text-primary-foreground transition-colors hover:bg-accent"
-                    >
-                        <Heart
-                            class="mr-2 h-4 w-4"
-                            aria-hidden="true"
-                        />
-                        Donate to this cause
-                        <ArrowRight
-                            class="ml-2 h-4 w-4"
-                            aria-hidden="true"
-                        />
-                    </a>
+                    {#if donateHref}
+                        <a
+                            href={donateHref}
+                            class="inline-flex h-12 items-center justify-center whitespace-nowrap rounded-sm bg-primary px-7 text-xs font-semibold uppercase tracking-[0.2em] text-primary-foreground transition-colors hover:bg-accent"
+                        >
+                            <Heart
+                                class="mr-2 h-4 w-4"
+                                aria-hidden="true"
+                            />
+                            {donateLabel}
+                            <ArrowRight
+                                class="ml-2 h-4 w-4"
+                                aria-hidden="true"
+                            />
+                        </a>
+                    {:else}
+                        <span class="inline-flex h-12 items-center rounded-sm border border-white/40 bg-white/5 px-6 text-xs font-semibold uppercase tracking-[0.15em] text-white/80">
+                            {donateUnavailableLabel}
+                        </span>
+                    {/if}
                     <a
                         href="/campaigns"
                         class="inline-flex h-12 items-center justify-center whitespace-nowrap rounded-sm border border-white/40 bg-white/5 px-6 text-xs font-semibold uppercase tracking-[0.2em] text-white backdrop-blur-sm transition-colors hover:border-white hover:bg-white/10"

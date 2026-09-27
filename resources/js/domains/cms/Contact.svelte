@@ -43,14 +43,13 @@
         return null;
     }
 
-    // "Open in Bing Maps" link (the human-facing directions page on
-    // bing.com, not the iframe). The consumer site is X-Frame-Options
-    // locked, but works fine when opened in a new tab. Provided by the
-    // controller as `mapOpenUrl`; we fall back to building a Bing URL
+    // Human-facing Google Maps directions link, also used when the
+    // embedded map is unavailable. Provided by the controller as
+    // `mapOpenUrl`; we fall back to a Google Maps URL
     // from the address if missing for older server payloads.
     const fallbackOpenUrl = $derived(
         mapAddress
-            ? `https://www.bing.com/maps?q=${encodeURIComponent(mapAddress)}`
+            ? `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(mapAddress)}`
             : null,
     );
     const mapsOpenUrl = $derived(mapOpenUrl ?? fallbackOpenUrl);
@@ -90,7 +89,9 @@
                 <p class="text-base text-muted-foreground lg:text-lg">
                     Reach the trust office for school support and annadanam
                     enquiries, donations, events, CSR enquiries, project
-                    updates, and future volunteering or support.
+                    updates, and future volunteering or support. Contact us
+                    for help choosing the pooled fund, donation receipts or
+                    trust documents, or to arrange a visit.
                 </p>
                 <div class="pt-2">
                     <TrustBadgeRow />
@@ -157,23 +158,17 @@
                             Visit
                         </p>
                         <h2 class="font-serif text-2xl font-semibold">
-                            Office hours
+                            Trust office
                         </h2>
                         <div class="space-y-1 text-sm text-muted-foreground">
-                            <p>Office hours published by the temple office</p>
+                            <p>
+                                Contact the trust office for current hours before visiting.
+                            </p>
                         </div>
                     </div>
 
-                    <!--
-                        Map slot. Embeds Google Maps when the
-                        contact_information table has an `address` row;
-                        otherwise degrades to the original placeholder.
-                        The iframe is sandboxed, lazy-loaded, and
-                        has a labelled title for screen readers. A
-                        "Open in Google Maps" link sits below it so
-                        visitors on browsers that block third-party
-                        iframes can still navigate to the address.
-                    -->
+                    <!-- Map supplied by the contact record, with a direct
+                         directions link for browsers where the embed fails. -->
                     <div
                         class="aspect-[3/2] overflow-hidden rounded-md border border-border/40 bg-ivory"
                         aria-label={mapAddress
@@ -185,8 +180,8 @@
                                 src={mapEmbedUrl}
                                 title={`Map of ${mapAddress ?? 'temple office'}`}
                                 class="h-full w-full border-0"
-                                loading="lazy"
-                                referrerpolicy="no-referrer-when-downgrade"
+                                loading="eager"
+                                referrerpolicy="strict-origin-when-cross-origin"
                                 allowfullscreen
                             ></iframe>
                         {:else}
@@ -204,10 +199,10 @@
                             href={mapsOpenUrl}
                             target="_blank"
                             rel="noopener noreferrer"
-                            class="inline-flex items-center gap-1.5 text-xs font-medium text-primary hover:underline"
+                            class="inline-flex min-h-11 items-center justify-center gap-2 rounded-md bg-primary px-4 py-3 text-sm font-semibold text-primary-foreground shadow-sm transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
                         >
                             <MapPin class="h-3.5 w-3.5" aria-hidden="true" />
-                            Open in Bing Maps
+                            Open directions in Google Maps
                         </a>
                     {/if}
                 </aside>
@@ -281,7 +276,7 @@
 
     <BottomCtaBand
         title="Visit the trust"
-        body="The trust office is near Nanjangud, outside Mysore. Visitors are welcome to coordinate a visit through the office in advance."
+        body="The trust’s school work and proposed campus are near Nanjangud. The office address is listed above in Mysore; please coordinate a visit through the office in advance."
         ctaLabel="See upcoming events"
         ctaHref="/events"
     />

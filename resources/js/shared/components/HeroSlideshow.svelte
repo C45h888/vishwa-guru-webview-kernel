@@ -48,21 +48,27 @@
         currentSlide = index;
     }
 
+    function decodeUnicodeEscapes(value: string): string {
+        return value.replace(/\\u([0-9a-fA-F]{4})/g, (_match, code) =>
+            String.fromCharCode(Number.parseInt(code, 16)),
+        );
+    }
+
     const currentBanner = $derived(heroBanners[currentSlide]);
     const slideTitle = $derived(
-        currentBanner?.title ?? page.title ?? FALLBACK_HERO_TITLE,
+        decodeUnicodeEscapes(
+            currentBanner?.title ?? page.title ?? FALLBACK_HERO_TITLE,
+        ),
     );
     const slideSubtitle = $derived(
-        currentBanner?.subtitle ?? page.meta_description ?? FALLBACK_HERO_SUBTITLE,
+        decodeUnicodeEscapes(
+            currentBanner?.subtitle ?? page.meta_description ?? FALLBACK_HERO_SUBTITLE,
+        ),
     );
     const slideImage = $derived<PublicMediaProps | null>(
         currentBanner?.image ?? currentBanner?.mobile_image ?? null,
     );
-    const slideMobileImage = $derived<PublicMediaProps | null>(
-        currentBanner?.mobile_image ?? currentBanner?.image ?? null,
-    );
     const hasImage = $derived(slideImage !== null);
-    const isImageFirst = $derived(slideImage === currentBanner?.image);
 </script>
 
 <section
@@ -77,24 +83,13 @@
         {#if hasImage}
             {#key currentSlide}
                 <div class="absolute inset-0 animate-fade-slow">
-                    <picture>
-                        {#if isImageFirst && slideMobileImage && slideMobileImage.id !== slideImage?.id}
-                            <source
-                                media="(max-width: 640px)"
-                                srcset={slideMobileImage.url}
-                            />
-                        {:else if !isImageFirst && slideImage && slideImage.id !== slideMobileImage?.id}
-                            <source
-                                media="(min-width: 641px)"
-                                srcset={slideImage.url}
-                            />
-                        {/if}
-                        <PublicMediaImage
-                            media={slideImage!}
-                            alt={slideTitle}
-                            class="h-full w-full object-cover"
-                        />
-                    </picture>
+                    <PublicMediaImage
+                        media={slideImage!}
+                        alt={slideTitle}
+                        loading="eager"
+                        fetchpriority="high"
+                        class="h-full w-full object-cover"
+                    />
                 </div>
             {/key}
             <div

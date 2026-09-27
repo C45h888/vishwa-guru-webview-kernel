@@ -12,11 +12,14 @@ use Inertia\Response;
 /**
  * Browse page for temple events.
  *
- * The live upcoming/past feeds come from the events module (currently
- * empty). The journal articles from event-articles.php are also passed
- * through and rendered as the "Past events" preview list on the page.
- * Once the events table is populated, the live `past` feed will
- * shadow the journal preview.
+ * Surface is fully DB-driven. The 32-article journal catalog from
+ * app/Events/Content/event-articles.php is no longer merged here —
+ * the journal routes were removed when the events surface was
+ * thinned to its 4 canonical entries (see routes/events.php and
+ * align_events.php for the seed surface). Each event card on this
+ * page resolves its banner through PublicMediaPresentationService,
+ * which points at /media/{cms_media_id} → file_assets.storage_path,
+ * i.e. storage/app/public/cms-media-upscaled/canonical/<file>.
  */
 final class IndexController
 {
@@ -37,20 +40,6 @@ final class IndexController
             $pastResult->items,
         ), 'banner_file_id', 'banner_image');
 
-        $articles = require app_path('Events/Content/event-articles.php');
-        $pastArticles = array_map(static function (array $a): array {
-            return [
-                'slug' => $a['slug'],
-                'category' => $a['category'],
-                'category_label' => $a['category_label'],
-                'eyebrow' => $a['eyebrow'],
-                'title' => $a['title'],
-                'excerpt' => $a['excerpt'],
-                'image' => $a['image'],
-                'image_alt' => $a['image_alt'],
-            ];
-        }, $articles);
-
         return Inertia::render('events/Index', [
             'upcoming' => $upcoming,
             'past' => $past,
@@ -60,7 +49,6 @@ final class IndexController
                 'total' => $pastResult->total,
                 'has_more' => $pastResult->hasMore,
             ],
-            'pastArticles' => $pastArticles,
             'appName' => config('app.name', 'Temple Trust'),
             'appUrl' => config('app.url'),
         ]);

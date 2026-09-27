@@ -13,13 +13,10 @@ use Inertia\Response;
  *
  * Reads all non-archived contact points from ContactInformationService
  * and derives the canonical map embed URL from the primary address row
- * (contact_type='address'). The embed is Microsoft Bing Maps'
- * public `/maps/embed` endpoint — no API key, no signup, no billing
- * account, free at low volume. The Microsoft chrome (search bar, zoom
- * controls, Bing attribution) is more polished / trusted than a raw
- * OpenStreetMap iframe and avoids the OSM tile-usage policy that
- * commercial sites would otherwise violate. Tiles for India are
- * sourced from OSM + TomTom under Microsoft's overlay.
+ * (contact_type='address'). The map uses Google's supported Embed API
+ * when a restricted embed key is configured; otherwise it embeds
+ * OpenStreetMap. The directions link always opens Google Maps and does
+ * not require an API key.
  *
  * Center is driven by APP_MAP_CENTER_LAT / APP_MAP_CENTER_LON env vars
  * (default: 12.331205, 76.666993 — the canonical temple office pin
@@ -44,25 +41,8 @@ final class ContactController
             $contacts->listAll(),
         );
 
-        // Derive the Bing Maps embed URL from the canonical address
-        // row so the map stays in sync with the address on file. The
-        // Bing `/maps/embed` endpoint is the public iframe contract:
-        // cp is "lat~lon" (tilde, not comma), lvl is the zoom level,
-        // w/h MUST match the iframe container's pixel size exactly,
-        // type=road picks the cleaner cartography. No API key
-        // required. Bing internally uses MapLibre GL and defaults to
-        // a 100x100 canvas when w/h are omitted — that leaves the
-        // iframe's full area as the parent background color with
-        // only the chrome (zoom, attribution) anchored in the
-        // top-left. Pinning w/h forces Bing's internal canvas to the
-        // exact container size so the map fills the iframe
-        // completely. The Svelte page pairs the iframe with
-        // `aspect-[3/2]` to match Bing's natural embed ratio, and
-        // the CSS pins the iframe to `h-full w-full` so the
-        // container always renders at the w/h we tell Bing about.
-        // A separate human-facing "Open in Bing Maps" link points
-        // to the consumer site (which is X-Frame-Options locked,
-        // but works fine when opened in a new tab).
+        // Build a bounded OSM iframe and universal Google Maps URL from
+        // the configured office pin. Google Maps URLs need no API key.
         $mapEmbedUrl = null;
         $mapAddress = null;
         $mapOpenUrl = null;
@@ -71,16 +51,27 @@ final class ContactController
                 $mapAddress = (string) $p['value'];
                 $lat = (float) env('APP_MAP_CENTER_LAT', '12.331205');
                 $lon = (float) env('APP_MAP_CENTER_LON', '76.666993');
-                $mapEmbedUrl = sprintf(
-                    'https://www.bing.com/maps/embed?cp=%s~%s&amp;lvl=16&amp;w=600&amp;h=400&amp;type=road',
-                    $lat,
-                    $lon,
-                );
-                $mapOpenUrl = sprintf(
-                    'https://www.bing.com/maps?cp=%s~%s&amp;lvl=16',
-                    $lat,
-                    $lon,
-                );
+                $bbox = implode(',', [
+                    number_format($lon - 0.012, 6, '.', ''),
+                    number_format($lat - 0.008, 6, '.', ''),
+                    number_format($lon + 0.012, 6, '.', ''),
+                    number_format($lat + 0.008, 6, '.', ''),
+                ]);
+                $marker = number_format($lat, 6, '.', '').','
+                    .number_format($lon, 6, '.', '');
+                $googleEmbedKey = config('services.google_maps.embed_api_key');
+                if (is_string($googleEmbedKey) && $googleEmbedKey !== '') {
+                    $mapEmbedUrl = 'https://www.google.com/maps/embed/v1/place?'
+                        .http_build_query([
+                            'key' => $googleEmbedKey,
+                            'q' => $marker,
+                        ], '', '&', PHP_QUERY_RFC3986);
+                } else {
+                    $mapEmbedUrl = 'https://www.openstreetmap.org/export/embed.html?bbox='
+                        .rawurlencode($bbox).'&layer=mapnik&marker='.rawurlencode($marker);
+                }
+                $mapOpenUrl = 'https://www.google.com/maps/dir/?api=1&destination='
+                    .rawurlencode($marker);
                 break;
             }
         }

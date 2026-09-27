@@ -97,13 +97,13 @@ final class ProductionSeeder extends Seeder
         ],
     ];
 
-    /** Two current causes, one fund: daily school annadanam + campus land. */
+    /** One pooled fund spans school operations and every campus stage. */
     private const SAMPLE_CAMPAIGN = [
         'id' => 'campaign_general_fund_2026',
         'slug' => 'temple-general-fund',
-        'title' => 'Schools and Campus Fund',
-        'description' => 'Two current causes, one fund. Daily annadanam at the trust’s schools — meals, drinking water, and events for children in need of care, including blind and deaf pupils on free education — alongside the land fund for the proposed three-acre healing and service campus near Nanjangud, outside Mysore. The trust publishes a closing report for every campaign.',
-        'short_description' => 'Daily annadanam and the campus land fund',
+        'title' => 'Schools & Campus Pooled Fund',
+        'description' => 'Donations are pooled by the trust across daily school operations and the staged campus programme near Nanjangud. The pooled fund includes land acquisition and planned Gaushala, temple, healing-environment, and cow-care work as those stages proceed. A gift is not restricted to a single sub-project. The trust publishes how campaign funds were used when the campaign closes.',
+        'short_description' => 'One pooled fund for daily school support and the staged campus programme',
         'category' => 'general',
         'state' => 'active',
         'currency_code' => 'INR',
@@ -152,7 +152,7 @@ final class ProductionSeeder extends Seeder
             'story' => [
                 'eyebrow' => 'Our Story',
                 'title' => 'Schools running today, the next chapter being prepared',
-                'body' => 'Sri Vishwaguru Sri Sri Sriram Shishyavrundham Mahasamsthanam (VSRSMS) is a charitable trust led by Sri Ram Ram Das Guruji. Guruji came from a teaching background and became a respected ritual and spiritual guide in Mysore. In 2012, he received Power of Attorney for the trust and began the major service endeavour that has shaped the public work since then. Since 2007 the trust has schooled children in need of care — including blind and deaf pupils who receive free education — with schooling, life skills, and cultural training including Bharatanatyam. The schools run today: daily life is sustained by annadanam, covering food, water, and events for the children. Alongside this ongoing work, the trust’s next chapter is a proposed three-acre healing and service campus near Nanjangud, outside Mysore. The campus land is under discussion; donations support the schools’ daily operations and the campus fund.',
+                'body' => 'Sri Vishwaguru Sri Sri Sriram Shishyavrundham Mahasamsthanam (VSRSMS) is a charitable trust led by Sri Ram Ram Das Guruji. Guruji came from a teaching background and became a respected ritual and spiritual guide in Mysore. In 2012, he received Power of Attorney for the trust and began the major service endeavour that has shaped the public work since then. Since 2007 the trust has schooled children in need of care — including blind and deaf pupils who receive free education — with schooling, life skills, and cultural training including Bharatanatyam. The schools run today: daily life is sustained by annadanam, covering food, water, and events for the children. Alongside this ongoing work, the trust’s next chapter is a proposed three-acre healing and service campus near Nanjangud, outside Mysore. The campus land is under discussion; one pooled fund supports daily school operations and the staged campus programme, including land acquisition and planned Gaushala, temple, healing-environment, and cow-care work.',
             ],
             'stats' => [
                 ['number' => '15+', 'label' => 'Years schooling children in need of care', 'description' => 'Since 2007 the trust has schooled children in need of care, including blind and deaf pupils who receive free education. The schools run today.'],
@@ -161,16 +161,16 @@ final class ProductionSeeder extends Seeder
                 ['number' => '3 acres', 'label' => 'Proposed campus size', 'description' => 'A proposed three-acre healing and service campus near Nanjangud, outside Mysore. The land is under discussion and additional capital is required to complete the acquisition.'],
             ],
             'programs' => [
-                ['eyebrow' => 'Ongoing · since 2007', 'title' => 'Free schooling for blind and deaf children', 'body' => 'The trust runs schools where children in need of care — including blind and deaf pupils — receive free education, with cultural training including Bharatanatyam. The schools run today and accept designated donations for their daily operations: food, water, and events for the children.', 'icon_key' => 'children_education'],
-                ['eyebrow' => 'Ongoing · daily', 'title' => 'Annadanam at the schools', 'body' => 'Every school day the trust provides daily annadanam for the children in its care: meals, drinking water, and events at the schools. This is a current ask — contributions sustain the daily operations of the schools, openly and accountably, alongside the campus fund.', 'icon_key' => 'land_acquisition'],
-                ['eyebrow' => 'Parallel aim · land fund', 'title' => 'Acquiring land near Nanjangud', 'body' => 'Alongside the schools, the trust is raising funds to acquire land near Nanjangud, outside Mysore, for the proposed three-acre campus. The land is under discussion; the acquisition requires additional capital. Until the land is secured, no construction begins. This is one of two current asks, together with the schools’ daily operations.', 'icon_key' => 'land_acquisition'],
-                ['eyebrow' => 'Planned · Stage 2+', 'title' => 'Build the Gaushala, temple, and healing environment', 'body' => 'On the acquired land, the trust intends to build a Gaushala for the care and protection of cows, a simple Shiva temple with Kamadhenu and Shiva-family shrines, and a disciplined environment for people recovering from addiction or serious personal difficulty — then the long-term care and welfare of the resident cows, with future cow-related farming and products for devotees in accordance with the project’s operating and legal framework. Construction begins after land acquisition closes. This stage is not yet fundraising.', 'icon_key' => 'gaushala'],
+                ['eyebrow' => 'Ongoing · since 2007', 'title' => 'Free schooling for blind and deaf children', 'body' => 'The trust runs schools where children in need of care — including blind and deaf pupils — receive free education, with cultural training including Bharatanatyam. The schools run today. Daily needs such as food, water, and events are supported through the pooled Schools and Campus Fund, alongside the staged campus programme.', 'icon_key' => 'children_education'],
+                ['eyebrow' => 'Ongoing · daily', 'title' => 'Annadanam at the schools', 'body' => 'Every school day the trust provides daily annadanam for the children in its care: meals, drinking water, and events at the schools. This work is included in the pooled fund alongside the staged campus programme.', 'icon_key' => 'land_acquisition'],
+                ['eyebrow' => 'Campus · land acquisition', 'title' => 'Acquiring land near Nanjangud', 'body' => 'The pooled fund supports land acquisition near Nanjangud, outside Mysore, for the proposed three-acre campus. The land is under discussion; no construction begins until it is secured. Donations are not designated to this sub-project alone.', 'icon_key' => 'land_acquisition'],
+                ['eyebrow' => 'Campus · planned stages', 'title' => 'Gaushala, temple, healing environment, and cow care', 'body' => 'The pooled fund also supports the campus stages planned for after land acquisition: a Gaushala, a simple Shiva temple, a healing environment, and long-term cow care. These are part of one pooled programme, not separate donation options.', 'icon_key' => 'gaushala'],
             ],
             'timeline' => [
                 ['year' => 2007, 'title' => 'Schooling children in need begins', 'description' => 'The trust begins schooling children in need of care, near Mysore — including blind and deaf pupils on free education. The first cohorts join the schools.'],
                 ['year' => 2012, 'title' => 'Guruji receives Power of Attorney', 'description' => 'Sri Ram Ram Das Guruji receives Power of Attorney for the trust and takes responsibility for the major service endeavour that has shaped the public work since then.'],
                 ['year' => 2022, 'title' => 'School cohorts graduate, schools continue', 'description' => 'Senior cohorts complete their education and move forward in life. The schools continue to run: new pupils study, eat, and gather daily under annadanam.'],
-                ['year' => 2026, 'title' => 'Schools plus campus: two current causes', 'description' => 'The trust publicly shares its plan for a proposed three-acre healing and service campus near Nanjangud, outside Mysore, while the schools keep running. Donations sustain daily annadanam and the land fund.'],
+                ['year' => 2026, 'title' => 'Schools and campus pooled fund', 'description' => 'The trust consolidates daily school support and the staged proposed campus programme into one pooled fund, including land acquisition, planned Gaushala and temple work, the healing environment, and cow care.'],
             ],
             'trustees' => [
                 ['name' => 'Sri Ram Ram Das Guruji', 'role' => 'Spiritual Leader, VSRSMS', 'photo_file_id' => null, 'bio' => 'Sri Ram Ram Das Guruji came from a teaching background and became a respected ritual and spiritual guide in Mysore. In 2012, he received Power of Attorney for the trust and has been the principal author of the trust’s service work since then. He is the visible primary actor across every public event the trust runs and the subject of the trust’s published imagery. He remains the point of contact for donations, event coordination, and the trust’s spiritual direction.'],
@@ -178,10 +178,11 @@ final class ProductionSeeder extends Seeder
             ],
             'visit' => [
                 'eyebrow' => 'Plan your visit',
-                'title' => 'The trust operates near Nanjangud, outside Mysore',
-                'body' => 'Office hours, specific pooja timings, and gate details will be published by the trust office once they are finalised for the current calendar. Visitors who wish to attend a trust event or to ask about a donation are asked to write to the office in advance.',
-                'address' => "Sri Vishwaguru Sri Sri Sriram Shishyavrundham Mahasamsthanam
-Nanjangud, Karnataka (outside Mysore)",
+                'title' => 'The trust’s work is near Nanjangud; its office is in Mysore',
+                'body' => 'The schools and proposed campus are near Nanjangud. The trust office is in Mysore; office hours, pooja timings, and visit details can be confirmed by contacting the office in advance.',
+                'address' => "Trust office
+No. 19/B, 2nd Cross, A.G. Block, N.R. Mohalla, Mysore — 570 007
+Schools and proposed campus: near Nanjangud, Karnataka",
                 'timings' => 'Office hours published by the trust office',
                 'phone' => '+91 98441 32318',
                 'dress_code' => 'Modest clothing preferred for visits to the temple premises. Specific dress requirements for the inner sanctum will be published with the formal timings.',
@@ -190,8 +191,8 @@ Nanjangud, Karnataka (outside Mysore)",
             'donate_cta' => [
                 'eyebrow' => 'Support the schools and the campus',
                 'title' => 'Sustain daily annadanam, help build the campus',
-                'body' => 'Donations sustain the daily operations of the schools — food, water, and events for the children — and support the land fund for the proposed healing and service campus. Construction follows once the land is secured. Cow care and welfare follow once the campus is operational. Contributions of any size are received with the trust’s gratitude and acknowledged with an official receipt.',
-                'cta_label' => 'Support the Schools and Campus Fund',
+                'body' => 'Donations are pooled across daily school operations and the staged campus programme, including land acquisition, planned Gaushala and temple work, the healing environment, and cow care as those stages proceed. A gift is not restricted to one sub-project. Every contribution is acknowledged with an official receipt.',
+                'cta_label' => 'Support the pooled fund',
                 'cta_url' => '/donate',
             ],
         ],

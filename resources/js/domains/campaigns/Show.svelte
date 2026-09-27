@@ -48,6 +48,12 @@
         DONATION_FAQ,
     } from '$shared/lib/campaign-fallbacks';
     import { currencyName } from '$shared/lib/currency';
+    import {
+        POOLED_FUND_DESCRIPTION,
+        POOLED_FUND_SHORT_DESCRIPTION,
+        POOLED_FUND_TITLE,
+        isPooledFund,
+    } from '$shared/lib/pooled-fund';
     import type {
         CampaignDetailProps,
         CampaignProgressProps,
@@ -70,13 +76,18 @@
     }> = $props();
 
     const fallback = $derived(campaignFallbackFor(campaign.category));
+    const pooledFund = $derived(isPooledFund(campaign));
+    const displayTitle = $derived(pooledFund ? POOLED_FUND_TITLE : campaign.title);
+    const displayShortDescription = $derived(
+        pooledFund ? POOLED_FUND_SHORT_DESCRIPTION : campaign.short_description,
+    );
 
     // ── Labels & meta ───────────────────────────────────────────────
 
     const CATEGORY_LABELS: Record<string, string> = {
-        general: 'Schools + Campus Fund',
-        school_annadanam: 'Schools · Daily Annadanam',
-        land_acquisition: 'Campus · Land Fund',
+        general: 'Pooled Fund',
+        school_annadanam: 'Pooled Fund',
+        land_acquisition: 'Campus · In pooled fund',
         construction: 'Campus · Planned Build',
         gaushala_build: 'Campus · Planned Build',
         operations: 'Campus · Planned Cow Care',
@@ -92,30 +103,46 @@
                 .replace(/\b\w/g, (c) => c.toUpperCase()),
     );
 
+    const plannedCategories = [
+        'construction',
+        'gaushala_build',
+        'operations',
+        'cow_care_future',
+    ];
+
     const causeEyebrow = $derived.by(() => {
         switch (campaign.category) {
             case 'general':
             case 'school_annadanam':
             case 'land_acquisition':
-                return 'Current cause · accepting offerings';
+                if (pooledFund) return 'One pooled fund · schools and campus';
+                return campaign.state === 'active'
+                    ? 'Included in the pooled fund'
+                    : 'Pooled fund campaign closed';
             case 'construction':
             case 'gaushala_build':
             case 'operations':
             case 'cow_care_future':
-                return 'Planned stage · opens after the land fund';
+                return 'Planned stage · supported through the pooled fund';
             default:
                 return 'Campaign · open now';
         }
     });
 
     const stateLabel = $derived(
-        campaign.state.charAt(0).toUpperCase() + campaign.state.slice(1),
+        plannedCategories.includes(campaign.category)
+            ? 'Supported through pooled fund'
+            : campaign.state === 'active'
+              ? 'Accepting donations'
+              : 'Campaign closed',
     );
 
     // ── About copy ──────────────────────────────────────────────────
 
     const aboutSource = $derived(
-        campaign.description && campaign.description.trim() !== ''
+            pooledFund
+                ? POOLED_FUND_DESCRIPTION
+                : campaign.description && campaign.description.trim() !== ''
             ? campaign.description
             : fallback.about,
     );
@@ -208,10 +235,10 @@
     }
 
     const whatsappUrl = $derived(
-        `https://wa.me/?text=${encodeURIComponent(`${campaign.title} — ${pageUrl}`)}`,
+        `https://wa.me/?text=${encodeURIComponent(`${displayTitle} — ${pageUrl}`)}`,
     );
     const mailtoUrl = $derived(
-        `mailto:?subject=${encodeURIComponent(`Support: ${campaign.title}`)}&body=${encodeURIComponent(`${pageUrl}`)}`,
+        `mailto:?subject=${encodeURIComponent(`Support: ${displayTitle}`)}&body=${encodeURIComponent(`${pageUrl}`)}`,
     );
 
     // ── FAQ ─────────────────────────────────────────────────────────
@@ -238,13 +265,32 @@
 
     // ── Donate href ────────────────────────────────────────────────
 
-    const donateHref = $derived(`/donate?campaign=${campaign.slug}`);
+    const acceptsDonations = $derived(
+        campaign.state === 'active' && !plannedCategories.includes(campaign.category),
+    );
+    const donateLabel = $derived(
+        pooledFund || plannedCategories.includes(campaign.category)
+            ? 'Give through the pooled fund'
+            : 'Donate to this cause',
+    );
+    const donateHref = $derived(
+        pooledFund || plannedCategories.includes(campaign.category)
+            ? '/donate'
+            : acceptsDonations
+              ? `/donate?campaign=${campaign.slug}`
+              : null,
+    );
+    const donateUnavailableLabel = $derived(
+        plannedCategories.includes(campaign.category)
+            ? 'This stage is included in the pooled fund'
+            : 'This campaign is closed',
+    );
 </script>
 
 <svelte:head>
-    <title>{campaign.title} — {appName}</title>
-    {#if campaign.short_description}
-        <meta name="description" content={campaign.short_description} />
+    <title>{displayTitle} — {appName}</title>
+    {#if displayShortDescription}
+        <meta name="description" content={displayShortDescription} />
     {/if}
 </svelte:head>
 
@@ -253,7 +299,11 @@
         <!-- ═══ 1. HERO ═══ -->
         <CampaignHero
             {campaign}
-            {donateHref}
+            donateHref={donateHref ?? undefined}
+            {donateLabel}
+            {donateUnavailableLabel}
+            {displayTitle}
+            {displayShortDescription}
             {categoryLabel}
             {causeEyebrow}
             {stateLabel}
@@ -300,15 +350,21 @@
                         {/each}
                     </div>
 
-                    <div class="pt-2">
-                        <a
-                            href={donateHref}
-                            class="inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:underline"
-                        >
-                            Donate to {campaign.title}
-                            <ArrowRight class="h-4 w-4" aria-hidden="true" />
-                        </a>
-                    </div>
+                    {#if donateHref}
+                        <div class="pt-2">
+                            <a
+                                href={donateHref}
+                                class="inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:underline"
+                            >
+                                {donateLabel}
+                                <ArrowRight class="h-4 w-4" aria-hidden="true" />
+                            </a>
+                        </div>
+                    {:else}
+                        <p class="pt-2 text-sm font-medium text-muted-foreground">
+                            {donateUnavailableLabel}.
+                        </p>
+                    {/if}
                 </div>
             </div>
         </section>
@@ -450,7 +506,9 @@
                             <h3
                                 class="font-serif text-2xl font-semibold leading-tight lg:text-3xl"
                             >
-                                Contribute to {campaign.title}
+                                {pooledFund || plannedCategories.includes(campaign.category)
+                                    ? 'Contribute through the pooled fund'
+                                    : `Contribute to ${campaign.title}`}
                             </h3>
                             <p class="text-sm text-muted-foreground">
                                 Every contribution, of any size, sustains
@@ -458,17 +516,23 @@
                                 {causeEyebrow.toLowerCase()}.
                             </p>
                         </div>
-                        <a
-                            href={donateHref}
-                            class="inline-flex h-12 items-center justify-center whitespace-nowrap rounded-sm bg-primary px-7 text-xs font-semibold uppercase tracking-[0.2em] text-primary-foreground transition-colors hover:bg-accent"
-                        >
-                            <Heart class="mr-2 h-4 w-4" aria-hidden="true" />
-                            Donate
-                            <ArrowRight
-                                class="ml-2 h-4 w-4"
-                                aria-hidden="true"
-                            />
-                        </a>
+                        {#if donateHref}
+                            <a
+                                href={donateHref}
+                                class="inline-flex h-12 items-center justify-center whitespace-nowrap rounded-sm bg-primary px-7 text-xs font-semibold uppercase tracking-[0.2em] text-primary-foreground transition-colors hover:bg-accent"
+                            >
+                                <Heart class="mr-2 h-4 w-4" aria-hidden="true" />
+                                Donate
+                                <ArrowRight
+                                    class="ml-2 h-4 w-4"
+                                    aria-hidden="true"
+                                />
+                            </a>
+                        {:else}
+                            <span class="text-sm font-medium text-muted-foreground">
+                                {donateUnavailableLabel}.
+                            </span>
+                        {/if}
                     </div>
                 </div>
             </div>

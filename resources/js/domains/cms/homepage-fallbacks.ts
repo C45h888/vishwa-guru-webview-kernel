@@ -27,19 +27,21 @@ import type { HomepageContentProps } from '$shared/lib/inertia';
 export const FALLBACK_HERO_TITLE = 'VSRSMS — Schooling children in need, building the next chapter';
 
 export const FALLBACK_HERO_SUBTITLE =
-    'Sri Vishwaguru Sri Sri Sriram Shishyavrundham Mahasamsthanam. Since 2007 the trust has schooled children in need of care — including blind and deaf pupils receiving free education — sustained by daily annadanam. Donations support the schools\u2019 daily operations and the proposed healing and service campus near Nanjangud, outside Mysore.';
+    'Sri Vishwaguru Sri Sri Sriram Shishyavrundham Mahasamsthanam. Since 2007 the trust has schooled children in need of care — including blind and deaf pupils receiving free education — sustained by daily annadanam. One pooled Schools & Campus Fund supports daily school operations and the staged proposed campus programme near Nanjangud, outside Mysore.';
 
 export const FALLBACK_HOMEPAGE_CONTENT: HomepageContentProps = {
     version: 1,
     story: {
         eyebrow: 'Our Story',
         title: 'Ongoing schooling, daily annadanam, and the next chapter',
-        body: 'Sri Vishwaguru Sri Sri Sriram Shishyavrundham Mahasamsthanam (VSRSMS) is a charitable trust led by Sri Ram Ram Das Guruji. Since 2007 the trust has schooled children in need of care — including blind and deaf pupils who receive free education. Daily life at the schools is sustained by annadanam: food, water, and events for the children. Alongside this ongoing work, the trust is raising funds for its next chapter: a proposed three-acre healing and service campus near Nanjangud, outside Mysore, anchored by a Gaushala, a simple Shiva temple, and a disciplined environment for recovery and service. The campus land is under discussion; the schools run today. Donations support the schools\u2019 daily operations and the campus fund.',
+        body: 'Sri Vishwaguru Sri Sri Sriram Shishyavrundham Mahasamsthanam (VSRSMS) is a charitable trust led by Sri Ram Ram Das Guruji. Since 2007 the trust has schooled children in need of care — including blind and deaf pupils who receive free education. Daily life at the schools is sustained by annadanam: food, water, and events for the children. Alongside this ongoing work, the trust is raising funds for its next chapter: a proposed three-acre healing and service campus near Nanjangud, outside Mysore, anchored by a Gaushala, a simple Shiva temple, and a disciplined environment for recovery and service. The campus land is under discussion; the schools run today. Donations are pooled through one Schools and Campus Fund across daily school operations and the staged campus programme, including land acquisition and planned Gaushala, temple, healing-environment, and cow-care work.',
         cta_label: 'Learn about the trust',
         cta_url: '/about',
         image_file_id: null,
+        pillar_image_file_id: null,
         alt_text: 'A glimpse of the trust work',
         image: null,
+        pillar_image: null,
     },
     mission_quote: {
         eyebrow: 'Our Mission',
@@ -51,7 +53,7 @@ export const FALLBACK_HOMEPAGE_CONTENT: HomepageContentProps = {
             key: 'pooja',
             eyebrow: 'Ongoing · since 2007',
             title: 'Free schooling for blind and deaf children',
-            body: 'The trust runs schools where children in need of care — including blind and deaf pupils — receive free education. Schooling is in person, broad in curriculum, and paced to what each child has actually come in with. Daily operations — food, water, and events for the children — are sustained by annadanam, and donations to this work go to those daily needs.',
+            body: 'The trust runs schools where children in need of care — including blind and deaf pupils — receive free education. Schooling is in person, broad in curriculum, and paced to what each child has actually come in with. Daily operations — food, water, and events for the children — are sustained by annadanam and supported through the pooled fund.',
             image_file_id: null,
             alt_text: 'Children at the trust\u2019s schools',
             image: null,
@@ -60,7 +62,7 @@ export const FALLBACK_HOMEPAGE_CONTENT: HomepageContentProps = {
             key: 'annadanam',
             eyebrow: 'Ongoing · daily',
             title: 'Annadanam: food, water, and school events',
-            body: 'Every school day the trust provides daily annadanam for the children in its care: meals, drinking water, and events at the schools. This is a current ask — contributions sustain the daily operations of the schools, openly and accountably, alongside the campus fund below.',
+            body: 'Every school day the trust provides daily annadanam for the children in its care: meals, drinking water, and events at the schools. The pooled fund supports these daily operations alongside the staged campus programme.',
             image_file_id: null,
             alt_text: 'Daily annadanam at the schools',
             image: null,
@@ -69,7 +71,7 @@ export const FALLBACK_HOMEPAGE_CONTENT: HomepageContentProps = {
             key: 'temple_care',
             eyebrow: 'Parallel aim',
             title: 'Land and campus: Gaushala, temple, healing environment',
-            body: 'Alongside the schools, the trust is raising funds to acquire land near Nanjangud, outside Mysore, for the proposed healing and service campus. On the secured land, the trust intends to build a Gaushala, a simple Shiva temple, and a disciplined healing environment. The land is under discussion; construction begins after it is secured. Donations support the schools\u2019 daily operations and this campus fund.',
+            body: 'Alongside daily school operations, the pooled fund supports the proposed campus near Nanjangud: land acquisition, followed by planned Gaushala, temple, healing-environment, and cow-care work as stages proceed. The land is under discussion; construction follows once it is secured. Gifts are not restricted to one sub-project.',
             image_file_id: null,
             alt_text: 'The proposed campus near Nanjangud',
             image: null,
@@ -79,7 +81,7 @@ export const FALLBACK_HOMEPAGE_CONTENT: HomepageContentProps = {
         eyebrow: 'Trust & Accountability',
         title: 'A trust that earns its support',
         registration:
-            'Sri Vishwaguru Sri Sri Sriram Shishyavrundham Mahasamsthanam is a charitable trust registered in India. Current causes are the daily operations of the schools — food, water, and events for the children — and the land fund for the proposed campus near Nanjangud, Karnataka.',
+            'Sri Vishwaguru Sri Sri Sriram Shishyavrundham Mahasamsthanam is a charitable trust registered in India. Donations are pooled across the daily operations of the schools and the staged campus programme near Nanjangud, including land acquisition and planned Gaushala, temple, healing-environment, and cow-care work.',
         tax_status:
             'An official receipt is issued for every donation. Tax-deductibility, including 80G certificates where applicable, is confirmed at the time of each donation in line with applicable law. The trust will publish a dedicated legal page once it has been reviewed and approved.',
         operating_principles: [
@@ -98,8 +100,8 @@ export const FALLBACK_HOMEPAGE_CONTENT: HomepageContentProps = {
     donate_cta: {
         eyebrow: 'Support the schools and the campus',
         title: 'Sustain daily annadanam, help build the campus',
-        body: 'Donations sustain the daily operations of the schools — food, water, and events for the children — and support the land fund for the proposed healing and service campus. Construction follows once the land is secured. Contributions of any size are received with the trust\u2019s gratitude and acknowledged with an official receipt.',
-        cta_label: 'Support the Schools and Campus Fund',
+        body: 'Donations are pooled through one Schools and Campus Fund across daily school operations and the staged campus programme, including land acquisition, planned Gaushala and temple work, the healing environment, and cow care. A gift is not restricted to one sub-project; every contribution is acknowledged with an official receipt.',
+        cta_label: 'Support the pooled fund',
         cta_url: '/donate',
     },
 };

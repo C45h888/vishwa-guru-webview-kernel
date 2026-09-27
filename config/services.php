@@ -3,6 +3,12 @@
 declare(strict_types=1);
 
 return [
+    'google_maps' => [
+        // Browser-visible key for the Maps Embed API. Restrict it to the
+        // deployed web origins and enable only the Embed API in Google Cloud.
+        'embed_api_key' => env('GOOGLE_MAPS_EMBED_API_KEY'),
+    ],
+
     /*
     |--------------------------------------------------------------------------
     | Payment Gateway Credentials
