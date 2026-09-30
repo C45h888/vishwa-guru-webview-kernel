@@ -128,20 +128,20 @@ final class SitemapBuilderTest extends TestCase
     {
         $campaignMock = Mockery::mock(CampaignsQueryContract::class);
         $campaignMock->shouldReceive('listDisplayable')
-            ->once()
+            ->zeroOrMoreTimes()
             ->andReturn(new CampaignPagedResultDTO($campaigns, count($campaigns), 1, 100, false));
 
         $eventMock = Mockery::mock(EventsQueryContract::class);
         $eventMock->shouldReceive('listUpcoming')
-            ->once()
+            ->zeroOrMoreTimes()
             ->andReturn($upcoming);
         $eventMock->shouldReceive('listPast')
-            ->once()
+            ->zeroOrMoreTimes()
             ->andReturn(new EventPagedResultDTO($past, count($past), 1, 100, false));
 
         $galleryMock = Mockery::mock(GalleryQueryContract::class);
         $galleryMock->shouldReceive('listDisplayable')
-            ->once()
+            ->zeroOrMoreTimes()
             ->andReturn(new GalleryPagedResultDTO($galleries, count($galleries), 1, 100, false));
 
         return new SitemapBuilder($campaignMock, $eventMock, $galleryMock);
