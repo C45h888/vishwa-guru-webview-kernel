@@ -26,7 +26,7 @@ final class DonorRepository implements DonorRepositoryContract
             return null;
         }
 
-        return Donor::fromRow($result->value()[0]);
+        return $this->toEntity($result->value()[0]);
     }
 
     public function findByEmail(string $email): ?Donor
@@ -39,7 +39,7 @@ final class DonorRepository implements DonorRepositoryContract
             return null;
         }
 
-        return Donor::fromRow($result->value()[0]);
+        return $this->toEntity($result->value()[0]);
     }
 
     public function findByPhone(string $phone): ?Donor
@@ -52,7 +52,7 @@ final class DonorRepository implements DonorRepositoryContract
             return null;
         }
 
-        return Donor::fromRow($result->value()[0]);
+        return $this->toEntity($result->value()[0]);
     }
 
     public function findByEmailOrPhone(?string $email, ?string $phone): ?Donor
@@ -73,52 +73,53 @@ final class DonorRepository implements DonorRepositoryContract
             $params['phone'] = $phone;
         }
 
-        $sql = 'SELECT * FROM donors WHERE ('.implode(' OR ', $conditions).') AND deleted_at IS NULL LIMIT 1';
+        $sql = 'SELECT * FROM donors WHERE ('.implode(' OR ', $conditions).') AND deleted_at IS NULL ORDER BY created_at ASC, id ASC LIMIT 1';
 
         $result = $this->adapter->query($sql, $params);
         if ($result->isFailure() || empty($result->value())) {
             return null;
         }
 
-        return Donor::fromRow($result->value()[0]);
+        return $this->toEntity($result->value()[0]);
     }
 
     public function save(Donor $donor): void
     {
         $row = $donor->toArray();
+        $address = $this->addressColumns($row['address'] ?? null);
 
         $sql = 'INSERT INTO donors (
             id, full_name, email, phone, country_code,
             address_line_1, address_line_2, city, state_region, postal_code,
-            pan_number, preferred_lang, is_anonymized, notes,
+            pan_number, preferred_lang, preferred_currency, is_anonymized, anonymized_at,
+            metadata, first_donation_at, last_donation_at, donation_count,
+            lifetime_contribution_minor, notes,
             created_at, updated_at, deleted_at
         ) VALUES (
             :id, :full_name, :email, :phone, :country_code,
             :address_line_1, :address_line_2, :city, :state_region, :postal_code,
-            :pan_number, :preferred_lang, :is_anonymized, :notes,
+            :pan_number, :preferred_lang, :preferred_currency, :is_anonymized, :anonymized_at,
+            :metadata, :first_donation_at, :last_donation_at, :donation_count,
+            :lifetime_contribution_minor, :notes,
             :created_at, :updated_at, :deleted_at
         )';
-
-        // Donor entity stores address as a JSON object; schema uses separate columns.
-        // Entity's toArray() uses 'address' key with JSON-encoded string.
-        // The entity gap means we can't persist the full address decomposition.
-        $address = $row['address'] ?? null;
-        $addressJson = is_string($address) ? $address : json_encode($address ?? [], JSON_THROW_ON_ERROR);
 
         $params = [
             'id' => $row['id'],
             'full_name' => $row['name'],
             'email' => $row['email'],
             'phone' => $row['phone'],
-            'country_code' => $row['country_code'] ?? null,
-            'address_line_1' => $row['address_line_1'] ?? null,
-            'address_line_2' => $row['address_line_2'] ?? null,
-            'city' => $row['city'] ?? null,
-            'state_region' => $row['state_region'] ?? null,
-            'postal_code' => $row['postal_code'] ?? null,
+            ...$address,
             'pan_number' => $row['pan_number'] ?? null,
             'preferred_lang' => $row['preferred_lang'] ?? null,
+            'preferred_currency' => $row['preferred_currency'],
             'is_anonymized' => $row['is_anonymized'],
+            'anonymized_at' => $row['anonymized_at'],
+            'metadata' => $row['metadata'],
+            'first_donation_at' => $row['first_donation_at'],
+            'last_donation_at' => $row['last_donation_at'],
+            'donation_count' => $row['donation_count'],
+            'lifetime_contribution_minor' => $row['lifetime_contribution_minor'],
             'notes' => $row['notes'] ?? null,
             'created_at' => $row['created_at'],
             'updated_at' => $row['updated_at'],
@@ -134,6 +135,7 @@ final class DonorRepository implements DonorRepositoryContract
     public function update(Donor $donor): void
     {
         $row = $donor->toArray();
+        $address = $this->addressColumns($row['address'] ?? null);
 
         $sql = 'UPDATE donors SET
             full_name = :full_name,
@@ -147,7 +149,9 @@ final class DonorRepository implements DonorRepositoryContract
             postal_code = :postal_code,
             pan_number = :pan_number,
             preferred_lang = :preferred_lang,
+            preferred_currency = :preferred_currency,
             is_anonymized = :is_anonymized,
+            anonymized_at = :anonymized_at,
             notes = :notes,
             metadata = :metadata,
             updated_at = :updated_at,
@@ -162,15 +166,12 @@ final class DonorRepository implements DonorRepositoryContract
             'full_name' => $row['name'],
             'email' => $row['email'],
             'phone' => $row['phone'],
-            'country_code' => $row['country_code'] ?? null,
-            'address_line_1' => $row['address_line_1'] ?? null,
-            'address_line_2' => $row['address_line_2'] ?? null,
-            'city' => $row['city'] ?? null,
-            'state_region' => $row['state_region'] ?? null,
-            'postal_code' => $row['postal_code'] ?? null,
+            ...$address,
             'pan_number' => $row['pan_number'] ?? null,
             'preferred_lang' => $row['preferred_lang'] ?? null,
+            'preferred_currency' => $row['preferred_currency'],
             'is_anonymized' => $row['is_anonymized'],
+            'anonymized_at' => $row['anonymized_at'],
             'notes' => $row['notes'] ?? null,
             'metadata' => is_string($row['metadata'])
                 ? $row['metadata']
@@ -194,12 +195,27 @@ final class DonorRepository implements DonorRepositoryContract
 
         $sql = 'UPDATE donors SET
             is_anonymized = true,
+            full_name = \'Anonymized donor\',
             email = NULL,
             phone = NULL,
+            pan_number = NULL,
+            country_code = NULL,
+            address_line_1 = NULL,
+            address_line_2 = NULL,
+            city = NULL,
+            state_region = NULL,
+            postal_code = NULL,
+            anonymized_at = :anonymized_at,
+            metadata = \'{}\',
+            notes = NULL,
             updated_at = :updated_at
         WHERE id = :id AND deleted_at IS NULL';
 
-        $exec = $this->adapter->execute($sql, ['id' => $id->value(), 'updated_at' => $updatedAt]);
+        $exec = $this->adapter->execute($sql, [
+            'id' => $id->value(),
+            'anonymized_at' => $updatedAt,
+            'updated_at' => $updatedAt,
+        ]);
         if ($exec->isFailure()) {
             throw new RuntimeException('DonorRepository::anonymize failed: '.$exec->error());
         }
@@ -223,5 +239,45 @@ final class DonorRepository implements DonorRepositoryContract
         );
 
         return ! $result->isFailure() && ! empty($result->value());
+    }
+
+    /** @param array<string, mixed> $row */
+    private function toEntity(array $row): Donor
+    {
+        if (! array_key_exists('address', $row)) {
+            $address = [
+                'line1' => $row['address_line_1'] ?? null,
+                'line2' => $row['address_line_2'] ?? null,
+                'city' => $row['city'] ?? null,
+                'state' => $row['state_region'] ?? null,
+                'pincode' => $row['postal_code'] ?? null,
+            ];
+            $address = array_filter($address, static fn ($value): bool => $value !== null && $value !== '');
+            if (($row['country_code'] ?? null) !== null && $row['country_code'] !== '') {
+                $address['country_code'] = $row['country_code'];
+            }
+            $row['address'] = $address === [] ? null : json_encode($address, JSON_THROW_ON_ERROR);
+        }
+
+        return Donor::fromRow($row);
+    }
+
+    /** @return array<string, mixed> */
+    private function addressColumns(mixed $address): array
+    {
+        if (is_string($address)) {
+            $decoded = json_decode($address, true);
+            $address = is_array($decoded) ? $decoded : [];
+        }
+        $address = is_array($address) ? $address : [];
+
+        return [
+            'country_code' => $address['country_code'] ?? null,
+            'address_line_1' => $address['line1'] ?? $address['address_line_1'] ?? null,
+            'address_line_2' => $address['line2'] ?? $address['address_line_2'] ?? null,
+            'city' => $address['city'] ?? null,
+            'state_region' => $address['state'] ?? $address['state_region'] ?? null,
+            'postal_code' => $address['postal_code'] ?? $address['postalCode'] ?? $address['pincode'] ?? null,
+        ];
     }
 }

@@ -9,7 +9,9 @@
 capture → receipt → refund). Razorpay + PayPal gateway adapters,
 payment orchestration, idempotency-via-Redis, receipt generation, and
 file-asset storage (the kernel that owns money also owns the files money
-needs to point at). The densest cross-kernel hub in the system.
+needs to point at). It also owns the donor CRM projection: identified
+profiles are created or linked only after verified payment, while
+anonymous donations remain unlinked. The densest cross-kernel hub in the system.
 
 **Does NOT own:** the cause-side (`Campaigns` — what the money is for),
 the static content that hosts the donation form (`Cms`), or the auth
@@ -112,6 +114,9 @@ The largest test surface in the codebase:
 - `tests/Feature/Payments/Infrastructure/` — end-to-end payment flow
   tests against the in-memory SQLite backend.
 - `tests/Feature/Payments/Receipts/` — receipt-rendering integration.
+- `database/seeders/ProductionDonorProjectionSeeder.php` — transactional,
+  rerunnable production projection and donor rollup rebuild; it is not
+  part of the ordinary content seeder.
 - `tests/Unit/Http/Requests/Payments/` — `RazorpayCheckoutRequest`
   unit tests. **Note:** this directory is moved to
   `tests/Unit/Payments/Http/Requests/` in Phase 4 of the restructure.

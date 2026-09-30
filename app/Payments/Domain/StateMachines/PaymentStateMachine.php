@@ -146,12 +146,16 @@ final class PaymentStateMachine
             TransactionStatus::INITIALIZED => [
                 StateTransitionEvent::AUTH_OK,
                 StateTransitionEvent::GATEWAY_CONFIRMED,
+                // A provider can report a captured payment before a
+                // separate authorization notification reaches us.
+                StateTransitionEvent::CAPTURE_RECEIVED,
                 StateTransitionEvent::GATEWAY_FAILED,
                 StateTransitionEvent::GATEWAY_TIMEOUT,
                 StateTransitionEvent::CUSTOMER_CANCELLED,
             ],
             TransactionStatus::PENDING => [
                 StateTransitionEvent::GATEWAY_CONFIRMED,
+                StateTransitionEvent::CAPTURE_RECEIVED,
                 StateTransitionEvent::GATEWAY_FAILED,
                 StateTransitionEvent::GATEWAY_TIMEOUT,
                 StateTransitionEvent::CUSTOMER_CANCELLED,
@@ -198,12 +202,14 @@ final class PaymentStateMachine
             // INITIALIZED +
             'initialized|auth_ok' => TransactionStatus::PENDING,
             'initialized|gateway_confirmed' => TransactionStatus::PENDING,
+            'initialized|capture_received' => TransactionStatus::CAPTURED,
             'initialized|gateway_failed' => TransactionStatus::FAILED,
             'initialized|gateway_timeout' => TransactionStatus::EXPIRED,
             'initialized|customer_cancelled' => TransactionStatus::CANCELLED,
 
             // PENDING +
             'pending|gateway_confirmed' => TransactionStatus::AUTHORIZED,
+            'pending|capture_received' => TransactionStatus::CAPTURED,
             'pending|gateway_failed' => TransactionStatus::FAILED,
             'pending|gateway_timeout' => TransactionStatus::EXPIRED,
             'pending|customer_cancelled' => TransactionStatus::CANCELLED,

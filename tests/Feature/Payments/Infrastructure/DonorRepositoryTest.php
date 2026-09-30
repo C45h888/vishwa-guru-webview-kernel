@@ -126,8 +126,8 @@ final class DonorRepositoryTest extends InfrastructureTestCase
         $this->assertTrue($anonymized->isAnonymized());
         $this->assertNull($anonymized->email());
         $this->assertNull($anonymized->phone());
-        // Name may or may not be retained depending on schema design — check actual behavior
-        $this->assertSame('Eve Davis', $anonymized->name()); // name retained, email/phone cleared
+        // The name is PII too and is replaced with a non-identifying label.
+        $this->assertSame('Anonymized donor', $anonymized->name());
     }
 
     public function testExistsWithEmailTrue(): void

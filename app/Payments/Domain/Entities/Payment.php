@@ -369,8 +369,12 @@ final class Payment implements EntityContract
             // ── Group 1: specific (status, target) success arms ───────────
             $this->status === TransactionStatus::INITIALIZED && $target === TransactionStatus::PENDING
                 => \App\Payments\Domain\StateMachines\StateTransitionEvent::AUTH_OK,
+            $this->status === TransactionStatus::INITIALIZED && $target === TransactionStatus::CAPTURED
+                => \App\Payments\Domain\StateMachines\StateTransitionEvent::CAPTURE_RECEIVED,
             $this->status === TransactionStatus::PENDING && $target === TransactionStatus::AUTHORIZED
                 => \App\Payments\Domain\StateMachines\StateTransitionEvent::GATEWAY_CONFIRMED,
+            $this->status === TransactionStatus::PENDING && $target === TransactionStatus::CAPTURED
+                => \App\Payments\Domain\StateMachines\StateTransitionEvent::CAPTURE_RECEIVED,
             $this->status === TransactionStatus::AUTHORIZED && $target === TransactionStatus::CAPTURED
                 => \App\Payments\Domain\StateMachines\StateTransitionEvent::CAPTURE_RECEIVED,
             $this->status === TransactionStatus::CAPTURED && $target === TransactionStatus::SETTLING

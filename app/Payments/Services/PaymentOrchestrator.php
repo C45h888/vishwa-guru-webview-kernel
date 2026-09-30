@@ -39,11 +39,12 @@ use App\Shared\ValueObjects\Identifier;
  * a subclass.
  *
  * Owns the canonical payment workflow:
- *   1. initialize(DonationIntent) → Donation(draft) → gateway.initialize()
- *      → Payment(INITIALIZED) persisted in a single transaction.
+ *   1. initialize(DonationIntent) → Donation(pending_payment)
+ *      → gateway.initialize() → Payment(INITIALIZED) persisted.
  *   2. handleWebhook(WebhookPayload) → verification pipeline → on
  *      success: Payment.transitionTo(verified status) + Donation.transitionTo(
- *      PAYMENT_VERIFIED) + ReceiptService.issue() in a single transaction.
+ *      PAYMENT_VERIFIED) in a single transaction; receipt/email work runs
+ *      after commit and only for a successful provider status.
  *      On failure: FailureStateService.record().
  *   3. refund(Identifier, int) → load → ceiling check → gateway.refund
  *      → Payment.transitionTo(REFUNDED|PARTIALLY_REFUNDED).
@@ -82,33 +83,28 @@ class PaymentOrchestrator
      * Initialize a payment for a verified donation intent.
      *
      * Steps:
-     *   1. Find-or-create the Donor from the DonationIntent's identity.
-     *   2. Select a gateway via PaymentProviderSelector.
-     *   3. Persist the Donation (state=DRAFT).
-     *   4. Call gateway.initialize(PaymentRequest).
-     *   5. Persist the Payment (status=INITIALIZED) referencing the
-     *      Donation and gateway order_id.
-     *   6. Audit + return PaymentResult.
+     *   1. Select a gateway via PaymentProviderSelector.
+     *   2. Call gateway.initialize(PaymentRequest).
+     *   3. Persist the Donation (state=PENDING_PAYMENT) and Payment.
+     *   4. Create or link a CRM Donor only after verified payment success.
+     *   5. Audit + return PaymentResult.
      *
-     * Steps 3-5 happen inside a single transaction so a gateway
+     * Persistence happens inside a single transaction so a gateway
      * failure leaves no orphan Donation row.
+     * The active Donation is the funnel record; Donor rows represent
+     * converted identified contributions, not abandoned checkout leads.
      *
      * @return Result<PaymentResult>
      *
-     * @phpstan-return Result<PaymentResult>|Result<Donor|null>|Result<null>
+     * @phpstan-return Result<PaymentResult>|Result<null>
      */
     public function initialize(DonationIntent $intent): Result
     {
-        $donorResolution = $this->resolveDonor($intent->donor());
-        if ($donorResolution->isFailure()) {
-            return $donorResolution;
-        }
-        $donorEntity = $donorResolution->value();
-        $donorId = $donorEntity?->id();
         $purpose = $this->purposeFromIntent($intent);
+        $donationId = EntityId::generate('donation');
 
         $paymentIntent = new PaymentIntent(
-            donationId: new Identifier($this->ids->next()),
+            donationId: new Identifier($donationId->ulid()),
             donor: $intent->donor(),
             amountMinor: $intent->amountMinor(),
             currency: $intent->currency(),
@@ -117,7 +113,7 @@ class PaymentOrchestrator
             candidateProviders: [],
             metadata: [
                 'campaign_id' => $intent->campaignId()->value(),
-                'donor_id' => $donorId?->ulid() ?? '',
+                'donation_id' => $donationId->ulid(),
             ],
         );
 
@@ -132,12 +128,13 @@ class PaymentOrchestrator
         }
 
         $paymentRequest = new PaymentRequest(
-            donorIdentifier: new Identifier($donorId?->ulid() ?? $this->ids->next()),
+            donorIdentifier: new Identifier($donationId->ulid()),
             amount: $intent->amountMinor(),
             currency: $intent->currency(),
             purpose: $purpose,
             metadata: [
                 'campaign_id' => $intent->campaignId()->value(),
+                'donation_id' => $donationId->ulid(),
                 'donation_idempotency_key' => $intent->idempotencyKey() ?? '',
             ],
             idempotencyKey: $paymentIntent->idempotencyKey(),
@@ -159,7 +156,7 @@ class PaymentOrchestrator
         $now = $this->clock->now();
 
         $persist = $this->coordinator->execute(function () use (
-            $intent, $donorId, $provider, $paymentRequest,
+            $intent, $donationId, $provider, $paymentRequest,
             $gatewayOrderId, $now, $purpose,
         ): PaymentResult {
             $donation = Donation::draft(
@@ -167,13 +164,18 @@ class PaymentOrchestrator
                 donor: $intent->donor(),
                 amountMinor: $intent->amountMinor(),
                 currency: $intent->currency(),
-                donorId: $donorId,
+                donorId: null,
                 dedication: $intent->dedication(),
                 donorMessage: $intent->donorMessage(),
                 internalNotes: $intent->internalNotes(),
                 idempotencyKey: $intent->idempotencyKey(),
                 metadata: $intent->metadata(),
-                id: EntityId::generate('donation'),
+                id: $donationId,
+            );
+            $donation = $donation->transitionTo(
+                machine: $this->donationStateMachine,
+                to: DonationState::PENDING_PAYMENT,
+                context: ['payment_initiated_at' => $now->format(DATE_ATOM)],
             );
             $this->donations->save($donation);
 
@@ -317,10 +319,10 @@ class PaymentOrchestrator
 
             $verification = $verified->value();
 
-            $transitioned = $local->transitionTo(
-                machine: $this->paymentStateMachine,
-                to: $verification->status(),
-                context: [
+            $transitioned = $this->transitionVerifiedPayment(
+                $local,
+                $verification->status(),
+                [
                     'amount_minor' => $verification->amountMinor(),
                     'method' => $verification->method(),
                     'gateway_payment_id' => $verification->gatewayPaymentId(),
@@ -331,9 +333,21 @@ class PaymentOrchestrator
 
             $donation = $this->donations->findById($local->donationId());
             if ($donation !== null) {
+                if ($verification->isSuccess()) {
+                    $donation = $this->linkDonorAfterConversion($donation);
+                    $target = DonationState::PAYMENT_VERIFIED;
+                } else {
+                    $target = in_array($verification->status(), [
+                        TransactionStatus::CANCELLED,
+                        TransactionStatus::EXPIRED,
+                    ], true)
+                        ? DonationState::CANCELLED
+                        : DonationState::FAILED;
+                }
+
                 $donationTransitioned = $donation->transitionTo(
                     machine: $this->donationStateMachine,
-                    to: DonationState::PAYMENT_VERIFIED,
+                    to: $target,
                     context: [
                         'verified_at' => $verification->verifiedAt()->format(DATE_ATOM),
                     ],
@@ -349,6 +363,10 @@ class PaymentOrchestrator
         }
 
         $transitioned = $commit->value();
+
+        if (! $transitioned->status()->isSuccessful()) {
+            return Result::success($transitioned);
+        }
 
         // Receipt issuance is intentionally outside the verification
         // transaction so a receipt failure does not roll back the
@@ -446,13 +464,15 @@ class PaymentOrchestrator
             }
 
             // Step 4: Transition Payment → CAPTURED via FSM.
-            $transitioned = $local->transitionTo(
-                machine: $this->paymentStateMachine,
-                to: TransactionStatus::CAPTURED,
-                context: [
+            $verifiedAt = $this->clock->now()->format(DATE_ATOM);
+            $transitioned = $this->transitionVerifiedPayment(
+                $local,
+                TransactionStatus::CAPTURED,
+                [
                     'method' => 'checkout_callback',
                     'gateway_payment_id' => $razorpayPaymentId,
-                    'verified_at' => $this->clock->now()->format(DATE_ATOM),
+                    'verified_at' => $verifiedAt,
+                    'amount_minor' => $local->amountMinor(),
                 ],
             );
             $this->payments->update($transitioned);
@@ -460,6 +480,7 @@ class PaymentOrchestrator
             // Step 5: Transition Donation → PAYMENT_VERIFIED.
             $donation = $this->donations->findById($local->donationId());
             if ($donation !== null) {
+                $donation = $this->linkDonorAfterConversion($donation);
                 $donationTransitioned = $donation->transitionTo(
                     machine: $this->donationStateMachine,
                     to: DonationState::PAYMENT_VERIFIED,
@@ -481,19 +502,31 @@ class PaymentOrchestrator
 
         // Step 6: Issue receipt (best-effort, non-fatal).
         if ($status === TransactionStatus::CAPTURED) {
+            $payment = $this->payments->findByGatewayOrderId($razorpayOrderId);
+            if ($payment === null) {
+                return Result::failure('verified_payment_not_found_after_commit');
+            }
+
             $receiptResult = $this->receiptService->issue(
-                new Identifier($razorpayOrderId),
+                new Identifier($payment->id()->ulid()),
             );
             if ($receiptResult->isFailure()) {
                 $this->auditLog->append(
                     eventType: 'payment.receipt.deferred',
                     entityType: Payment::ENTITY_TYPE,
-                    entityId: $razorpayOrderId,
+                    entityId: $payment->id()->ulid(),
                     previousState: $status->value,
                     newState: $status->value,
                     context: ['receipt_error' => $receiptResult->error()],
                     occurredAt: $this->clock->now(),
                 );
+            } else {
+                $receipt = $receiptResult->value();
+                if ($receipt instanceof \App\Payments\Domain\Entities\Receipt) {
+                    \App\Jobs\ReceiptEmailJob::dispatch(
+                        new Identifier($receipt->id()->ulid()),
+                    );
+                }
             }
         }
 
@@ -665,11 +698,55 @@ class PaymentOrchestrator
     }
 
     /**
-     * Find-or-create a Donor row from the DonationIntent's identity.
+     * Apply a provider-verified payment status using the canonical state
+     * machine. Provider webhooks may confirm capture directly from an
+     * initialized/pending checkout, so the state machine owns that path.
      *
-     * Returns null for anonymous donors (the schema allows
-     * donations.donor_id IS NULL). Returns the persisted Donor
-     * entity for identified donors.
+     * @param array<string, mixed> $context
+     */
+    private function transitionVerifiedPayment(
+        Payment $payment,
+        TransactionStatus $status,
+        array $context,
+    ): Payment {
+        return $payment->transitionTo(
+            machine: $this->paymentStateMachine,
+            to: $status,
+            context: $context,
+        );
+    }
+
+    /**
+     * Link or create a Donor row only once the contribution has converted.
+     * Donation snapshots continue to support receipt generation and audit.
+     */
+    private function linkDonorAfterConversion(Donation $donation): Donation
+    {
+        if ($donation->donorId() !== null || $donation->isAnonymousFlag()) {
+            return $donation;
+        }
+
+        $identity = DonorIdentity::identified(
+            name: (string) $donation->donorNameSnapshot(),
+            email: $donation->donorEmailSnapshot(),
+            phone: $donation->donorPhoneSnapshot(),
+            pan: $donation->donorPanSnapshot(),
+            address: $donation->donorAddressSnapshot(),
+        );
+        $resolved = $this->resolveDonor($identity);
+        if ($resolved->isFailure()) {
+            throw new \RuntimeException((string) $resolved->error());
+        }
+
+        $donor = $resolved->value();
+        return $donor === null
+            ? $donation
+            : $donation->withChanges(['donor_id' => $donor->id()]);
+    }
+
+    /**
+     * Find-or-create a Donor row for a verified identified contribution.
+     * Anonymous donations remain unlinked.
      *
      * @return Result<Donor|null>
      *
