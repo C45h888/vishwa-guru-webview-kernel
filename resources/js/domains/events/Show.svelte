@@ -10,6 +10,7 @@
     import GradientPanel from '$shared/components/GradientPanel.svelte';
     import { CalendarDays, MapPin, Clock } from 'lucide-svelte';
     import { page } from '@inertiajs/svelte';
+    import SeoHead from '$shared/components/SeoHead.svelte';
     import type {
         EventSummaryProps,
         AppPageProps,
@@ -28,6 +29,7 @@
     let {
         event,
         appName,
+        appUrl,
     }: AppPageProps<{ event: EventDetailProps }> = $props();
 
     const related = $derived(event.related ?? []);
@@ -50,12 +52,14 @@
     }
 </script>
 
-<svelte:head>
-    <title>{event.title} — {appName}</title>
-    {#if event.short_description}
-        <meta name="description" content={event.short_description} />
-    {/if}
-</svelte:head>
+<SeoHead
+    title={event.title}
+    {appName}
+    {appUrl}
+    description={event.short_description}
+    image={heroImage?.url ?? null}
+    imageAlt={heroImage?.alt_text ?? null}
+/>
 
 <PublicLayout>
     <article>

@@ -7,6 +7,7 @@
     import BottomCtaBand from '$shared/components/BottomCtaBand.svelte';
     import Lightbox from '$shared/components/Lightbox.svelte';
     import { Camera, ChevronLeft, ChevronRight, ArrowLeft } from 'lucide-svelte';
+    import SeoHead from '$shared/components/SeoHead.svelte';
     import type {
         GalleryImageProps,
         GallerySummaryProps,
@@ -31,6 +32,7 @@
         gallery,
         siblings = [],
         appName,
+        appUrl,
     }: AppPageProps<{
         gallery: GalleryDetailProps;
         siblings?: SiblingGallery[];
@@ -85,12 +87,14 @@
     );
 </script>
 
-<svelte:head>
-    <title>{gallery.title} — {appName}</title>
-    {#if gallery.short_description}
-        <meta name="description" content={gallery.short_description} />
-    {/if}
-</svelte:head>
+<SeoHead
+    title={gallery.title}
+    {appName}
+    {appUrl}
+    description={gallery.short_description}
+    image={heroImage?.url ?? null}
+    imageAlt={heroImage?.alt_text ?? null}
+/>
 
 <PublicLayout>
     <!-- ═══ BREADCRUMBS ═══ -->

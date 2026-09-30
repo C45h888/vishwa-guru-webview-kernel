@@ -48,6 +48,7 @@
         DONATION_FAQ,
     } from '$shared/lib/campaign-fallbacks';
     import { currencyName } from '$shared/lib/currency';
+    import SeoHead from '$shared/components/SeoHead.svelte';
     import {
         POOLED_FUND_DESCRIPTION,
         POOLED_FUND_SHORT_DESCRIPTION,
@@ -66,6 +67,7 @@
         progress,
         relatedCampaigns = [],
         appName,
+        appUrl,
     }: AppPageProps<{
         campaign: CampaignDetailProps;
         progress: CampaignProgressProps[];
@@ -287,12 +289,14 @@
     );
 </script>
 
-<svelte:head>
-    <title>{displayTitle} — {appName}</title>
-    {#if displayShortDescription}
-        <meta name="description" content={displayShortDescription} />
-    {/if}
-</svelte:head>
+<SeoHead
+    title={displayTitle}
+    {appName}
+    {appUrl}
+    description={displayShortDescription}
+    image={campaign.cover_image?.url ?? null}
+    imageAlt={campaign.cover_image?.alt_text ?? null}
+/>
 
 <PublicLayout>
     <article>

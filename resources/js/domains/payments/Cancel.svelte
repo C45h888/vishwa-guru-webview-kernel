@@ -5,13 +5,12 @@
     import { Button } from '$shared/ui/button';
     import { XCircle } from 'lucide-svelte';
     import type { AppPageProps } from '$shared/lib/inertia';
+    import SeoHead from '$shared/components/SeoHead.svelte';
 
-    let { appName }: AppPageProps = $props();
+    let { appName, appUrl }: AppPageProps = $props();
 </script>
 
-<svelte:head>
-    <title>Donation cancelled — {appName}</title>
-</svelte:head>
+<SeoHead title="Donation cancelled" {appName} {appUrl} noindex />
 
 <PublicLayout>
     <section class="relative overflow-hidden bg-background">

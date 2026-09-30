@@ -5,6 +5,7 @@
     import BottomCtaBand from '$shared/components/BottomCtaBand.svelte';
     import Filter from 'lucide-svelte/icons/filter';
     import type { AppPageProps } from '$shared/lib/inertia';
+    import SeoHead from '$shared/components/SeoHead.svelte';
 
     interface JournalCard {
         slug: string;
@@ -27,6 +28,7 @@
         cards,
         categories,
         appName,
+        appUrl,
     }: AppPageProps<{
         cards: JournalCard[];
         categories: JournalCategory[];
@@ -57,9 +59,12 @@
     );
 </script>
 
-<svelte:head>
-    <title>Events Journal — {appName}</title>
-</svelte:head>
+<SeoHead
+    title="Events Journal"
+    {appName}
+    {appUrl}
+    description="Stories and reflections from the trust's festivals, schools, and community life."
+/>
 
 <PublicLayout>
     <section class="relative overflow-hidden bg-background">

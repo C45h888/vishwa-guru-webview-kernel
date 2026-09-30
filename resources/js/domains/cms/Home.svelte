@@ -17,6 +17,7 @@
     import { ArrowRight, Camera, Heart } from 'lucide-svelte';
     import { FALLBACK_HOMEPAGE_CONTENT } from './homepage-fallbacks';
     import type { HomePageProps } from './types';
+    import SeoHead from '$shared/components/SeoHead.svelte';
 
     let {
         page,
@@ -27,6 +28,7 @@
         featuredEvents,
         featuredGalleries,
         appName,
+        appUrl,
     }: HomePageProps = $props();
 
     const sourceContent = $derived(
@@ -100,12 +102,19 @@
     );
 </script>
 
-<svelte:head>
-    <title>{page.title} — {appName}</title>
-    {#if page.meta_description}
-        <meta name="description" content={page.meta_description} />
-    {/if}
-</svelte:head>
+<SeoHead
+    title={page.title}
+    {appName}
+    {appUrl}
+    description={page.meta_description}
+    jsonLd={{
+        '@context': 'https://schema.org',
+        '@type': 'HinduTemple',
+        name: appName,
+        url: appUrl,
+        logo: `${appUrl}/icon-512.png`,
+    }}
+/>
 
 <PublicLayout>
     <!-- ═══ 1. HERO SLIDESHOW ═══ -->

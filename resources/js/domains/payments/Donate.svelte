@@ -15,6 +15,7 @@
     import { openRazorpayCheckout } from '$shared/lib/razorpay';
     import { toE164, countryByCode } from '$shared/lib/phone';
     import { validateEmail, emailErrorMessage } from '$shared/lib/validate';
+    import SeoHead from '$shared/components/SeoHead.svelte';
     import PhoneInput from '$shared/ui/phone-input/PhoneInput.svelte';
     import {
         POOLED_FUND_DESCRIPTION,
@@ -34,6 +35,7 @@
         preselectRecurring,
         preselectAnonymous,
         appName,
+        appUrl,
     }: AppPageProps<{
         campaigns: CampaignSummaryProps[];
         defaultCurrency: string;
@@ -302,13 +304,12 @@
     }
 </script>
 
-<svelte:head>
-<title>{POOLED_FUND_TITLE} — {appName}</title>
-<meta
-    name="description"
-    content="Give through one pooled fund for daily school support and the staged campus programme, including land acquisition and planned Gaushala, temple, healing-environment, and cow-care work. Secure payments via Razorpay."
+<SeoHead
+    title={POOLED_FUND_TITLE}
+    {appName}
+    {appUrl}
+    description="Give through one pooled fund for daily school support and the staged campus programme, including land acquisition and planned Gaushala, temple, healing-environment, and cow-care work. Secure payments via Razorpay."
 />
-</svelte:head>
 
 <PublicLayout>
     <section class="relative overflow-hidden bg-background">

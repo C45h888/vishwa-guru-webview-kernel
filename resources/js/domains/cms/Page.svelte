@@ -5,16 +5,12 @@
     import TrustBadgeRow from '$shared/components/TrustBadgeRow.svelte';
     import BottomCtaBand from '$shared/components/BottomCtaBand.svelte';
     import type { CmsPageProps } from './types';
+    import SeoHead from '$shared/components/SeoHead.svelte';
 
-    let { page, heroBanners, html, appName }: CmsPageProps = $props();
+    let { page, heroBanners, html, appName, appUrl }: CmsPageProps = $props();
 </script>
 
-<svelte:head>
-    <title>{page.title} — {appName}</title>
-    {#if page.meta_description}
-        <meta name="description" content={page.meta_description} />
-    {/if}
-</svelte:head>
+<SeoHead title={page.title} {appName} {appUrl} description={page.meta_description} />
 
 <PublicLayout>
     <section class="relative overflow-hidden bg-background">

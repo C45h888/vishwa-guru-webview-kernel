@@ -6,6 +6,7 @@
     import BottomCtaBand from '$shared/components/BottomCtaBand.svelte';
     import { Button } from '$shared/ui/button';
     import { ArrowRight, Camera } from 'lucide-svelte';
+    import SeoHead from '$shared/components/SeoHead.svelte';
     import type {
         GallerySummaryProps,
         PaginationProps,
@@ -16,6 +17,7 @@
         galleries,
         pagination,
         appName,
+        appUrl,
     }: AppPageProps<{
         galleries: GallerySummaryProps[];
         pagination: PaginationProps;
@@ -24,13 +26,12 @@
     const hasContent = $derived(galleries.length > 0);
 </script>
 
-<svelte:head>
-    <title>Gallery — {appName}</title>
-    <meta
-        name="description"
-        content="School life, daily annadanam, festivals, and community moments from the trust."
-    />
-</svelte:head>
+<SeoHead
+    title="Gallery"
+    {appName}
+    {appUrl}
+    description="School life, daily annadanam, festivals, and community moments from the trust."
+/>
 
 <PublicLayout>
     <!-- ═══ INTRO HEAD ═══ -->

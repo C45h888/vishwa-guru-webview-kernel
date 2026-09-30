@@ -19,6 +19,7 @@
     } from 'lucide-svelte';
     import { FALLBACK_ABOUT_PAGE_CONTENT } from './about-fallbacks';
     import type { AboutPageProps } from './types';
+    import SeoHead from '$shared/components/SeoHead.svelte';
 
     let {
         page,
@@ -27,6 +28,7 @@
         featuredGalleries,
         html,
         appName,
+        appUrl,
     }: AboutPageProps = $props();
 
     const sourceContent = $derived(
@@ -117,12 +119,7 @@
     }
 </script>
 
-<svelte:head>
-    <title>{page.title} — {appName}</title>
-    {#if page.meta_description}
-        <meta name="description" content={page.meta_description} />
-    {/if}
-</svelte:head>
+<SeoHead title={page.title} {appName} {appUrl} description={page.meta_description} />
 
 <PublicLayout>
     <!-- ═══ MAGAZINE HERO ═══ -->

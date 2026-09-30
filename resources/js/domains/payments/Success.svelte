@@ -13,10 +13,12 @@
         AppPageProps,
     } from '$shared/lib/inertia';
     import { openRazorpayCheckout } from '$shared/lib/razorpay';
+    import SeoHead from '$shared/components/SeoHead.svelte';
 
     let {
         payment,
         appName,
+        appUrl,
     }: AppPageProps<{
         payment: PaymentStatusProps;
     }> = $props();
@@ -189,9 +191,7 @@
     }
 </script>
 
-<svelte:head>
-    <title>Donation status — {appName}</title>
-</svelte:head>
+<SeoHead title="Donation status" {appName} {appUrl} noindex />
 
 <PublicLayout>
     <section class="relative overflow-hidden bg-background">

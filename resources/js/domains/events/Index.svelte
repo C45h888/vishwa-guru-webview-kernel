@@ -7,12 +7,14 @@
     import { Pencil } from 'lucide-svelte';
     import { page } from '@inertiajs/svelte';
     import type { AppPageProps, EventSummaryProps } from '$shared/lib/inertia';
+    import SeoHead from '$shared/components/SeoHead.svelte';
 
     let {
         upcoming,
         past,
         pagination,
         appName,
+        appUrl,
     }: AppPageProps<{
         upcoming: EventSummaryProps[];
         past: EventSummaryProps[];
@@ -24,9 +26,12 @@
     const isAdmin = $derived($page.props.authUser?.role === 'admin');
 </script>
 
-<svelte:head>
-    <title>Events — {appName}</title>
-</svelte:head>
+<SeoHead
+    title="Events"
+    {appName}
+    {appUrl}
+    description="Upcoming poojas, festivals, and gatherings at the trust, plus past celebrations."
+/>
 
 <PublicLayout>
     {#if isAdmin}

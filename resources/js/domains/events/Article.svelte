@@ -5,6 +5,7 @@
     import TrustBadgeRow from '$shared/components/TrustBadgeRow.svelte';
     import BottomCtaBand from '$shared/components/BottomCtaBand.svelte';
     import type { AppPageProps } from '$shared/lib/inertia';
+    import SeoHead from '$shared/components/SeoHead.svelte';
 
     interface Article {
         slug: string;
@@ -31,6 +32,7 @@
         article,
         related,
         appName,
+        appUrl,
     }: AppPageProps<{
         article: Article;
         related: RelatedArticle[];
@@ -39,12 +41,7 @@
     const hasRelated = $derived(related.length > 0);
 </script>
 
-<svelte:head>
-    <title>{article.title} — {appName}</title>
-    {#if article.excerpt}
-        <meta name="description" content={article.excerpt} />
-    {/if}
-</svelte:head>
+<SeoHead title={article.title} {appName} {appUrl} description={article.excerpt} type="article" />
 
 <PublicLayout>
     <article>

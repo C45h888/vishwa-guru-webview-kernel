@@ -7,10 +7,12 @@
     import Money from '$shared/components/Money.svelte';
     import { Download, ExternalLink, Shield, FileText } from 'lucide-svelte';
     import type { AppPageProps, ReceiptProps } from '$shared/lib/inertia';
+    import SeoHead from '$shared/components/SeoHead.svelte';
 
     let {
         receipt,
         appName,
+        appUrl,
     }: AppPageProps<{ receipt: ReceiptProps }> = $props();
 
     const shortHash = $derived(receipt.content_hash.slice(0, 12));
@@ -47,9 +49,7 @@
     }
 </script>
 
-<svelte:head>
-    <title>Receipt {receipt.receipt_number} — {appName}</title>
-</svelte:head>
+<SeoHead title={`Receipt ${receipt.receipt_number}`} {appName} {appUrl} noindex />
 
 <PublicLayout>
     <section class="relative overflow-hidden bg-background">

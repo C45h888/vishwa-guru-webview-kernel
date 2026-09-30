@@ -12,6 +12,7 @@
         MessageCircle,
     } from 'lucide-svelte';
     import type { ContactPageProps } from './types';
+    import SeoHead from '$shared/components/SeoHead.svelte';
 
     let {
         contactPoints,
@@ -21,6 +22,7 @@
         mapAddress,
         mapOpenUrl,
         appName,
+        appUrl,
     }: ContactPageProps = $props();
 
     // WhatsApp link — wa.me takes the number with the leading + stripped
@@ -66,9 +68,12 @@
     });
 </script>
 
-<svelte:head>
-    <title>Contact — {appName}</title>
-</svelte:head>
+<SeoHead
+    title="Contact"
+    {appName}
+    {appUrl}
+    description="Reach the trust — visit, call, or write about donations, volunteering, and temple services."
+/>
 
 <PublicLayout>
     <section class="relative overflow-hidden bg-background">

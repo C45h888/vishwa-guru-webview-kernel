@@ -6,6 +6,7 @@
     import TrustBadgeRow from '$shared/components/TrustBadgeRow.svelte';
     import BottomCtaBand from '$shared/components/BottomCtaBand.svelte';
     import { Button } from '$shared/ui/button';
+    import SeoHead from '$shared/components/SeoHead.svelte';
     import {
         ArrowRight,
         ChevronDown,
@@ -30,6 +31,7 @@
         currentCategory = null,
         currentSort = 'featured' as SortKey,
         appName,
+        appUrl,
     }: AppPageProps<{
         campaigns: (CampaignSummaryProps & {
             raised_amount_minor?: number | null;
@@ -120,9 +122,12 @@
     const PILLARS = PILLAR_COPY;
 </script>
 
-<svelte:head>
-    <title>Campaigns — {appName}</title>
-</svelte:head>
+<SeoHead
+    title="Campaigns"
+    {appName}
+    {appUrl}
+    description="Browse donation campaigns — the pooled fund for daily school support and the staged campus programme."
+/>
 
 <PublicLayout>
     <!-- ═══ 1. THREE PILLARS — main header (Isha-style 3-image row) ═══ -->

@@ -13,12 +13,13 @@
     } from 'lucide-svelte';
     import { FALLBACK_LEGAL_PAGE_CONTENT } from './legal-fallbacks';
     import type { LegalPageProps } from './types';
+    import SeoHead from '$shared/components/SeoHead.svelte';
     import type {
         LegalCertificateKey,
         LegalCertificateProps,
     } from '$shared/lib/inertia';
 
-    let { page, legalContent, appName }: LegalPageProps = $props();
+    let { page, legalContent, appName, appUrl }: LegalPageProps = $props();
 
     const content = $derived(
         legalContent === null ? FALLBACK_LEGAL_PAGE_CONTENT : legalContent,
@@ -58,12 +59,7 @@
     }
 </script>
 
-<svelte:head>
-    <title>{page.title} — {appName}</title>
-    {#if page.meta_description}
-        <meta name="description" content={page.meta_description} />
-    {/if}
-</svelte:head>
+<SeoHead title={page.title} {appName} {appUrl} description={page.meta_description} />
 
 <PublicLayout>
     <!-- ═══ PAGE TITLE STRIP (no hero — content-only page) ═══ -->
