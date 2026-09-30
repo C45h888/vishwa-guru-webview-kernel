@@ -12,6 +12,7 @@ use App\Events\Domain\DTOs\EventPagedResultDTO;
 use App\Gallery\Contracts\GalleryQueryContract;
 use App\Gallery\Domain\DTOs\GalleryPagedResultDTO;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Config;
 use Mockery;
 use Tests\TestCase;
 
@@ -21,6 +22,17 @@ use Tests\TestCase;
  */
 final class SitemapTest extends TestCase
 {
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        // Isolate from production Redis: the suite runs inside the live
+        // container, and the default cache store would otherwise persist
+        // mock-built sitemaps where real traffic can read them.
+        Config::set('cache.default', 'array');
+        Cache::flush();
+    }
+
     protected function tearDown(): void
     {
         Mockery::close();
