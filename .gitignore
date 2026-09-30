@@ -23,6 +23,11 @@ Homestead.json
 /.sublime
 *.log
 *.lock
+# Laravel/Node dependency lock files MUST be tracked — a fresh clone
+# without composer.lock falls back to `composer update`, which fails on
+# Packagist security advisories and breaks container builds.
+!composer.lock
+!package-lock.json
 .DS_Store
 Thumbs.db
 /.phpunit.cache/
