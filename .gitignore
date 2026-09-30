@@ -6,6 +6,7 @@ node_modules/.vite
 /.env
 /.env.backup
 /.env.production
+/.env.bak*
 /.phpunit.result.cache
 /phpunit.xml.env
 Homestead.yaml
