@@ -9,6 +9,8 @@ use App\Http\Controllers\Public\HomeController;
 use App\Http\Controllers\Public\LegalController;
 use App\Http\Controllers\Public\Legal\DocumentController as LegalDocumentController;
 use App\Http\Controllers\Public\CmsMedia\ShowController as CmsMediaShowController;
+use App\Http\Controllers\Public\Seo\RobotsController as SeoRobotsController;
+use App\Http\Controllers\Public\Seo\SitemapController as SeoSitemapController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -52,6 +54,15 @@ Route::get('/legal', [LegalController::class, 'index'])
 Route::get('/legal/documents/{key}', LegalDocumentController::class)
     ->where('key', '(eighty_g|twelve_a|poa|tan)')
     ->name('cms.legal.document');
+
+/*
+ * SEO surface — /robots.txt + /sitemap.xml. Registered BEFORE the
+ * generic {slug} fallback below so the literal paths are never
+ * captured by CmsPageController (same doctrine as /about and /legal
+ * above). Controllers return raw text/XML, not Inertia responses.
+ */
+Route::get('/robots.txt', SeoRobotsController::class)->name('seo.robots');
+Route::get('/sitemap.xml', SeoSitemapController::class)->name('seo.sitemap');
 
 /*
  * Generic CMS page resolver for /privacy, /terms, /trustee,
