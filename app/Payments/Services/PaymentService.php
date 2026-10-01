@@ -90,4 +90,21 @@ final class PaymentService
             $razorpaySignature,
         );
     }
+
+    /**
+     * Reconcile local payment state with the gateway's authoritative
+     * order status.
+     *
+     * Backend safety net for the completion page: when a payment is
+     * non-terminal locally but the provider has already captured it
+     * (webhook delayed/misconfigured, donor left the tab before the
+     * synchronous callback fired), this converges local state and issues
+     * the receipt. Terminal or non-definitive orders are returned as-is.
+     *
+     * @return Result<\App\Payments\Domain\Enums\TransactionStatus>
+     */
+    public function reconcileOrder(string $gatewayOrderId): Result
+    {
+        return $this->orchestrator->reconcileOrder($gatewayOrderId);
+    }
 }

@@ -13,6 +13,7 @@
         AppPageProps,
     } from '$shared/lib/inertia';
     import { openRazorpayCheckout } from '$shared/lib/razorpay';
+    import type { RazorpaySuccessResponse } from '$shared/lib/razorpay';
     import SeoHead from '$shared/components/SeoHead.svelte';
 
     let {
@@ -94,6 +95,55 @@
         }
     }
 
+    function currentCsrfToken(): string {
+        return (
+            (
+                document.querySelector(
+                    'meta[name="csrf-token"]',
+                ) as HTMLMetaElement | null
+            )?.content ?? ''
+        );
+    }
+
+    /**
+     * Confirm a Razorpay capture server-side, then re-poll local status.
+     * Non-fatal: if the verify call fails, the next full page load
+     * reconciles against the gateway anyway.
+     */
+    async function confirmCapture(
+        response?: RazorpaySuccessResponse,
+    ): Promise<void> {
+        if (
+            response?.razorpay_order_id &&
+            response.razorpay_payment_id &&
+            response.razorpay_signature
+        ) {
+            try {
+                await fetch('/api/v1/razorpay/verify', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        Accept: 'application/json',
+                        'X-CSRF-TOKEN': currentCsrfToken(),
+                        'X-Requested-With': 'XMLHttpRequest',
+                    },
+                    credentials: 'same-origin',
+                    body: JSON.stringify({
+                        razorpay_order_id: response.razorpay_order_id,
+                        razorpay_payment_id: response.razorpay_payment_id,
+                        razorpay_signature: response.razorpay_signature,
+                    }),
+                });
+            } catch {
+                /* non-fatal — the backend reconciles on the next load */
+            }
+        }
+
+        pollAttempts = 0;
+        pollHandle = setInterval(pollOnce, POLL_INTERVAL_MS);
+        void pollOnce();
+    }
+
     async function pollOnce(): Promise<void> {
         pollAttempts += 1;
 
@@ -171,9 +221,8 @@
                 amountMinor: latestStatus.amount_minor ?? 0,
                 currency: latestStatus.currency_code ?? 'INR',
                 appName,
-                onSuccess: () => {
-                    pollAttempts = 0;
-                    pollHandle = setInterval(pollOnce, POLL_INTERVAL_MS);
+                onSuccess: (response) => {
+                    void confirmCapture(response);
                 },
                 onDismiss: () => {
                     openingCheckout = false;
@@ -317,17 +366,40 @@
                             class="mt-0.5 h-5 w-5 shrink-0 text-primary"
                             aria-hidden="true"
                         />
-                        <div class="space-y-1">
-                            <p class="text-sm font-medium">
-                                Your receipt is on its way
-                            </p>
-                            <p
-                                class="text-xs leading-relaxed text-muted-foreground"
-                            >
-                                An official receipt will be emailed to you
-                                shortly. Keep it for your records — the
-                                temple's gratitude is already in the offering.
-                            </p>
+                        <div class="space-y-2">
+                            {#if latestStatus.receipt}
+                                <p class="text-sm font-medium">
+                                    Your receipt is ready
+                                </p>
+                                <p
+                                    class="text-xs leading-relaxed text-muted-foreground"
+                                >
+                                    Receipt
+                                    <span class="font-mono"
+                                        >{latestStatus.receipt.number}</span
+                                    > has been issued. Download it and keep it
+                                    for your records.
+                                </p>
+                                <Button
+                                    href={latestStatus.receipt.download_path}
+                                    variant="outline"
+                                    size="sm"
+                                >
+                                    Download receipt (PDF)
+                                </Button>
+                            {:else}
+                                <p class="text-sm font-medium">
+                                    Payment received
+                                </p>
+                                <p
+                                    class="text-xs leading-relaxed text-muted-foreground"
+                                >
+                                    Thank you — your donation is confirmed. Your
+                                    official receipt is being generated and
+                                    will appear here shortly; keep this page
+                                    open or refresh in a moment.
+                                </p>
+                            {/if}
                         </div>
                     </div>
                 {/if}

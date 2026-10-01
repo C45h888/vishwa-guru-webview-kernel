@@ -38,6 +38,12 @@ export interface RazorpayInstance {
     open: () => void;
 }
 
+export interface RazorpaySuccessResponse {
+    razorpay_payment_id: string;
+    razorpay_order_id: string;
+    razorpay_signature: string;
+}
+
 export interface RazorpayCheckoutInput {
     orderId: string;
     keyId: string;
@@ -46,7 +52,12 @@ export interface RazorpayCheckoutInput {
     currency: string;
     appName: string;
     description?: string;
-    onSuccess?: () => void;
+    /**
+     * Called with Razorpay's signed checkout response. Callers should
+     * confirm the capture server-side (POST /api/v1/razorpay/verify)
+     * before treating the payment as successful.
+     */
+    onSuccess?: (response?: RazorpaySuccessResponse) => void;
     onDismiss?: () => void;
 }
 
@@ -92,8 +103,8 @@ export async function openRazorpayCheckout(
         currency: input.currency,
         name: input.appName,
         description: input.description ?? 'Donation',
-        handler: () => {
-            input.onSuccess?.();
+        handler: (response: unknown) => {
+            input.onSuccess?.(response as RazorpaySuccessResponse);
         },
         modal: {
             ondismiss: () => {

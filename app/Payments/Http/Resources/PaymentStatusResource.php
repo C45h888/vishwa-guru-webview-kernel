@@ -13,7 +13,8 @@ use App\Payments\Domain\Entities\Payment;
  * (raw_provider_response, verification_metadata, idempotency_key,
  * etc.) that the public UI never needs. The Success page only
  * requires the gateway order id, current status, amount, currency,
- * and the public Razorpay key id needed to open checkout.js.
+ * the public Razorpay key id needed to open checkout.js, and the
+ * receipt download reference once one exists.
  *
  * The key_id is loaded from the active provider config so the
  * controller never has to know about provider-specific config keys.
@@ -21,9 +22,10 @@ use App\Payments\Domain\Entities\Payment;
 final class PaymentStatusResource
 {
     /**
+     * @param  array{number: string, download_path: string}|null  $receipt
      * @return array<string, mixed>
      */
-    public static function fromEntity(Payment $payment, string $publicKeyId): array
+    public static function fromEntity(Payment $payment, string $publicKeyId, ?array $receipt = null): array
     {
         return [
             'gateway_order_id' => (string) $payment->providerOrderId(),
@@ -35,6 +37,7 @@ final class PaymentStatusResource
             'failed_at' => $payment->failedAt()?->format(DATE_ATOM),
             'last_failure_reason' => $payment->lastFailureReason(),
             'public_key_id' => $publicKeyId,
+            'receipt' => $receipt,
         ];
     }
 
@@ -54,7 +57,8 @@ final class PaymentStatusResource
             'captured_at' => null,
             'failed_at' => null,
             'last_failure_reason' => null,
-            'public_key_id' => null,
+            'public_key_id' => '',
+            'receipt' => null,
         ];
     }
 }

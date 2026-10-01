@@ -13,6 +13,7 @@
         AppPageProps,
     } from '$shared/lib/inertia';
     import { openRazorpayCheckout } from '$shared/lib/razorpay';
+    import type { RazorpaySuccessResponse } from '$shared/lib/razorpay';
     import { toE164, countryByCode } from '$shared/lib/phone';
     import { validateEmail, emailErrorMessage } from '$shared/lib/validate';
     import SeoHead from '$shared/components/SeoHead.svelte';
@@ -104,6 +105,20 @@
     const selectedCampaignData = $derived(
         campaigns.find((c) => c.slug === String(selectedCampaign)) ?? null,
     );
+
+    /**
+     * Read the Inertia-injected CSRF token. Used by the JSON POSTs that
+     * sit outside Inertia's own form handling (checkout + verify).
+     */
+    function currentCsrfToken(): string {
+        return (
+            (
+                document.querySelector(
+                    'meta[name="csrf-token"]',
+                ) as HTMLMetaElement | null
+            )?.content ?? ''
+        );
+    }
 
     function rupeesToMinor(rupees: string): number {
         const parsed = parseFloat(rupees);
@@ -214,12 +229,7 @@
         };
 
         try {
-            const csrfToken =
-                (
-                    document.querySelector(
-                        'meta[name="csrf-token"]',
-                    ) as HTMLMetaElement | null
-                )?.content ?? '';
+            const csrfToken = currentCsrfToken();
             const response = await fetch('/api/v1/razorpay/checkout', {
                 method: 'POST',
                 headers: {
@@ -271,9 +281,44 @@
                     amountMinor: amount,
                     currency,
                     appName,
-                    onSuccess: () => {
+                    onSuccess: async (response?: RazorpaySuccessResponse) => {
+                        // Confirm the capture server-side through the canonical
+                        // signature-verification endpoint before showing success.
+                        // The backend flips the Payment to CAPTURED and the
+                        // success page then reads authoritative state. A failure
+                        // here is non-fatal: the page still reconciles against
+                        // the gateway as a fallback.
+                        if (
+                            response?.razorpay_order_id &&
+                            response.razorpay_payment_id &&
+                            response.razorpay_signature
+                        ) {
+                            try {
+                                await fetch('/api/v1/razorpay/verify', {
+                                    method: 'POST',
+                                    headers: {
+                                        'Content-Type': 'application/json',
+                                        Accept: 'application/json',
+                                        'X-CSRF-TOKEN': currentCsrfToken(),
+                                        'X-Requested-With': 'XMLHttpRequest',
+                                    },
+                                    credentials: 'same-origin',
+                                    body: JSON.stringify({
+                                        razorpay_order_id:
+                                            response.razorpay_order_id,
+                                        razorpay_payment_id:
+                                            response.razorpay_payment_id,
+                                        razorpay_signature:
+                                            response.razorpay_signature,
+                                    }),
+                                });
+                            } catch {
+                                /* non-fatal — success page reconciles */
+                            }
+                        }
+
                         router.visit(
-                            `/donate/success?gateway_order_id=${encodeURIComponent(orderId)}`,
+                            `/donate/success?gateway_order_id=${encodeURIComponent(response?.razorpay_order_id ?? orderId)}`,
                         );
                     },
                     onDismiss: () => {

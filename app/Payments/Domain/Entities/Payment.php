@@ -343,6 +343,22 @@ final class Payment implements EntityContract
         }
         $row['status'] = $result->toState()->value;
 
+        // DB invariant `payments_status_authorized_ts`: authorized_at is
+        // NOT NULL for authorized/captured/settled. Razorpay auto-captures
+        // (payment_capture=1), so a payment can jump straight from
+        // INITIALIZED to CAPTURED with no separate authorization event.
+        // Back-fill the timestamp so the invariant holds; an
+        // already-authorized payment keeps its original authorization time
+        // because fromRow() carried it forward.
+        if (
+            in_array($row['status'], ['authorized', 'captured', 'settled'], true)
+            && empty($row['authorized_at'])
+        ) {
+            $row['authorized_at'] = $row['captured_at']
+                ?? $row['settled_at']
+                ?? (new DateTimeImmutable())->format(DATE_ATOM);
+        }
+
         return self::fromRow($row);
     }
 

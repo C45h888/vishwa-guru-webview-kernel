@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Payments\Infrastructure\Adapters\Razorpay;
 
 use App\Payments\Contracts\PaymentGatewayContract;
+use App\Payments\Contracts\PaymentReconciliationContract;
+use App\Payments\Domain\DTOs\GatewayReconciliation;
 use App\Payments\Domain\DTOs\GatewayResponseDTO;
 use App\Payments\Domain\Enums\Currency;
 use App\Payments\Domain\Enums\TransactionStatus;
@@ -20,7 +22,7 @@ use Throwable;
  * Razorpay implementation of PaymentGatewayContract.
  * Translates our domain types to Razorpay API payloads and back.
  */
-final class RazorpayAdapter implements PaymentGatewayContract
+final class RazorpayAdapter implements PaymentGatewayContract, PaymentReconciliationContract
 {
     public function __construct(
         private RazorpayClient $client,
@@ -154,6 +156,65 @@ final class RazorpayAdapter implements PaymentGatewayContract
             'pending' => TransactionStatus::PENDING,
             default => TransactionStatus::PENDING,
         };
+    }
+
+    /**
+     * Report the authoritative status of an order from Razorpay.
+     *
+     * Razorpay keeps an order at `created` even once it is paid; the
+     * capture truth lives on the order's payment objects. We fetch them
+     * and pick the most authoritative: captured > authorized > created >
+     * failed. No local state is mutated here — the orchestrator drives
+     * the state machine from the returned DTO.
+     *
+     * @return Result<GatewayReconciliation>
+     */
+    public function reconcileOrder(string $gatewayOrderId): Result
+    {
+        try {
+            $payments = $this->client->fetchOrderPayments($gatewayOrderId);
+        } catch (Throwable $e) {
+            return Result::failure(
+                'razorpay_reconcile_fetch_failed: '.$e->getMessage(),
+            );
+        }
+
+        if ($payments === []) {
+            return Result::success(new GatewayReconciliation(
+                status: TransactionStatus::INITIALIZED,
+                gatewayPaymentId: null,
+                amountMinor: 0,
+                currency: Currency::INR,
+                method: null,
+            ));
+        }
+
+        $rank = ['captured' => 3, 'authorized' => 2, 'created' => 1];
+        $chosen = null;
+        $best = -1;
+        foreach ($payments as $payment) {
+            $score = $rank[strtolower((string) ($payment['status'] ?? ''))] ?? 0;
+            if ($chosen === null || $score > $best) {
+                $chosen = $payment;
+                $best = $score;
+            }
+        }
+
+        $currency = Currency::INR;
+        try {
+            $currency = Currency::from((string) ($chosen['currency'] ?? 'INR'));
+        } catch (Throwable) {
+            // Unknown currency code — fall back to INR (Razorpay's
+            // only supported currency for this deployment).
+        }
+
+        return Result::success(new GatewayReconciliation(
+            status: $this->mapStatus((string) ($chosen['status'] ?? '')),
+            gatewayPaymentId: (string) ($chosen['id'] ?? ''),
+            amountMinor: (int) ($chosen['amount'] ?? 0),
+            currency: $currency,
+            method: isset($chosen['method']) ? (string) $chosen['method'] : null,
+        ));
     }
 
     public function providerName(): string

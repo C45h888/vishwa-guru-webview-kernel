@@ -7,6 +7,7 @@ namespace App\Payments\Infrastructure\Receipts;
 use App\Payments\Domain\Repositories\FileAssetRepositoryContract;
 use App\Payments\Domain\Repositories\PaymentDocumentRepositoryContract;
 use App\Payments\Domain\ValueObjects\FileAssetRecord;
+use App\Persistence\ValueObjects\EntityId;
 use App\Shared\Contracts\ConfigurationContract;
 use App\Shared\Support\Clock;
 use App\Shared\Support\Result;
@@ -128,13 +129,10 @@ class ReceiptStorage
      */
     private function generateId(): string
     {
-        // Uses the ULID pattern consistent with EntityId generation.
-        // The actual implementation would come from a ULID generator.
-        // For now, generate a time-sortable ID:
-        return sprintf(
-            'fa_%s%s',
-            $this->clock->now()->format('ymd'),
-            substr(bin2hex(random_bytes(8)), 0, 12),
-        );
+        // Canonical typed ID: file_asset_<26-char ULID>. The previous
+        // 'fa_<ymd><hex>' shape violated the EntityId invariant and made
+        // the downstream `new Identifier(...)` in ReceiptRenderer::draft
+        // throw (the stripped value was not a valid 26-char ULID).
+        return EntityId::generate('file_asset')->value();
     }
 }

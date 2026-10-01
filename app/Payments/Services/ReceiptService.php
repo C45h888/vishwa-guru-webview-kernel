@@ -141,7 +141,10 @@ class ReceiptService
             amountInWords: $d->amountInWords(),
             isTaxDeductible: true,
             tax80gEligible: false,
-            receiptFileId: EntityId::fromString($d->fileAssetId()->value()),
+            // ReceiptDraft::fileAssetId() carries a bare ULID; the Receipt
+            // entity stores the canonical typed EntityId, so re-attach the
+            // `file_asset_` prefix here.
+            receiptFileId: EntityId::fromString('file_asset_'.$d->fileAssetId()->value()),
             certificate80gFileId: null,
             deliveryChannel: $d->deliveryChannel(),
             deliveryAddress: $d->deliveryAddress(),

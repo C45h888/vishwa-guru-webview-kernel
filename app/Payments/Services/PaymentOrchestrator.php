@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Payments\Services;
 
 use App\Payments\Contracts\PaymentGatewayContract;
+use App\Payments\Contracts\PaymentReconciliationContract;
 use App\Payments\Domain\DTOs\VerificationContextDTO;
 use App\Payments\Domain\Entities\Donation;
 use App\Payments\Domain\Entities\Donor;
@@ -449,41 +450,148 @@ class PaymentOrchestrator
             return Result::failure('verify_signature_mismatch');
         }
 
-        // Step 2: Look up + lock the local Payment row.
-        $commit = $this->coordinator->execute(function () use ($razorpayOrderId, $razorpayPaymentId): Result {
-            $local = $this->payments->lockByGatewayOrderIdForUpdate($razorpayOrderId);
+        // The gateway signed this callback, so the capture is
+        // authoritative. Commit it against local state through the shared
+        // state-machine path (idempotency, donation mirror, receipt).
+        return $this->commitGatewayStatus(
+            $razorpayOrderId,
+            TransactionStatus::CAPTURED,
+            [
+                'method' => 'checkout_callback',
+                'gateway_payment_id' => $razorpayPaymentId,
+            ],
+        );
+    }
+
+    /**
+     * Reconcile a local Payment with the gateway's authoritative order
+     * status.
+     *
+     * Backend safety net for when the async webhook is delayed,
+     * misconfigured, or never delivered (and the donor closed the tab
+     * before the synchronous checkout callback fired). It closes the gap
+     * where the donor has really paid but the local Payment row is still
+     * non-terminal, which would otherwise make the completion page report
+     * a payment as unsuccessful.
+     *
+     * Only definitive outcomes are persisted; an order still awaiting
+     * payment returns the unchanged local status.
+     *
+     * @return Result<TransactionStatus>
+     *
+     * @phpstan-return Result<TransactionStatus>|Result<null>
+     */
+    public function reconcileOrder(string $gatewayOrderId): Result
+    {
+        $payment = $this->payments->findByGatewayOrderId($gatewayOrderId);
+        if ($payment === null) {
+            return Result::failure('reconcile_unknown_order: '.$gatewayOrderId);
+        }
+
+        if ($payment->status()->isTerminal() || $payment->status()->isSuccessful()) {
+            return Result::success($payment->status());
+        }
+
+        $gateway = $this->resolveGatewayFor($payment);
+        if ($gateway->isFailure()) {
+            return $gateway;
+        }
+
+        $adapter = $gateway->value();
+        if (! $adapter instanceof PaymentReconciliationContract) {
+            // Provider cannot report order truth — leave local state alone.
+            return Result::success($payment->status());
+        }
+
+        $recon = $adapter->reconcileOrder($gatewayOrderId);
+        if ($recon->isFailure()) {
+            return Result::failure('reconcile_fetch_failed: '.$recon->error());
+        }
+
+        $result = $recon->value();
+
+        $definitive = in_array($result->status, [
+            TransactionStatus::CAPTURED,
+            TransactionStatus::FAILED,
+            TransactionStatus::EXPIRED,
+            TransactionStatus::CANCELLED,
+        ], true);
+
+        if (! $definitive) {
+            return Result::success($payment->status());
+        }
+
+        $context = [
+            'method' => $result->method,
+            'gateway_payment_id' => $result->gatewayPaymentId,
+        ];
+        if ($result->amountMinor > 0) {
+            $context['amount_minor'] = $result->amountMinor;
+        }
+
+        return $this->commitGatewayStatus($gatewayOrderId, $result->status, $context);
+    }
+
+    /**
+     * Converge a local Payment to a gateway-verified status.
+     *
+     * Shared by the synchronous checkout callback and reconciliation.
+     * Locks the Payment row, applies the PaymentStateMachine transition,
+     * mirrors the Donation to its matching outcome state
+     * (PAYMENT_VERIFIED on success; FAILED/CANCELLED otherwise), and
+     * persists — all inside one transaction. Best-effort receipt issuance
+     * follows after commit.
+     *
+     * @param  array<string, mixed>  $context  Extra FSM context (method,
+     *                                          gateway_payment_id, amount_minor, …)
+     *
+     * @return Result<TransactionStatus>
+     *
+     * @phpstan-return Result<TransactionStatus>|Result<null>
+     */
+    private function commitGatewayStatus(
+        string $gatewayOrderId,
+        TransactionStatus $targetStatus,
+        array $context = [],
+    ): Result {
+        $commit = $this->coordinator->execute(function () use (
+            $gatewayOrderId, $targetStatus, $context,
+        ): Result {
+            $local = $this->payments->lockByGatewayOrderIdForUpdate($gatewayOrderId);
             if ($local === null) {
                 return Result::failure(
-                    'verify_unknown_order: no local Payment with gateway_order_id='.$razorpayOrderId,
+                    'verify_unknown_order: no local Payment with gateway_order_id='.$gatewayOrderId,
                 );
             }
 
-            // Step 3: Idempotency — already terminal-success? Return as-is.
+            // Idempotency — already terminal-success? Return as-is.
             if ($local->status()->isSuccessful()) {
                 return Result::success($local->status());
             }
 
-            // Step 4: Transition Payment → CAPTURED via FSM.
-            $verifiedAt = $this->clock->now()->format(DATE_ATOM);
-            $transitioned = $this->transitionVerifiedPayment(
-                $local,
-                TransactionStatus::CAPTURED,
-                [
-                    'method' => 'checkout_callback',
-                    'gateway_payment_id' => $razorpayPaymentId,
-                    'verified_at' => $verifiedAt,
-                    'amount_minor' => $local->amountMinor(),
-                ],
-            );
+            $context['amount_minor'] = $context['amount_minor'] ?? $local->amountMinor();
+            $context['verified_at'] = $context['verified_at'] ?? $this->clock->now()->format(DATE_ATOM);
+
+            $transitioned = $this->transitionVerifiedPayment($local, $targetStatus, $context);
             $this->payments->update($transitioned);
 
-            // Step 5: Transition Donation → PAYMENT_VERIFIED.
             $donation = $this->donations->findById($local->donationId());
             if ($donation !== null) {
-                $donation = $this->linkDonorAfterConversion($donation);
+                if ($targetStatus->isSuccessful()) {
+                    $donation = $this->linkDonorAfterConversion($donation);
+                    $target = DonationState::PAYMENT_VERIFIED;
+                } else {
+                    $target = in_array($targetStatus, [
+                        TransactionStatus::CANCELLED,
+                        TransactionStatus::EXPIRED,
+                    ], true)
+                        ? DonationState::CANCELLED
+                        : DonationState::FAILED;
+                }
+
                 $donationTransitioned = $donation->transitionTo(
                     machine: $this->donationStateMachine,
-                    to: DonationState::PAYMENT_VERIFIED,
+                    to: $target,
                     context: [
                         'verified_at' => $this->clock->now()->format(DATE_ATOM),
                     ],
@@ -498,39 +606,52 @@ class PaymentOrchestrator
             return $commit;
         }
 
-        $status = $commit->value();
+        $committed = $commit->value();
 
-        // Step 6: Issue receipt (best-effort, non-fatal).
-        if ($status === TransactionStatus::CAPTURED) {
-            $payment = $this->payments->findByGatewayOrderId($razorpayOrderId);
-            if ($payment === null) {
-                return Result::failure('verified_payment_not_found_after_commit');
-            }
-
-            $receiptResult = $this->receiptService->issue(
-                new Identifier($payment->id()->ulid()),
-            );
-            if ($receiptResult->isFailure()) {
-                $this->auditLog->append(
-                    eventType: 'payment.receipt.deferred',
-                    entityType: Payment::ENTITY_TYPE,
-                    entityId: $payment->id()->ulid(),
-                    previousState: $status->value,
-                    newState: $status->value,
-                    context: ['receipt_error' => $receiptResult->error()],
-                    occurredAt: $this->clock->now(),
-                );
-            } else {
-                $receipt = $receiptResult->value();
-                if ($receipt instanceof \App\Payments\Domain\Entities\Receipt) {
-                    \App\Jobs\ReceiptEmailJob::dispatch(
-                        new Identifier($receipt->id()->ulid()),
-                    );
-                }
-            }
+        if ($committed === TransactionStatus::CAPTURED) {
+            $this->issueReceiptBestEffort($gatewayOrderId);
         }
 
-        return Result::success($status);
+        return Result::success($committed);
+    }
+
+    /**
+     * Issue the receipt for a captured payment, best-effort.
+     *
+     * A failure is audited but never fails the caller: the money has
+     * already moved, so receipt delivery is deferred rather than lost.
+     */
+    private function issueReceiptBestEffort(string $gatewayOrderId): void
+    {
+        $payment = $this->payments->findByGatewayOrderId($gatewayOrderId);
+        if ($payment === null) {
+            return;
+        }
+
+        $receiptResult = $this->receiptService->issue(
+            new Identifier($payment->id()->ulid()),
+        );
+
+        if ($receiptResult->isFailure()) {
+            $this->auditLog->append(
+                eventType: 'payment.receipt.deferred',
+                entityType: Payment::ENTITY_TYPE,
+                entityId: $payment->id()->ulid(),
+                previousState: TransactionStatus::CAPTURED->value,
+                newState: TransactionStatus::CAPTURED->value,
+                context: ['receipt_error' => $receiptResult->error()],
+                occurredAt: $this->clock->now(),
+            );
+
+            return;
+        }
+
+        $receipt = $receiptResult->value();
+        if ($receipt instanceof \App\Payments\Domain\Entities\Receipt) {
+            \App\Jobs\ReceiptEmailJob::dispatch(
+                new Identifier($receipt->id()->ulid()),
+            );
+        }
     }
 
     /**

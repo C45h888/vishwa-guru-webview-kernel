@@ -38,6 +38,7 @@ identity making the payment (Phase 4 `Auth`).
 | PaymentGatewayContract | `App\Payments\Contracts\PaymentGatewayContract` | Razorpay + PayPal adapters implement |
 | PaymentProviderContract | `App\Payments\Contracts\PaymentProviderContract` | Provider factory |
 | PaymentVerificationContract | `App\Payments\Contracts\PaymentVerificationContract` | Webhook signature verification |
+| PaymentReconciliationContract | `App\Payments\Contracts\PaymentReconciliationContract` | Optional gateway capability: authoritative order-status reconciliation (Razorpay adapter implements; consumed by PaymentOrchestrator::reconcileOrder) |
 | ReceiptGenerationContract | `App\Payments\Contracts\ReceiptGenerationContract` | Receipt rendering |
 | CampaignQueryContract | `App\Payments\Contracts\CampaignQueryContract` | **Shape A bridge** — owned by Payments; Cms consumes |
 | FailureStateContract | `App\Payments\Contracts\FailureStateContract` | Payments consumes Runtime's failure surface |

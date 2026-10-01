@@ -33,9 +33,14 @@ final class ReceiptDraft
         if (empty($receiptNumber)) {
             throw new InvalidArgumentException('ReceiptDraft receiptNumber cannot be empty');
         }
-        if (! preg_match('/^TR-\d{4}-[A-Z0-9]{4,32}$/', $receiptNumber)) {
+        // Canonical format produced by ReceiptNumberAllocator:
+        //   TR-{4-digit FY year}-{6-digit sequence}-{8-char URL-safe salt}
+        // e.g. TR-2026-000001-A7c3ZpQ9. Mirrors the allocator's
+        // PATTERN/ANCHORED_PATTERN (routes/receipts.php uses the same) so
+        // the draft, the allocator, and the route constraint cannot drift.
+        if (! preg_match('/^TR-\d{4}-\d{6}-[A-Za-z0-9_-]{8}$/', $receiptNumber)) {
             throw new InvalidArgumentException(
-                "ReceiptDraft receiptNumber must match TR-YYYY-{shortId}: got {$receiptNumber}"
+                "ReceiptDraft receiptNumber must match TR-YYYY-NNNNNN-salt: got {$receiptNumber}"
             );
         }
         if (empty($contentHash)) {

@@ -183,7 +183,13 @@ final class Receipt implements EntityContract
             tax80gEligible: $tax80gEligible,
             tax80gCertificateNumber: $tax80gCertificateNumber,
             contentHash: $contentHash,
-            state: ReceiptDeliveryState::PENDING->value,
+            // `state` is the receipt lifecycle (receipt_state enum:
+            // generated|delivered|archived); delivery progress lives on
+            // `delivery_status` (receipt_delivery_status enum). A freshly
+            // issued receipt is `generated` and its delivery is `pending`.
+            // Previously this was set to the delivery value `pending`,
+            // which the receipt_state enum rejected on INSERT.
+            state: 'generated',
             generatedAt: $now,
             deliveredAt: null,
             deliveryStatus: self::DELIVERY_PENDING,

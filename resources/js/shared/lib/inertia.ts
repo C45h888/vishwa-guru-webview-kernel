@@ -228,6 +228,11 @@ export type PaymentStatusCase =
 /**
  * Donation success page read-shape (PaymentStatusResource::fromEntity output).
  */
+export interface PaymentReceiptProps {
+    number: string;
+    download_path: string;
+}
+
 export interface PaymentStatusProps {
     gateway_order_id: string;
     status: PaymentStatusCase;
@@ -238,6 +243,7 @@ export interface PaymentStatusProps {
     failed_at: string | null;
     last_failure_reason: string | null;
     public_key_id: string | null;
+    receipt: PaymentReceiptProps | null;
 }
 
 /**

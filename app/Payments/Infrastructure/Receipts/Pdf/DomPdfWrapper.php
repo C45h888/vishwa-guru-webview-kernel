@@ -29,15 +29,14 @@ class DomPdfWrapper implements PdfWrapper
      */
     public function render(string $viewHtml): string
     {
-        /** @var Pdf $pdf */
-        $pdf = app(Pdf::class);
+        // Canonical barryvdh/laravel-dompdf usage: go through the facade's
+        // static API. The previous code called `getDomPDF()` on an instance
+        // resolved via `app(Pdf::class)`, which returns the Facade class —
+        // not the underlying 'dompdf.wrapper' service — and fatally failed
+        // with "Call to undefined method ...\Facade\Pdf::getDomPDF()".
+        $pdf = Pdf::loadHTML($viewHtml)->setPaper('a4', 'portrait');
 
-        $domPdf = $pdf->getDomPDF();
-        $domPdf->loadHtml($viewHtml, 'UTF-8');
-        $domPdf->setPaper('a4', 'portrait');
-        $domPdf->render();
-
-        $output = $domPdf->output();
+        $output = $pdf->output();
 
         if ($output === null || $output === '') {
             throw new RuntimeException('DomPdfWrapper: PDF rendering produced empty output');

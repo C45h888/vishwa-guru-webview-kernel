@@ -87,6 +87,45 @@ final class RazorpayClient
     }
 
     /**
+     * Fetch every payment made against an order.
+     *
+     * Razorpay's order status stays `created` even after payment; the
+     * authoritative capture status lives on the payment objects. This is
+     * the read used by reconciliation to close the webhook gap. Each item
+     * is normalized to an associative array (id, status, amount, currency,
+     * method, captured).
+     *
+     * @return array<int, array<string, mixed>>
+     * @throws PaymentInitializationFailedException
+     */
+    public function fetchOrderPayments(string $orderId): array
+    {
+        try {
+            $order = $this->api->order->fetch($orderId);
+            $collection = $order->payments();
+            $decoded = $this->toArray($collection);
+
+            $items = $decoded['items'] ?? [];
+            if (! is_array($items)) {
+                return [];
+            }
+
+            $normalized = [];
+            foreach ($items as $item) {
+                if (is_object($item) && method_exists($item, 'toArray')) {
+                    $normalized[] = $item->toArray();
+                } elseif (is_array($item)) {
+                    $normalized[] = $item;
+                }
+            }
+
+            return $normalized;
+        } catch (Throwable $e) {
+            throw GatewayErrorTranslator::forInitialization('razorpay', $e);
+        }
+    }
+
+    /**
      * Initiate a refund for a payment.
      *
      * @param array<string, mixed> $body Refund parameters
