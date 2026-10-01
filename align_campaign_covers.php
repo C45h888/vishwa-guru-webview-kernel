@@ -7,7 +7,7 @@ declare(strict_types=1);
  *
  * Gives each DB campaign its own distinct canonical cover image:
  *
- *   campaign_general_fund_2026  (Schools and Campus Fund)
+ *   campaign_01M3V9QP311Z564SCJ9GW47HE7  (Schools and Campus Fund)
  *     -> canonical/a-guru-blessing.png
  *   campaign_0001N6BR8BAAYG80DYW8ABHWX8  (Shiva Temple Construction)
  *     -> canonical/WELFARE.jpg
@@ -71,7 +71,7 @@ function fileMeta(string $file): array
 
 $covers = [
     [
-        'campaign_id'    => 'campaign_general_fund_2026',
+        'campaign_id'    => 'campaign_01M3V9QP311Z564SCJ9GW47HE7',
         'file_asset_id'  => 'file_asset_0001NBFVMN66ZSK0QWSKC9ZRP8',
         'cms_media_id'   => 'cms_media_0001NBFVMNKCJHR69FG4H1492F',
         'canonical'      => 'a-guru-blessing.png',

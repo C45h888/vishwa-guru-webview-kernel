@@ -29,12 +29,17 @@ final class FormController
     {
         $paged = $campaigns->listDisplayable(1, 50);
 
+        // Every active displayable campaign is offered as a giving
+        // destination. The donor chooses which campaign their gift
+        // supports; the form submits that campaign's typed ID to the
+        // Razorpay checkout contract. Filtering to a single pooled fund
+        // here would defeat the multi-campaign surface and left donors
+        // unable to give to any other active campaign.
         $campaignsList = array_map(
             static fn ($dto) => $dto->toArray(),
             array_values(array_filter(
                 $paged->items,
-                static fn ($dto) => $dto->state === 'active'
-                    && $dto->id === config('campaigns.donation_pool_campaign_id'),
+                static fn ($dto) => $dto->state === 'active',
             )),
         );
 

@@ -99,7 +99,7 @@ final class ProductionSeeder extends Seeder
 
     /** One pooled fund spans school operations and every campus stage. */
     private const SAMPLE_CAMPAIGN = [
-        'id' => 'campaign_general_fund_2026',
+        'id' => 'campaign_01M3V9QP311Z564SCJ9GW47HE7',
         'slug' => 'temple-general-fund',
         'title' => 'Schools & Campus Pooled Fund',
         'description' => 'Donations are pooled by the trust across daily school operations and the staged campus programme near Nanjangud. The pooled fund includes land acquisition and planned Gaushala, temple, healing-environment, and cow-care work as those stages proceed. A gift is not restricted to a single sub-project. The trust publishes how campaign funds were used when the campaign closes.',

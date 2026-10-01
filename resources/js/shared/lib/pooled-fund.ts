@@ -1,5 +1,8 @@
 /** Canonical public giving destination for the consolidated campaign. */
-export const POOLED_FUND_ID = 'campaign_general_fund_2026';
+// Pinned by migration
+// 2026_10_01_000001_k_campaigns_normalize_donate_pool_id.php. Keep in sync
+// with config/campaigns.php (donation_pool_campaign_id).
+export const POOLED_FUND_ID = 'campaign_01M3V9QP311Z564SCJ9GW47HE7';
 export const POOLED_FUND_TITLE = 'Schools & Campus Pooled Fund';
 export const POOLED_FUND_SHORT_DESCRIPTION =
     'One pooled fund for daily school support and the staged campus programme.';

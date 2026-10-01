@@ -23,7 +23,11 @@ declare(strict_types=1);
 */
 
 return [
-    'donation_pool_campaign_id' => 'campaign_general_fund_2026',
+    // Canonical typed ID of the pooled-fund campaign. Pinned by migration
+    // 2026_10_01_000001_k_campaigns_normalize_donate_pool_id.php. Keep in
+    // sync with resources/js/shared/lib/pooled-fund.ts (POOLED_FUND_ID),
+    // ProductionSeeder::SAMPLE_CAMPAIGN, and align_campaign_covers.php.
+    'donation_pool_campaign_id' => 'campaign_01M3V9QP311Z564SCJ9GW47HE7',
     'pillars' => [
         [
             'file_asset_id' => 'file_asset_0001NBFPX8R6Y1RXCSXZM4DSVM',

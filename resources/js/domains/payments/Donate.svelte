@@ -17,10 +17,6 @@
     import { validateEmail, emailErrorMessage } from '$shared/lib/validate';
     import SeoHead from '$shared/components/SeoHead.svelte';
     import PhoneInput from '$shared/ui/phone-input/PhoneInput.svelte';
-    import {
-        POOLED_FUND_DESCRIPTION,
-        POOLED_FUND_TITLE,
-    } from '$shared/lib/pooled-fund';
 
     // Razorpay environment: shared via HandleInertiaRequests. When 'test',
     // the donate flow surfaces a "Test mode" badge so anyone in the
@@ -305,10 +301,10 @@
 </script>
 
 <SeoHead
-    title={POOLED_FUND_TITLE}
+    title="Donate"
     {appName}
     {appUrl}
-    description="Give through one pooled fund for daily school support and the staged campus programme, including land acquisition and planned Gaushala, temple, healing-environment, and cow-care work. Secure payments via Razorpay."
+    description="Choose the campaign your gift supports and give securely through Razorpay. An official receipt is issued for every donation."
 />
 
 <PublicLayout>
@@ -334,22 +330,19 @@
                     <p
                         class="text-xs font-semibold uppercase tracking-[0.25em] text-primary"
                     >
-                        One pooled fund
+                        Give with purpose
                     </p>
                     <h1
                         class="font-serif text-3xl font-semibold leading-tight lg:text-5xl"
                     >
-                        Support schools and the campus programme
+                        Support a campaign
                     </h1>
                     <p
                         class="max-w-md text-base leading-relaxed text-muted-foreground lg:text-lg"
                     >
-                        Donations are pooled by the trust across daily school
-                        operations and the staged campus programme near
-                        Nanjangud. The fund includes land acquisition and
-                        planned Gaushala, temple, healing-environment, and
-                        cow-care work as those stages proceed. A gift is not
-                        restricted to one sub-project.
+                        Choose the campaign your gift should support. Every
+                        contribution is acknowledged with an official receipt,
+                        and secure payment is handled by Razorpay.
                     </p>
                     <div
                         class="flex items-center gap-2 pt-2 text-xs text-muted-foreground"
@@ -382,24 +375,33 @@
                                 <CardHeader>
                                     <CardTitle>Giving destination</CardTitle>
                                     <CardDescription>
-                                        One pooled fund supports the schools and
-                                        campus programme.
+                                        Choose the campaign your gift supports.
                                     </CardDescription>
                                 </CardHeader>
                                 <CardContent class="space-y-3">
-                                    <Label>Fund</Label>
+                                    <Label for="campaign">Campaign</Label>
+                                    <select
+                                        id="campaign"
+                                        bind:value={selectedCampaign}
+                                        class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                                    >
+                                        {#each campaigns as offering (offering.id)}
+                                            <option value={offering.slug}>
+                                                {offering.title}
+                                            </option>
+                                        {/each}
+                                    </select>
                                     {#if selectedCampaignData}
-                                        <p class="font-medium text-foreground">
-                                            {POOLED_FUND_TITLE}
-                                        </p>
                                         <p
                                             class="text-xs text-muted-foreground"
                                         >
                                             Currency: {selectedCampaignData.currency_code}
                                         </p>
-                                        <p class="text-sm leading-relaxed text-foreground/80">
-                                            {POOLED_FUND_DESCRIPTION}
-                                        </p>
+                                        {#if selectedCampaignData.short_description}
+                                            <p class="text-sm leading-relaxed text-foreground/80">
+                                                {selectedCampaignData.short_description}
+                                            </p>
+                                        {/if}
                                     {/if}
                                 </CardContent>
                             </Card>
