@@ -52,6 +52,15 @@ final class FormController
         $preselectRecurring = request()->query('recurring');
         $preselectAnonymous = request()->query('anonymous') === '1';
 
+        // 80G certificate threshold (minor units). Donations above this
+        // require a PAN to issue an 80G certificate, so the form reveals
+        // the PAN/address fields from here up. Sourced from config so the
+        // UI threshold cannot drift from Receipt80GValidator.
+        $eightyGThresholdMinor = (int) config(
+            'receipts.80g.certificate_threshold_minor',
+            500_00,
+        );
+
         return Inertia::render('payments/Donate', [
             'campaigns' => $campaignsList,
             'defaultCurrency' => $defaultCurrency,
@@ -59,6 +68,7 @@ final class FormController
             'preselectAmountRupees' => $preselectAmount,
             'preselectRecurring' => $preselectRecurring,
             'preselectAnonymous' => $preselectAnonymous,
+            'eightyGThresholdMinor' => $eightyGThresholdMinor,
             'appName' => (string) config('app.name', 'Temple Trust'),
             'appUrl' => (string) config('app.url'),
         ]);

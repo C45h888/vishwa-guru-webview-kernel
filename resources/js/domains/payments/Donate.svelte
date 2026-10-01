@@ -37,6 +37,7 @@
         preselectAmountRupees,
         preselectRecurring,
         preselectAnonymous,
+        eightyGThresholdMinor,
         appName,
         appUrl,
     }: AppPageProps<{
@@ -46,6 +47,8 @@
         preselectAmountRupees: string | null;
         preselectRecurring: string | null;
         preselectAnonymous: boolean;
+        /** 80G certificate threshold in minor units (paise), from backend config. */
+        eightyGThresholdMinor: number;
     }> = $props();
 
     let selectedCampaign = $state<string>(
@@ -70,10 +73,14 @@
     let purpose = $state<string>('');
     let donorMessage = $state<string>('');
 
-    // Wave 1 M1 fix (2026-08-06): PAN and address fields surface only when
-    // the amount crosses the 80G reporting threshold (₹2,000 in India) AND
-    // the donor is identified. Anonymous donors never need PAN/address.
-    const showEightyGFields = $derived(!isAnonymous && parseFloat(amountRupees) > 2000);
+    // PAN and address fields surface when the amount exceeds the 80G
+    // certificate threshold (backend config: default ₹500) AND the donor is
+    // identified. The threshold is passed from the backend so the UI cannot
+    // drift from Receipt80GValidator. Anonymous donors never need PAN/address.
+    const eightyGThresholdRupees = $derived(eightyGThresholdMinor / 100);
+    const showEightyGFields = $derived(
+        !isAnonymous && parseFloat(amountRupees) > eightyGThresholdRupees,
+    );
     const messageRemaining = $derived(500 - donorMessage.length);
 
     // UX pass (2026-08-08): inline validation state for email + phone. When
