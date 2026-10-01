@@ -15,7 +15,13 @@
     import { openRazorpayCheckout } from '$shared/lib/razorpay';
     import type { RazorpaySuccessResponse } from '$shared/lib/razorpay';
     import { toE164, countryByCode } from '$shared/lib/phone';
-    import { validateEmail, emailErrorMessage } from '$shared/lib/validate';
+    import {
+        validateEmail,
+        emailErrorMessage,
+        normalizePan,
+        validatePan,
+        panErrorMessage,
+    } from '$shared/lib/validate';
     import SeoHead from '$shared/components/SeoHead.svelte';
     import PhoneInput from '$shared/ui/phone-input/PhoneInput.svelte';
 
@@ -94,10 +100,17 @@
     );
     let emailTouched = $state(false);
     let phoneTouched = $state(false);
+    let panTouched = $state(false);
     const emailError = $derived(emailTouched ? emailRequiredError : null);
     const phoneError = $derived(
         phoneTouched || isIdentified ? phoneRequiredError : null,
     );
+
+    // PAN is optional (only shown above the 80G threshold); when provided it
+    // must be a valid 10-char PAN. Case/separator noise is normalized first
+    // so a lowercase or spaced PAN is not wrongly rejected.
+    const panValidity = $derived(validatePan(donorPan));
+    const panError = $derived(panTouched ? panErrorMessage(panValidity) : null);
 
     let submitting = $state(false);
     let errorMessage = $state<string | null>(null);
@@ -173,6 +186,15 @@
             }
         }
 
+        if (showEightyGFields) {
+            panTouched = true;
+            if (!panValidity.ok) {
+                errorMessage =
+                    panErrorMessage(panValidity) ?? 'Please enter a valid PAN.';
+                return;
+            }
+        }
+
         const amountMinor = rupeesToMinor(amountRupees);
         // RazorpayAdapter enforces ₹1..₹1 crore per adapter's
         // minimumAmount()/maximumAmount() — match on the client too.
@@ -209,7 +231,7 @@
                 phone: (phoneValidity.ok && phoneValidity.e164
                     ? phoneValidity.e164
                     : (donorPhone ? toE164(countryByCode(donorPhoneCountry), donorPhone) : null)),
-                pan: showEightyGFields ? donorPan || null : null,
+                pan: showEightyGFields ? normalizePan(donorPan) || null : null,
                 address: isAnonymous
                     ? null
                     : (donorAddressLine1 || donorCity || donorPincode
@@ -577,16 +599,39 @@
                                                 <Input
                                                     id="pan"
                                                     type="text"
+                                                    inputmode="text"
+                                                    autocomplete="off"
                                                     maxlength={10}
-                                                    pattern="[A-Z]{5}[0-9]{4}[A-Z]"
-                                                    bind:value={donorPan}
+                                                    value={donorPan}
+                                                    oninput={(e) => {
+                                                        donorPan =
+                                                            normalizePan(
+                                                                (
+                                                                    e.currentTarget as HTMLInputElement
+                                                                ).value,
+                                                            );
+                                                    }}
+                                                    onblur={() => {
+                                                        panTouched = true;
+                                                    }}
+                                                    aria-invalid={panError
+                                                        ? 'true'
+                                                        : 'false'}
                                                     placeholder="AAAAA9999A"
                                                 />
-                                                <p
-                                                    class="text-xs text-muted-foreground"
-                                                >
-                                                    Format: AAAAA9999A
-                                                </p>
+                                                {#if panError}
+                                                    <p
+                                                        class="text-xs text-destructive"
+                                                    >
+                                                        {panError}
+                                                    </p>
+                                                {:else}
+                                                    <p
+                                                        class="text-xs text-muted-foreground"
+                                                    >
+                                                        Format: AAAAA9999A
+                                                    </p>
+                                                {/if}
                                             </div>
                                             <div class="space-y-2">
                                                 <Label for="address-line1"

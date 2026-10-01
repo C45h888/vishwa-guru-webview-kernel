@@ -89,6 +89,78 @@ final class RazorpayCheckoutRequestTest extends TestCase
         $this->assertFalse($validator->fails(), implode(', ', $validator->errors()->all()));
     }
 
+    public function test_lowercase_pan_is_normalized_and_accepted(): void
+    {
+        $validator = $this->validatePrepared([
+            'amount_minor' => 500_000,
+            'currency' => 'INR',
+            'campaign_id' => $this->campaignId(),
+            'donor' => [
+                'name' => 'A Devotee',
+                'email' => 'devotee@example.com',
+                'phone' => '+919876543210',
+                'pan' => 'abcde1234f',
+            ],
+        ]);
+
+        $this->assertFalse($validator->fails(), implode(', ', $validator->errors()->all()));
+        $this->assertSame('ABCDE1234F', $validator->getData()['donor']['pan']);
+    }
+
+    public function test_spaced_pan_is_normalized_and_accepted(): void
+    {
+        $validator = $this->validatePrepared([
+            'amount_minor' => 500_000,
+            'currency' => 'INR',
+            'campaign_id' => $this->campaignId(),
+            'donor' => [
+                'name' => 'A Devotee',
+                'email' => 'devotee@example.com',
+                'phone' => '+919876543210',
+                'pan' => 'AB CDE-1234 F',
+            ],
+        ]);
+
+        $this->assertFalse($validator->fails(), implode(', ', $validator->errors()->all()));
+        $this->assertSame('ABCDE1234F', $validator->getData()['donor']['pan']);
+    }
+
+    public function test_empty_pan_is_normalized_to_null(): void
+    {
+        $validator = $this->validatePrepared([
+            'amount_minor' => 500_000,
+            'currency' => 'INR',
+            'campaign_id' => $this->campaignId(),
+            'donor' => [
+                'name' => 'A Devotee',
+                'email' => 'devotee@example.com',
+                'phone' => '+919876543210',
+                'pan' => '   ',
+            ],
+        ]);
+
+        $this->assertFalse($validator->fails(), implode(', ', $validator->errors()->all()));
+        $this->assertNull($validator->getData()['donor']['pan']);
+    }
+
+    public function test_invalid_pan_is_rejected_after_normalization(): void
+    {
+        $validator = $this->validatePrepared([
+            'amount_minor' => 500_000,
+            'currency' => 'INR',
+            'campaign_id' => $this->campaignId(),
+            'donor' => [
+                'name' => 'A Devotee',
+                'email' => 'devotee@example.com',
+                'phone' => '+919876543210',
+                'pan' => 'ABCDE12345',
+            ],
+        ]);
+
+        $this->assertTrue($validator->fails());
+        $this->assertNotEmpty($validator->errors()->get('donor.pan'));
+    }
+
     /**
      * Validate an input payload against the live FormRequest rules. The
      * request MUST carry the input (merge/replace) before rules() runs,
@@ -102,6 +174,25 @@ final class RazorpayCheckoutRequestTest extends TestCase
     {
         $request = new RazorpayCheckoutRequest();
         $request->replace($data);
+
+        return Validator::make($request->all(), $request->rules());
+    }
+
+    /**
+     * Same as validate(), but runs prepareForValidation() first so the
+     * boundary normalizations (PAN casing/separators) are exercised the
+     * way they are in the real request lifecycle.
+     *
+     * @param  array<string, mixed>  $data
+     */
+    private function validatePrepared(array $data): \Illuminate\Validation\Validator
+    {
+        $request = new RazorpayCheckoutRequest();
+        $request->replace($data);
+
+        $prepare = new \ReflectionMethod($request, 'prepareForValidation');
+        $prepare->setAccessible(true);
+        $prepare->invoke($request);
 
         return Validator::make($request->all(), $request->rules());
     }

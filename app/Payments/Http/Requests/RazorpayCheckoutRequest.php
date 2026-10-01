@@ -35,6 +35,42 @@ final class RazorpayCheckoutRequest extends FormRequest
     }
 
     /**
+     * Normalize the donor PAN before validation.
+     *
+     * PAN is canonically uppercase (AAAAA9999A) and case-sensitive at the
+     * storage/domain layer. Donors routinely type it lowercase or paste it
+     * with spaces, which previously tripped the strict regex and surfaced
+     * as "The donor.pan field format is invalid." Normalizing at the
+     * request boundary means any casing/spacing is accepted while the
+     * persisted PAN stays canonical. Empty → null so `nullable` applies.
+     */
+    protected function prepareForValidation(): void
+    {
+        $donor = $this->input('donor');
+        if (! is_array($donor) || ! array_key_exists('pan', $donor)) {
+            return;
+        }
+
+        $donor['pan'] = $this->normalizePan($donor['pan']);
+        $this->merge(['donor' => $donor]);
+    }
+
+    private function normalizePan(mixed $pan): ?string
+    {
+        if ($pan === null) {
+            return null;
+        }
+        if (! is_string($pan)) {
+            // Leave non-string input untouched so the `string` rule reports it.
+            return null;
+        }
+
+        $normalized = strtoupper((string) preg_replace('/[^A-Za-z0-9]/', '', $pan));
+
+        return $normalized === '' ? null : $normalized;
+    }
+
+    /**
      * A donor is "identified" when a name is supplied. Anonymous donors send
      * name as null/absent; the controller maps that to DonorIdentity::anonymous().
      */
