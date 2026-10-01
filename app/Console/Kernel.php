@@ -33,6 +33,14 @@ class Kernel extends ConsoleKernel
             ->withoutOverlapping()
             ->runInBackground()
             ->appendOutputTo(storage_path('logs/redis-info.log'));
+
+        // Receipt backfill: dispatch generation for any successfully
+        // validated payment that has no receipt (transient job failure,
+        // signal lost during a deploy, etc.). Idempotent.
+        $schedule->command('receipts:reconcile')
+            ->everyFiveMinutes()
+            ->withoutOverlapping()
+            ->runInBackground();
     }
 
     /**

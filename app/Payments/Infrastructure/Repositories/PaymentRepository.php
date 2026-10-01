@@ -354,4 +354,34 @@ final class PaymentRepository implements PaymentRepositoryContract
 
         return Payment::fromRow($result->value()[0]);
     }
+
+    /**
+     * @return array<int, Payment>
+     */
+    public function findSuccessfulWithoutReceipt(int $limit = 200): array
+    {
+        // Successful statuses mirror TransactionStatus::isSuccessful().
+        // LIMIT is inlined (sanitized int) because Postgres treats a bound
+        // LIMIT parameter as text and rejects it.
+        $safeLimit = max(1, $limit);
+
+        $result = $this->adapter->query(
+            "SELECT p.* FROM payments p
+             LEFT JOIN receipts r ON r.payment_id = p.id
+             WHERE p.status IN ('captured', 'settling', 'settled')
+               AND p.deleted_at IS NULL
+               AND r.id IS NULL
+             ORDER BY p.created_at ASC
+             LIMIT {$safeLimit}",
+        );
+
+        if ($result->isFailure()) {
+            return [];
+        }
+
+        return array_map(
+            static fn (array $row): Payment => Payment::fromRow($row),
+            $result->value(),
+        );
+    }
 }

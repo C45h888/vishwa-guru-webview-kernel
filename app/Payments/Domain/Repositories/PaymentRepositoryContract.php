@@ -88,4 +88,12 @@ interface PaymentRepositoryContract
      * SELECT ... FOR UPDATE row lock by gateway order id. MUST be inside a transaction.
      */
     public function lockByGatewayOrderIdForUpdate(string $gatewayOrderId): ?Payment;
+
+    /**
+     * Payments in a successful status (captured/settling/settled) that have
+     * no receipt row yet. Used by the receipts:reconcile backfill command.
+     *
+     * @return array<int, Payment>
+     */
+    public function findSuccessfulWithoutReceipt(int $limit = 200): array;
 }

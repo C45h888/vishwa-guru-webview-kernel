@@ -10,6 +10,7 @@ use App\Payments\Domain\Entities\Donor;
 use App\Payments\Domain\Entities\FailureState;
 use App\Payments\Domain\Entities\Payment;
 use App\Payments\Domain\Entities\Receipt;
+use App\Payments\Domain\Events\PaymentValidated;
 use App\Payments\Domain\Repositories\AuditEventRepositoryContract;
 use App\Payments\Domain\Repositories\DonationRepositoryContract;
 use App\Payments\Domain\Repositories\DonorRepositoryContract;
@@ -53,8 +54,11 @@ use App\Payments\Services\FailureStateService;
 use App\Payments\Services\PaymentOrchestrator;
 use App\Payments\Services\PaymentProviderSelector;
 use App\Payments\Services\PaymentService;
+use App\Payments\Console\Commands\ReconcileReceiptsCommand;
+use App\Payments\Jobs\GenerateReceiptJob;
 use App\Payments\Services\PaymentVerificationService;
 use App\Payments\Services\ReceiptGeneration\StubReceiptGenerator;
+use App\Payments\Services\ReceiptIssuanceCoordinator;
 use App\Payments\Services\ReceiptService;
 use App\Payments\Services\TransactionCoordinator;
 use App\Persistence\Contracts\PersistenceAdapterContract;
@@ -251,6 +255,7 @@ final class PaymentsServiceProvider extends ServiceProvider
         $app->singleton(PaymentService::class);
         $app->singleton(PaymentOrchestrator::class);
         $app->singleton(ReceiptService::class);
+        $app->singleton(ReceiptIssuanceCoordinator::class);
         $app->singleton(FailureStateService::class);
         $app->singleton(TransactionCoordinator::class);
 
@@ -283,6 +288,21 @@ final class PaymentsServiceProvider extends ServiceProvider
         $registry->register('webhook_event',   WebhookEventRepository::class);
         $registry->register('audit_event',     AuditEventRepository::class);
         $registry->register('file_asset',      FileAssetRepository::class);
+
+        // ════════════════════════════════════════════════════════════════
+        // Receipt generation binding: PaymentValidated → coordinator.
+        // The coordinator dispatches GenerateReceiptJob onto the dedicated
+        // `receipts` queue. This makes receipt generation a consequence of
+        // payment validation, not of a specific HTTP capture path.
+        // ════════════════════════════════════════════════════════════════
+        $this->app->make('events')->listen(
+            PaymentValidated::class,
+            ReceiptIssuanceCoordinator::class,
+        );
+
+        if ($this->app->runningInConsole()) {
+            $this->commands([ReconcileReceiptsCommand::class]);
+        }
     }
 
     /**
@@ -335,6 +355,9 @@ final class PaymentsServiceProvider extends ServiceProvider
             PaymentOrchestrator::class,
             PaymentVerificationService::class,
             ReceiptService::class,
+            ReceiptIssuanceCoordinator::class,
+            GenerateReceiptJob::class,
+            ReconcileReceiptsCommand::class,
             FailureStateService::class,
             TransactionCoordinator::class,
             // Registry contract (we depend on it in boot())

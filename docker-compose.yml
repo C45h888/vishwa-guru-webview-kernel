@@ -151,6 +151,50 @@ services:
       sh -c "composer install --no-interaction --prefer-dist &&
              php artisan queue:work redis --sleep=3 --tries=3 --timeout=60"
 
+  # ── Receipts worker (dedicated) ──────────────────────────────────────
+  # Owns receipt generation: consumes ONLY the `receipts` queue.
+  # Receipt work is isolated from the default worker so a receipt backlog
+  # can never starve other jobs (and vice versa). Receipt generation is a
+  # financial artifact, so the worker timeout is generous.
+  receipts-worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: temple-trust-receipts-worker
+    restart: unless-stopped
+    working_dir: /app
+    env_file:
+      - .env
+    volumes:
+      - .:/app
+    depends_on:
+      redis:
+        condition: service_healthy
+    command: >
+      sh -c "composer install --no-interaction --prefer-dist &&
+             php artisan queue:work redis --queue=receipts --sleep=3 --tries=3 --timeout=120"
+
+  # ── Scheduler (schedule:work) ────────────────────────────────────────
+  # Runs Laravel's scheduler loop: Redis diagnostics + receipts:reconcile
+  # (the backfill safety net for missed receipt generation).
+  scheduler:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: temple-trust-scheduler
+    restart: unless-stopped
+    working_dir: /app
+    env_file:
+      - .env
+    volumes:
+      - .:/app
+    depends_on:
+      redis:
+        condition: service_healthy
+    command: >
+      sh -c "composer install --no-interaction --prefer-dist &&
+             php artisan schedule:work"
+
 volumes:
   redis-data:
   postgres-data:

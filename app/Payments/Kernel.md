@@ -46,6 +46,17 @@ identity making the payment (Phase 4 `Auth`).
 Plus internal contracts under `App\Payments\Domain\Repositories\` and
 `App\Payments\Infrastructure\Adapters\`.
 
+**Receipt generation binding.** Receipt creation is a consequence of
+payment validation, not of a specific capture path. On a successful
+transition (verify callback, reconcile, or webhook), the orchestrator
+dispatches the domain event
+`App\Payments\Domain\Events\PaymentValidated` after the capture commits.
+`App\Payments\Services\ReceiptIssuanceCoordinator` listens, and dispatches
+`App\Payments\Jobs\GenerateReceiptJob` onto the dedicated `receipts`
+queue (owned by the `receipts-worker` container). `receipts:reconcile`
+(scheduled by the `scheduler` container) backfills any miss. Delivery at
+launch is the success-page PDF download; email is a later pass.
+
 ## Providers
 
 `App\Payments\Providers\PaymentsServiceProvider` — pinned position: Shared

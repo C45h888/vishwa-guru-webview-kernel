@@ -7,6 +7,7 @@ namespace App\Payments\Services;
 use App\Payments\Contracts\PaymentGatewayContract;
 use App\Payments\Contracts\PaymentReconciliationContract;
 use App\Payments\Domain\DTOs\VerificationContextDTO;
+use App\Payments\Domain\Events\PaymentValidated;
 use App\Payments\Domain\Entities\Donation;
 use App\Payments\Domain\Entities\Donor;
 use App\Payments\Domain\Entities\Payment;
@@ -65,7 +66,6 @@ use App\Shared\ValueObjects\Identifier;
 class PaymentOrchestrator
 {
     public function __construct(
-        private readonly ReceiptService $receiptService,
         private readonly FailureStateService $failureStateService,
         private readonly PaymentProviderSelector $selector,
         private readonly PaymentVerificationService $verification,
@@ -369,42 +369,17 @@ class PaymentOrchestrator
             return Result::success($transitioned);
         }
 
-        // Receipt issuance is intentionally outside the verification
-        // transaction so a receipt failure does not roll back the
-        // verified payment. The receipt service escalates a
-        // FailureState on its own failure path.
-        $receiptResult = $this->receiptService->issue(
-            new Identifier($transitioned->id()->ulid()),
-        );
-
-        if ($receiptResult->isFailure()) {
-            // The receipt failure path is non-fatal; the payment
-            // itself is verified. We surface a warning Result but
-            // still return the Payment as the success payload.
-            $this->auditLog->append(
-                eventType: 'payment.receipt.deferred',
-                entityType: Payment::ENTITY_TYPE,
-                entityId: $transitioned->id()->ulid(),
-                previousState: $transitioned->status()->value,
-                newState: $transitioned->status()->value,
-                context: [
-                    'receipt_error' => $receiptResult->error(),
-                ],
-                occurredAt: $this->clock->now(),
-            );
-        } else {
-            // Receipt issued cleanly. Fire-and-forget the donor email
-            // onto the receipts queue. The job is idempotent on
-            // receipt:{id}:email and tries=1 — an SMTP outage surfaces
-            // to ops rather than silently retrying, and re-dispatch
-            // from operator UI doesn't double-send within the TTL.
-            $issued = $receiptResult->value();
-            if ($issued instanceof \App\Payments\Domain\Entities\Receipt) {
-                \App\Jobs\ReceiptEmailJob::dispatch(
-                    new Identifier($issued->id()->ulid()),
-                );
-            }
-        }
+        // Receipt generation is bound to payment validation: dispatch the
+        // domain signal AFTER the verified-payment transaction has
+        // committed. ReceiptIssuanceCoordinator fans it out to the
+        // dedicated `receipts` queue, so the receipt is produced by a
+        // dedicated worker rather than inline in this HTTP path.
+        event(new PaymentValidated(
+            paymentUlid: $transitioned->id()->ulid(),
+            gatewayOrderId: $gatewayOrderId,
+            status: $transitioned->status(),
+            occurredAt: $this->clock->now(),
+        ));
 
         return Result::success($transitioned);
     }
@@ -608,50 +583,23 @@ class PaymentOrchestrator
 
         $committed = $commit->value();
 
-        if ($committed === TransactionStatus::CAPTURED) {
-            $this->issueReceiptBestEffort($gatewayOrderId);
+        // Receipt generation is bound to payment validation: dispatch the
+        // domain signal AFTER the capture transaction has committed.
+        // ReceiptIssuanceCoordinator fans it out to the dedicated
+        // `receipts` queue. No inline best-effort issuance here.
+        if ($committed->isSuccessful()) {
+            $payment = $this->payments->findByGatewayOrderId($gatewayOrderId);
+            if ($payment !== null) {
+                event(new PaymentValidated(
+                    paymentUlid: $payment->id()->ulid(),
+                    gatewayOrderId: $gatewayOrderId,
+                    status: $committed,
+                    occurredAt: $this->clock->now(),
+                ));
+            }
         }
 
         return Result::success($committed);
-    }
-
-    /**
-     * Issue the receipt for a captured payment, best-effort.
-     *
-     * A failure is audited but never fails the caller: the money has
-     * already moved, so receipt delivery is deferred rather than lost.
-     */
-    private function issueReceiptBestEffort(string $gatewayOrderId): void
-    {
-        $payment = $this->payments->findByGatewayOrderId($gatewayOrderId);
-        if ($payment === null) {
-            return;
-        }
-
-        $receiptResult = $this->receiptService->issue(
-            new Identifier($payment->id()->ulid()),
-        );
-
-        if ($receiptResult->isFailure()) {
-            $this->auditLog->append(
-                eventType: 'payment.receipt.deferred',
-                entityType: Payment::ENTITY_TYPE,
-                entityId: $payment->id()->ulid(),
-                previousState: TransactionStatus::CAPTURED->value,
-                newState: TransactionStatus::CAPTURED->value,
-                context: ['receipt_error' => $receiptResult->error()],
-                occurredAt: $this->clock->now(),
-            );
-
-            return;
-        }
-
-        $receipt = $receiptResult->value();
-        if ($receipt instanceof \App\Payments\Domain\Entities\Receipt) {
-            \App\Jobs\ReceiptEmailJob::dispatch(
-                new Identifier($receipt->id()->ulid()),
-            );
-        }
     }
 
     /**

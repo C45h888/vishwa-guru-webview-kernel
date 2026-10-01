@@ -25,7 +25,6 @@ use App\Payments\Services\FailureStateService;
 use App\Payments\Services\PaymentOrchestrator;
 use App\Payments\Services\PaymentProviderSelector;
 use App\Payments\Services\PaymentVerificationService;
-use App\Payments\Services\ReceiptService;
 use App\Payments\Services\TransactionCoordinator;
 use App\Persistence\Contracts\PersistenceAdapterContract;
 use App\Persistence\ValueObjects\EntityId;
@@ -248,7 +247,6 @@ final class PaymentOrchestratorTest extends TestCase
         );
 
         return new PaymentOrchestrator(
-            receiptService: $this->createMock(ReceiptService::class),
             failureStateService: $this->createMock(FailureStateService::class),
             selector: $selector ?? $this->makeSelectorWithGateway($gateway),
             verification: $this->createMock(PaymentVerificationService::class),
