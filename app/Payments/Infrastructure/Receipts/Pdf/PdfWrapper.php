@@ -41,4 +41,11 @@ interface PdfWrapper
      * @return int  bytes; 0 if file does not exist
      */
     public function size(string $disk, string $path): int;
+
+    /**
+     * Read the raw bytes of a file at the given disk+path.
+     *
+     * @return string|null  bytes; null if the file does not exist
+     */
+    public function read(string $disk, string $path): ?string;
 }

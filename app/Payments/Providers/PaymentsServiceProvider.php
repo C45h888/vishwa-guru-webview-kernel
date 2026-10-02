@@ -223,6 +223,15 @@ final class PaymentsServiceProvider extends ServiceProvider
         $app->singleton(\App\Payments\Infrastructure\Receipts\ReceiptStorage::class);
         $app->singleton(\App\Payments\Receipts\ReceiptSubstrate::class);
 
+        // Mail package seam — the standalone mail package (app/Mail/) pulls
+        // data and books delivery through these ports; the adapters live on
+        // the Payments side and delegate to the predefined receipt workers
+        // (ReceiptSubstrate DataWorker/TypesWorker) and ReceiptService.
+        $app->bind(\App\Mail\Contracts\ReceiptSourceContract::class,
+            \App\Payments\Mail\ReceiptSourceAdapter::class);
+        $app->bind(\App\Mail\Contracts\DeliveryBookkeepingContract::class,
+            \App\Payments\Mail\DeliveryBookkeepingAdapter::class);
+
         // ReceiptGeneration → ReceiptSubstrate is the production path.
         // The substrate decides whether to actually run based on
         // config('receipts.enabled'); the env var switch is RECEIPTS_ENABLED.

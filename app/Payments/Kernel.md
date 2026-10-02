@@ -84,6 +84,27 @@ Supersedes (absorbed, files deleted): `ReceiptRenderer`,
 `StubReceiptGenerator`, and the loose `resources/views/receipts/*.blade.php`
 templates. The design file system is `resources/views/receipts/design/`.
 
+**Mail seam (standalone `Mail` kernel).** Outbound mail lives in its own
+package (`app/Mail/`, see `app/Mail/Kernel.md`) headed by the mother file
+`MailSubstrate` (Hostinger Mail API boundaries + canonical email
+composition). The seam between this kernel and the mail package is
+`App\Mail\Coordinator\MailDispatchCoordinator` — the only entry Payments
+may call. Payments supplies the two port adapters:
+
+- `App\Payments\Mail\ReceiptSourceAdapter` — implements
+  `App\Mail\Contracts\ReceiptSourceContract`; delegates to the PREDEFINED
+  receipt workers (DataWorker/TypesWorker via
+  `ReceiptSubstrate::documentFor`) + the stored hash-true PDF artifact
+  (re-render fallback), so the TypesWorker stays the single type producer.
+- `App\Payments\Mail\DeliveryBookkeepingAdapter` — implements
+  `App\Mail\Contracts\DeliveryBookkeepingContract`; drives
+  `ReceiptService::markDelivered()` (ReceiptStateMachine) + the audit
+  trail per outcome.
+
+Delivery trigger: `GenerateReceiptJob` dispatches the queue carrier
+`App\Jobs\ReceiptEmailJob` AFTER issuance commits (delivery never blocks
+or undoes a verified receipt); the job delegates entirely to the seam.
+
 ## Providers
 
 `App\Payments\Providers\PaymentsServiceProvider` — pinned position: Shared

@@ -10,6 +10,7 @@
         "ext-pdo": "*",
         "ext-redis": "*",
         "barryvdh/laravel-dompdf": "^2.0",
+        "hostinger/mail-api-php-sdk": "^1.18",
         "inertiajs/inertia-laravel": "^2.0",
         "laravel/framework": "^10.0",
         "laravel/tinker": "^2.9",

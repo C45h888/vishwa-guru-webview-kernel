@@ -58,5 +58,16 @@ final class GenerateReceiptJob extends AbstractQueuedJob
                 'GenerateReceiptJob: receipt issuance failed — '.$result->error(),
             );
         }
+
+        // Delivery is a CONSEQUENCE of issuance, never a part of it: the
+        // queue carrier for the mail flow is dispatched only after the
+        // receipt committed, so a mail failure can never undo or block a
+        // verified receipt. The mail seam handles idempotency itself.
+        $receipt = $result->value();
+        if ($receipt instanceof \App\Payments\Domain\Entities\Receipt) {
+            \App\Jobs\ReceiptEmailJob::dispatch(
+                new Identifier($receipt->id()->ulid()),
+            );
+        }
     }
 }

@@ -86,6 +86,14 @@ final class InMemoryPdfWrapper implements PdfWrapper
     }
 
     /**
+     * Read raw bytes from the in-memory store.
+     */
+    public function read(string $disk, string $path): ?string
+    {
+        return $this->getStored($disk, $path);
+    }
+
+    /**
      * Pre-load bytes to be returned by the next N render/write calls.
      *
      * @param  list<string>  $bytesList

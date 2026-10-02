@@ -46,6 +46,17 @@ class DomPdfWrapper implements PdfWrapper
     }
 
     /**
+     * Read raw bytes from a Laravel storage disk.
+     */
+    public function read(string $disk, string $path): ?string
+    {
+        /** @var FilesystemAdapter $store */
+        $store = Storage::disk($disk);
+
+        return $store->exists($path) ? (string) $store->get($path) : null;
+    }
+
+    /**
      * Write bytes to a Laravel storage disk.
      *
      * @param  string  $content  Raw bytes

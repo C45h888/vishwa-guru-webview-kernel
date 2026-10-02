@@ -38,10 +38,11 @@
     34 => 'App\\Redis\\Providers\\RedisServiceProvider',
     35 => 'App\\Queue\\Providers\\QueueServiceProvider',
     36 => 'App\\Payments\\Providers\\PaymentsServiceProvider',
-    37 => 'App\\Cms\\Providers\\CmsServiceProvider',
-    38 => 'App\\Campaigns\\Providers\\CampaignsServiceProvider',
-    39 => 'App\\Gallery\\Providers\\GalleryServiceProvider',
-    40 => 'App\\Events\\Providers\\EventsServiceProvider',
+    37 => 'App\\Mail\\Providers\\MailServiceProvider',
+    38 => 'App\\Cms\\Providers\\CmsServiceProvider',
+    39 => 'App\\Campaigns\\Providers\\CampaignsServiceProvider',
+    40 => 'App\\Gallery\\Providers\\GalleryServiceProvider',
+    41 => 'App\\Events\\Providers\\EventsServiceProvider',
   ),
   'eager' => 
   array (
@@ -68,10 +69,11 @@
     20 => 'App\\Redis\\Providers\\RedisServiceProvider',
     21 => 'App\\Queue\\Providers\\QueueServiceProvider',
     22 => 'App\\Payments\\Providers\\PaymentsServiceProvider',
-    23 => 'App\\Cms\\Providers\\CmsServiceProvider',
-    24 => 'App\\Campaigns\\Providers\\CampaignsServiceProvider',
-    25 => 'App\\Gallery\\Providers\\GalleryServiceProvider',
-    26 => 'App\\Events\\Providers\\EventsServiceProvider',
+    23 => 'App\\Mail\\Providers\\MailServiceProvider',
+    24 => 'App\\Cms\\Providers\\CmsServiceProvider',
+    25 => 'App\\Campaigns\\Providers\\CampaignsServiceProvider',
+    26 => 'App\\Gallery\\Providers\\GalleryServiceProvider',
+    27 => 'App\\Events\\Providers\\EventsServiceProvider',
   ),
   'deferred' => 
   array (

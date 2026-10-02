@@ -49,6 +49,7 @@ return [
     App\Redis\Providers\RedisServiceProvider::class,
     App\Queue\Providers\QueueServiceProvider::class,
     App\Payments\Providers\PaymentsServiceProvider::class,
+    App\Mail\Providers\MailServiceProvider::class,
     App\Cms\Providers\CmsServiceProvider::class,
     App\Campaigns\Providers\CampaignsServiceProvider::class,
     App\Gallery\Providers\GalleryServiceProvider::class,
