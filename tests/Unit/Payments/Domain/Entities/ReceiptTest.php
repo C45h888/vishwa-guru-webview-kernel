@@ -22,7 +22,7 @@ class ReceiptTest extends TestCase
             donationId: EntityId::generate('donation'),
             paymentId: EntityId::generate('payment'),
             campaignId: EntityId::generate('campaign'),
-            receiptNumber: 'TR-2026-ABCD1234',
+            receiptNumber: 'TR-2026-000042-A7c3ZpQ9',
             campaignTitleSnapshot: 'Test Campaign',
             donorName: 'Test Donor',
             amountMinor: 100000,
@@ -37,7 +37,7 @@ class ReceiptTest extends TestCase
     {
         $r = $this->make();
         $this->assertSame(ReceiptDeliveryState::PENDING->value, $r->deliveryStatus());
-        $this->assertSame('TR-2026-ABCD1234', $r->receiptNumber());
+        $this->assertSame('TR-2026-000042-A7c3ZpQ9', $r->receiptNumber());
         $this->assertSame('email', $r->deliveryChannel());
         $this->assertTrue($r->isPending());
         $this->assertFalse($r->isDelivered());
@@ -66,7 +66,7 @@ class ReceiptTest extends TestCase
             donationId: EntityId::generate('donation'),
             paymentId: EntityId::generate('payment'),
             campaignId: EntityId::generate('campaign'),
-            receiptNumber: 'TR-2026-ABCD1234',
+            receiptNumber: 'TR-2026-000042-A7c3ZpQ9',
             campaignTitleSnapshot: 'Test Campaign',
             donorName: 'Test Donor',
             amountMinor: 100000,
@@ -88,7 +88,7 @@ class ReceiptTest extends TestCase
     {
         $r = $this->make();
         $this->expectException(PaymentStateTransitionException::class);
-        $r->withChanges(['receipt_number' => 'TR-2026-OTHER']);
+        $r->withChanges(['receipt_number' => 'TR-2026-000043-B7c3ZpQ9']);
     }
 
     public function testWithChangesRejectsDeliveryStatus(): void

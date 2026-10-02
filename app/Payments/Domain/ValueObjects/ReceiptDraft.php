@@ -29,6 +29,7 @@ final class ReceiptDraft
         private readonly ?string $deliveryChannel = null,
         private readonly ?string $deliveryAddress = null,
         private readonly ?string $amountInWords = null,
+        private readonly ?\App\Payments\Domain\DTOs\ReceiptDocument $document = null,
     ) {
         if (empty($receiptNumber)) {
             throw new InvalidArgumentException('ReceiptDraft receiptNumber cannot be empty');
@@ -103,6 +104,17 @@ final class ReceiptDraft
         return $this->amountInWords;
     }
 
+    /**
+     * The typed snapshot this receipt was rendered from — null only for
+     * legacy drafts built before the substrate. When present,
+     * ReceiptService::issue() persists the row from these exact fields,
+     * so document and runtime state cannot disagree.
+     */
+    public function document(): ?\App\Payments\Domain\DTOs\ReceiptDocument
+    {
+        return $this->document;
+    }
+
     public function isDelivered(): bool
     {
         return $this->deliveryChannel !== null && $this->deliveryAddress !== null;
@@ -139,6 +151,7 @@ final class ReceiptDraft
         ?string $amountInWords,
         ?string $deliveryChannel = null,
         ?string $deliveryAddress = null,
+        ?\App\Payments\Domain\DTOs\ReceiptDocument $document = null,
     ): self {
         return new self(
             transactionId: $transactionId,
@@ -150,6 +163,7 @@ final class ReceiptDraft
             deliveryChannel: $deliveryChannel,
             deliveryAddress: $deliveryAddress,
             amountInWords: $amountInWords,
+            document: $document,
         );
     }
 }

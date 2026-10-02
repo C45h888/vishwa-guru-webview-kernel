@@ -49,12 +49,13 @@ final class ReceiptProjectionTest extends TestCase
         $receipt = $this->buildReceipt();
         $projection = $receipt->toReadProjection();
 
-        // The full entity `toArray()` includes internal fields; the
-        // projection must NOT. Catches any future field added to `toArray()`
-        // that someone forgets to exclude from the projection.
+        // The full entity `toArray()` includes internal fields; every key
+        // the projection emits must be on the documented public list.
+        // Catches any future field added to `toArray()` that someone
+        // forgets to exclude from the projection.
         $fullKeys = array_keys($receipt->toArray());
 
-        foreach ($fullKeys as $key) {
+        foreach (array_keys($projection) as $key) {
             self::assertContains(
                 $key,
                 [
@@ -75,6 +76,11 @@ final class ReceiptProjectionTest extends TestCase
                 'Either narrow the projection or document why the field is public.',
             );
         }
+
+        // The access token is the URL credential — it must never appear
+        // in a wire payload.
+        self::assertNotContains('access_token', array_keys($projection));
+        self::assertNotEmpty($fullKeys);
     }
 
     public function test_to_read_projection_currency_emits_iso_code_string(): void

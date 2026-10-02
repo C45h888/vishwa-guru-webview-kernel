@@ -96,6 +96,7 @@ final class Receipt implements EntityContract
         private readonly ?DateTimeImmutable $deliveredAt,
         private readonly string $deliveryStatus,
         private readonly ?string $deliveryChannel,
+        private readonly ?string $deliveryAddress,
         private readonly array $deliveryMetadata,
         private readonly ?EntityId $receiptFileId,
         private readonly ?EntityId $certificate80gFileId,
@@ -194,6 +195,7 @@ final class Receipt implements EntityContract
             deliveredAt: null,
             deliveryStatus: self::DELIVERY_PENDING,
             deliveryChannel: $deliveryChannel,
+            deliveryAddress: $deliveryAddress,
             deliveryMetadata: $deliveryMetadata,
             receiptFileId: $receiptFileId,
             certificate80gFileId: $certificate80gFileId,
@@ -277,6 +279,9 @@ final class Receipt implements EntityContract
             deliveredAt: self::parseDate($row['delivered_at'] ?? null),
             deliveryStatus: $deliveryStatus,
             deliveryChannel: isset($row['delivery_channel']) ? (string) $row['delivery_channel'] : null,
+            deliveryAddress: isset($row['delivery_address']) && $row['delivery_address'] !== null
+                ? (string) $row['delivery_address']
+                : null,
             deliveryMetadata: self::decodeJson($row['delivery_metadata'] ?? '{}'),
             receiptFileId: isset($row['receipt_file_id']) && $row['receipt_file_id'] !== null
                 ? EntityId::fromString($row['receipt_file_id'])
@@ -334,6 +339,7 @@ final class Receipt implements EntityContract
             'delivered_at' => $this->deliveredAt?->format(DATE_ATOM),
             'delivery_status' => $this->deliveryStatus,
             'delivery_channel' => $this->deliveryChannel,
+            'delivery_address' => $this->deliveryAddress,
             'delivery_metadata' => json_encode($this->deliveryMetadata, JSON_THROW_ON_ERROR),
             'metadata' => json_encode($this->metadata, JSON_THROW_ON_ERROR),
             'created_at' => $this->createdAt->format(DATE_ATOM),
@@ -369,7 +375,6 @@ final class Receipt implements EntityContract
             'content_hash'             => $this->contentHash,
             'state'                    => $this->state,
             'generated_at'             => $this->generatedAt->format(DATE_ATOM),
-            'access_token'             => $this->accessToken,
         ];
     }
 

@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\Route;
 | Two GET routes for the canonical receipt surface:
 |
 |   GET /receipts/{number}            — full Inertia receipt page (cms/Receipt)
-|   GET /receipts/{number}/download   — PDF stream via ReceiptPdfGenerator
+|   GET /receipts/{number}/download   — PDF stream via the receipt substrate (ReceiptSubstrate)
 |
 | Both constrained to the canonical receipt format
 | TR-{FY_year}-{06_digit_sequence} via ReceiptNumberAllocator::PATTERN.

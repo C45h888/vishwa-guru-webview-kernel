@@ -57,7 +57,6 @@ use App\Payments\Services\PaymentService;
 use App\Payments\Console\Commands\ReconcileReceiptsCommand;
 use App\Payments\Jobs\GenerateReceiptJob;
 use App\Payments\Services\PaymentVerificationService;
-use App\Payments\Services\ReceiptGeneration\StubReceiptGenerator;
 use App\Payments\Services\ReceiptIssuanceCoordinator;
 use App\Payments\Services\ReceiptService;
 use App\Payments\Services\TransactionCoordinator;
@@ -209,7 +208,7 @@ final class PaymentsServiceProvider extends ServiceProvider
         }
 
         // ════════════════════════════════════════════════════════════════
-        // AXIS B — Receipt pipeline (ReceiptRenderer is the production impl)
+        // AXIS B — Receipt pipeline (ReceiptSubstrate is the production impl)
         // ════════════════════════════════════════════════════════════════
         // PdfWrapper: bind DomPdfWrapper as the production implementation.
         // DomPdfWrapper self-resolves the barryvdh\DomPDF facade inside render()
@@ -218,16 +217,17 @@ final class PaymentsServiceProvider extends ServiceProvider
             \App\Payments\Infrastructure\Receipts\Pdf\DomPdfWrapper::class);
 
         // Receipt subsystem — singletons (stateless beyond constructor injection).
+        // Generation logic lives in the ReceiptSubstrate (app/Payments/Receipts/),
+        // which runs the data → types → design worker pipeline.
         $app->singleton(\App\Payments\Infrastructure\Receipts\ReceiptNumberAllocator::class);
-        $app->singleton(\App\Payments\Infrastructure\Receipts\Receipt80GValidator::class);
-        $app->singleton(\App\Payments\Infrastructure\Receipts\ReceiptPdfGenerator::class);
         $app->singleton(\App\Payments\Infrastructure\Receipts\ReceiptStorage::class);
+        $app->singleton(\App\Payments\Receipts\ReceiptSubstrate::class);
 
-        // ReceiptGeneration → ReceiptRenderer is the production path.
-        // ReceiptRenderer decides whether to actually run based on
+        // ReceiptGeneration → ReceiptSubstrate is the production path.
+        // The substrate decides whether to actually run based on
         // config('receipts.enabled'); the env var switch is RECEIPTS_ENABLED.
         $app->bind(ReceiptGenerationContract::class,
-            \App\Payments\Infrastructure\Receipts\ReceiptRenderer::class);
+            \App\Payments\Receipts\ReceiptSubstrate::class);
 
         // PaymentProviderSelector requires iterable<PaymentGatewayContract>
         // which Laravel can't auto-inject → manual closure

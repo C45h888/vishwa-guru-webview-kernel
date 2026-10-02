@@ -43,7 +43,7 @@ identity making the payment (Phase 4 `Auth`).
 | PaymentProviderContract | `App\Payments\Contracts\PaymentProviderContract` | Provider factory |
 | PaymentVerificationContract | `App\Payments\Contracts\PaymentVerificationContract` | Webhook signature verification |
 | PaymentReconciliationContract | `App\Payments\Contracts\PaymentReconciliationContract` | Optional gateway capability: authoritative order-status reconciliation (Razorpay adapter implements; consumed by PaymentOrchestrator::reconcileOrder) |
-| ReceiptGenerationContract | `App\Payments\Contracts\ReceiptGenerationContract` | Receipt rendering |
+| ReceiptGenerationContract | `App\Payments\Contracts\ReceiptGenerationContract` | Implemented by `App\Payments\Receipts\ReceiptSubstrate` (the receipt substrate package: data → types → design workers) |
 | CampaignQueryContract | `App\Payments\Contracts\CampaignQueryContract` | **Shape A bridge** — owned by Payments; Cms consumes |
 | FailureStateContract | `App\Payments\Contracts\FailureStateContract` | Payments consumes Runtime's failure surface |
 
@@ -60,6 +60,29 @@ dispatches the domain event
 queue (owned by the `receipts-worker` container). `receipts:reconcile`
 (scheduled by the `scheduler` container) backfills any miss. Delivery at
 launch is the success-page PDF download; email is a later pass.
+
+**Receipt substrate package** (`app/Payments/Receipts/`) — the canonical
+receipt generation surface. `ReceiptSubstrate` is the parent that holds
+all generation logic (assembly, the `verify80G()` certification function,
+money/date/FY/address formatting, donee identity); semantic work is
+split across worker boundaries that import their logic from the parent:
+
+- `Workers/DataWorker.php` — pure transport of data (payment, donation,
+  campaign, existing receipt rows). No logic.
+- `Workers/TypesWorker.php` — builds the typed `ReceiptDocument`
+  (`App\Payments\Domain\DTOs\ReceiptDocument`) — the single snapshot the
+  designed PDF renders AND the persisted receipts row is issued from.
+- `Workers/DesignWorker.php` — compiles
+  `resources/views/receipts/design/` (template + tokenised style layer)
+  into PDF bytes. Design lives only there; generation never sees CSS.
+- `Workers/WorkerCadence.php` — per-worker timeout budget + bounded
+  retries (config `receipts.workers`), so stage failures fall into the
+  queue-level retry ladder instead of hanging it.
+
+Supersedes (absorbed, files deleted): `ReceiptRenderer`,
+`ReceiptFormatter`, `Receipt80GValidator`, `ReceiptPdfGenerator`,
+`StubReceiptGenerator`, and the loose `resources/views/receipts/*.blade.php`
+templates. The design file system is `resources/views/receipts/design/`.
 
 ## Providers
 
@@ -124,7 +147,12 @@ The largest test surface in the codebase:
 - `tests/Unit/Payments/Domain/` — entities, value objects, DTOs, enums,
   state machines (per-FSM subdirectory).
 - `tests/Unit/Payments/Infrastructure/` — adapter round-trips
-  (`Adapters/`) + receipt rendering (`Receipts/`).
+  (`Adapters/`) + receipt support primitives (`Receipts/`: allocator,
+  storage, amount-in-words, Form 10BD).
+- `tests/Unit/Payments/Receipts/` — receipt substrate package
+  (`ReceiptSubstrateTest`: generation logic + verify80G + formatting +
+  document-is-persisted-snapshot guarantee; `Workers/WorkerCadenceTest`,
+  `Workers/DesignWorkerTest`).
 - `tests/Unit/Payments/Services/` — payment + idempotency service tests.
 - `tests/Unit/Payments/Jobs/` — async job handler tests.
 - `tests/Feature/Payments/Infrastructure/` — end-to-end payment flow

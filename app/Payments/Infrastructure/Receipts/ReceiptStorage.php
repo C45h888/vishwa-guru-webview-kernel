@@ -16,7 +16,7 @@ use RuntimeException;
 /**
  * Persists rendered PDF bytes to storage and creates a FileAssetRecord.
  *
- * Returns Result<FileAssetRecord> so the caller (ReceiptRenderer) can
+ * Returns Result<FileAssetRecord> so the caller (ReceiptSubstrate) can
  * compose the ReceiptDraft without depending on Storage::disk directly.
  */
 class ReceiptStorage
@@ -131,7 +131,7 @@ class ReceiptStorage
     {
         // Canonical typed ID: file_asset_<26-char ULID>. The previous
         // 'fa_<ymd><hex>' shape violated the EntityId invariant and made
-        // the downstream `new Identifier(...)` in ReceiptRenderer::draft
+        // the downstream `new Identifier(...)` in ReceiptSubstrate::draft
         // throw (the stripped value was not a valid 26-char ULID).
         return EntityId::generate('file_asset')->value();
     }

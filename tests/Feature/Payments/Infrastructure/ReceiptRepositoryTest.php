@@ -33,7 +33,7 @@ final class ReceiptRepositoryTest extends InfrastructureTestCase
             donationId: $donationId,
             paymentId: $paymentId,
             campaignId: $campaignId,
-            receiptNumber: 'TR-2026-A001',
+            receiptNumber: 'TR-2026-000001-AAAA1111',
             campaignTitleSnapshot: 'Test Campaign',
             donorName: 'Test Donor',
             amountMinor: 50000,
@@ -47,7 +47,7 @@ final class ReceiptRepositoryTest extends InfrastructureTestCase
         $found = $this->repo->findById($receipt->id());
         $this->assertNotNull($found);
         $this->assertSame($receipt->id()->value(), $found->id()->value());
-        $this->assertSame('TR-2026-A001', $found->receiptNumber());
+        $this->assertSame('TR-2026-000001-AAAA1111', $found->receiptNumber());
         $this->assertSame('Test Donor', $found->donorName());
         $this->assertSame(50000, $found->amountMinor());
         $this->assertSame(Currency::INR->value, $found->currency()->value);
@@ -63,7 +63,7 @@ final class ReceiptRepositoryTest extends InfrastructureTestCase
             donationId: $donationId,
             paymentId: $paymentId,
             campaignId: $campaignId,
-            receiptNumber: 'TR-2026-B002',
+            receiptNumber: 'TR-2026-000002-BBBB2222',
             campaignTitleSnapshot: 'Campaign B',
             donorName: 'Donor B',
             amountMinor: 75000,
@@ -73,7 +73,7 @@ final class ReceiptRepositoryTest extends InfrastructureTestCase
 
         $this->repo->save($receipt);
 
-        $found = $this->repo->findByReceiptNumber('TR-2026-B002');
+        $found = $this->repo->findByReceiptNumber('TR-2026-000002-BBBB2222');
         $this->assertNotNull($found);
         $this->assertSame($receipt->id()->value(), $found->id()->value());
     }
@@ -94,7 +94,7 @@ final class ReceiptRepositoryTest extends InfrastructureTestCase
             donationId: $donationId,
             paymentId: $paymentId,
             campaignId: $campaignId,
-            receiptNumber: 'TR-2026-C003',
+            receiptNumber: 'TR-2026-000003-CCCC3333',
             campaignTitleSnapshot: 'Campaign C',
             donorName: 'Donor C',
             amountMinor: 30000,
@@ -126,7 +126,7 @@ final class ReceiptRepositoryTest extends InfrastructureTestCase
             donationId: $donationId,
             paymentId: $paymentId,
             campaignId: $campaignId,
-            receiptNumber: 'TR-2026-D004',
+            receiptNumber: 'TR-2026-000004-DDDD4444',
             campaignTitleSnapshot: 'Campaign D',
             donorName: 'Donor D',
             amountMinor: 20000,
@@ -158,7 +158,7 @@ final class ReceiptRepositoryTest extends InfrastructureTestCase
             donationId: $donationId,
             paymentId: $paymentId,
             campaignId: $campaignId,
-            receiptNumber: 'TR-2026-E005',
+            receiptNumber: 'TR-2026-000005-EEEE5555',
             campaignTitleSnapshot: 'Campaign E',
             donorName: 'Donor E',
             amountMinor: 40000,

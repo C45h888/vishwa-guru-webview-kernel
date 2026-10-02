@@ -13,6 +13,33 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Worker cadence (receipt substrate pipeline)
+    |--------------------------------------------------------------------------
+    |
+    | Each worker stage under App\Payments\Receipts\Workers runs with a
+    | wall-clock budget (timeout_ms) and bounded attempts (max_attempts),
+    | with backoff_ms between attempts. A stage that exhausts its cadence
+    | fails fast into the queue-level retry ladder (GenerateReceiptJob).
+    |
+    */
+    'workers' => [
+        'data' => [
+            'timeout_ms' => (int) env('RECEIPT_WORKER_DATA_TIMEOUT_MS', 2000),
+            'max_attempts' => (int) env('RECEIPT_WORKER_DATA_ATTEMPTS', 2),
+        ],
+        'types' => [
+            'timeout_ms' => (int) env('RECEIPT_WORKER_TYPES_TIMEOUT_MS', 1000),
+            'max_attempts' => (int) env('RECEIPT_WORKER_TYPES_ATTEMPTS', 2),
+        ],
+        'design' => [
+            'timeout_ms' => (int) env('RECEIPT_WORKER_DESIGN_TIMEOUT_MS', 8000),
+            'max_attempts' => (int) env('RECEIPT_WORKER_DESIGN_ATTEMPTS', 3),
+        ],
+        'backoff_ms' => [100, 400],
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Storage
     |--------------------------------------------------------------------------
     */

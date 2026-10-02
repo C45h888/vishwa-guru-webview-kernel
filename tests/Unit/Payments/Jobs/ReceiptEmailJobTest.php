@@ -86,8 +86,12 @@ final class ReceiptEmailJobTest extends TestCase
 
         Mail::assertSentCount(1);
         Mail::assertSent(ReceiptMailable::class, function ($message) use ($receipt, $accessToken): bool {
-            $to = $message->to;
-            $hasRecipient = isset($to['priya@example.in']);
+            // Mailable::$to is a list of ['name' => .., 'address' => ..] rows.
+            $recipients = array_map(
+                static fn ($t): string => is_array($t) ? (string) ($t['address'] ?? '') : (string) $t,
+                (array) ($message->to ?? []),
+            );
+            $hasRecipient = in_array('priya@example.in', $recipients, true);
             $envelope = $message->envelope();
             $subject = $envelope->subject ?? '';
             $body = $message->render() ?? '';
@@ -97,9 +101,11 @@ final class ReceiptEmailJobTest extends TestCase
                 && str_contains($body, 'Priya Sharma')
                 && str_contains($body, $receipt->receiptNumber())
                 && str_contains($body, 't='.urlencode($accessToken))
-                // PII guard — never embed PAN/address in the email body.
-                && ! str_contains($body, 'PAN')
-                && ! str_contains($body, 'address');
+                // PII guard — never embed the donor's PAN value or postal
+                // address in the email body (the word "PAN" in guidance
+                // copy is fine; the donor's VALUES are not).
+                && ! str_contains($body, 'ABCPY1234D')
+                && ! str_contains($body, '12 Test Lane');
         });
     }
 
@@ -144,6 +150,8 @@ final class ReceiptEmailJobTest extends TestCase
             currency: Currency::INR,
             contentHash: str_repeat('a', 64),
             donorEmail: $donorEmail,
+            donorPan: 'ABCPY1234D',
+            donorAddress: ['line1' => '12 Test Lane', 'city' => 'Mumbai', 'state' => 'MH', 'pincode' => '400001'],
         );
     }
 }

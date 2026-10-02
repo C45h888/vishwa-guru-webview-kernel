@@ -15,8 +15,11 @@ class DomPdfWrapperTest extends TestCase
 {
     public function testWrapperImplementsPdfWrapper(): void
     {
+        // is_subclass_of() (not is_a()) is the correct class-string check
+        // against an interface — is_a() with allow_string only matches
+        // class ancestry, not interface implementation.
         $this->assertTrue(
-            is_a(DomPdfWrapper::class, \App\Payments\Infrastructure\Receipts\Pdf\PdfWrapper::class),
+            is_subclass_of(DomPdfWrapper::class, \App\Payments\Infrastructure\Receipts\Pdf\PdfWrapper::class),
         );
     }
 

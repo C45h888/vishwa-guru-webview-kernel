@@ -4,7 +4,6 @@
     import { Card, CardContent, CardHeader, CardTitle } from '$shared/ui/card';
     import { Badge } from '$shared/ui/badge';
     import { Button } from '$shared/ui/button';
-    import Money from '$shared/components/Money.svelte';
     import { Download, ExternalLink, Shield, FileText } from 'lucide-svelte';
     import type { AppPageProps, ReceiptProps } from '$shared/lib/inertia';
     import SeoHead from '$shared/components/SeoHead.svelte';
@@ -16,7 +15,14 @@
     }: AppPageProps<{ receipt: ReceiptProps }> = $props();
 
     const shortHash = $derived(receipt.content_hash.slice(0, 12));
-    const pdfUrl = $derived(`/receipts/${receipt.receipt_number}/download`);
+    // The access token travels as ?t= on this page's own URL — forward it
+    // to the gated PDF routes so the download/open links actually work.
+    const tokenQuery = $derived(
+        typeof window !== 'undefined' ? window.location.search : '',
+    );
+    const pdfUrl = $derived(
+        `/receipts/${receipt.receipt_number}/download${tokenQuery}`,
+    );
 
     let downloading = $state(false);
     let downloadError = $state<string | null>(null);
@@ -79,6 +85,7 @@
                         {:else if receipt.is_tax_deductible}
                             <Badge variant="secondary">Tax deductible</Badge>
                         {/if}
+                        <Badge variant="outline">{receipt.fy_label}</Badge>
                     </div>
                     <p class="font-mono text-sm text-muted-foreground">
                         {receipt.receipt_number}
@@ -109,16 +116,46 @@
                         <div class="flex items-baseline justify-between">
                             <span class="text-muted-foreground">Amount</span>
                             <span class="font-serif text-lg font-semibold">
-                                <Money
-                                    amountMinor={receipt.amount_minor}
-                                    currencyCode={receipt.currency_code}
-                                />
+                                {receipt.amount_display}
                             </span>
                         </div>
                         {#if receipt.amount_in_words}
                             <p class="text-xs italic text-muted-foreground">
                                 {receipt.amount_in_words}
                             </p>
+                        {/if}
+                        <div class="flex items-baseline justify-between">
+                            <span class="text-muted-foreground"
+                                >Payment reference</span
+                            >
+                            <span class="font-mono text-xs">
+                                {receipt.payment_reference}
+                            </span>
+                        </div>
+                        {#if receipt.payment_date_display}
+                            <div class="flex items-baseline justify-between">
+                                <span class="text-muted-foreground"
+                                    >Payment date</span
+                                >
+                                <span>{receipt.payment_date_display}</span>
+                            </div>
+                        {/if}
+                        {#if receipt.tax_80g_eligible}
+                            <div class="flex items-baseline justify-between">
+                                <span class="text-muted-foreground"
+                                    >80G certificate</span
+                                >
+                                <span class="text-right font-mono text-xs">
+                                    {receipt.tax_80g_certificate_number ??
+                                        'Registered'}<br />
+                                    {#if receipt.tax_80g_registration_number}
+                                        <span class="text-muted-foreground">
+                                            Reg. No.
+                                            {receipt.tax_80g_registration_number}
+                                        </span>
+                                    {/if}
+                                </span>
+                            </div>
                         {/if}
                     </CardContent>
                 </Card>
@@ -138,7 +175,7 @@
                             <span class="text-muted-foreground"
                                 >Issued at</span
                             >
-                            <span>{receipt.generated_at}</span>
+                            <span>{receipt.issued_date_display}</span>
                         </div>
 
                         <div

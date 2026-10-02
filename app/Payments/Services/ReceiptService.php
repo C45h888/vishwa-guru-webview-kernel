@@ -122,8 +122,14 @@ class ReceiptService
 
         $donation = $this->donations->findById($payment->donationId());
         $campaignId = $donation?->campaignId() ?? EntityId::generate('campaign');
-        $campaignTitleSnapshot = $this->resolveCampaignTitle($donation);
-        $donorName = $donation?->donorNameSnapshot() ?? 'Anonymous';
+
+        // Canonical snapshot: when the substrate produced a typed document,
+        // the persisted row is built from EXACTLY the fields the design
+        // rendered (campaign title, donor snapshots, 80G decision). The
+        // fallback path only serves legacy drafts without a document.
+        $doc = $d->document();
+        $campaignTitleSnapshot = $doc->campaignTitle ?? $this->resolveCampaignTitle($donation);
+        $donorName = $doc->donorName ?? ($donation?->donorNameSnapshot() ?? 'Anonymous');
 
         $receipt = Receipt::issue(
             donationId: $payment->donationId(),
@@ -135,12 +141,13 @@ class ReceiptService
             amountMinor: $payment->amountMinor(),
             currency: $payment->currency(),
             contentHash: $d->contentHash(),
-            donorEmail: $donation?->donorEmailSnapshot(),
-            donorPan: $donation?->donorPanSnapshot(),
+            donorEmail: $doc->donorEmail ?? $donation?->donorEmailSnapshot(),
+            donorPan: $doc->donorPan ?? $donation?->donorPanSnapshot(),
             donorAddress: $donation?->donorAddressSnapshot(),
             amountInWords: $d->amountInWords(),
-            isTaxDeductible: true,
-            tax80gEligible: false,
+            isTaxDeductible: $doc->isTaxDeductible ?? true,
+            tax80gEligible: $doc->tax80gEligible ?? false,
+            tax80gCertificateNumber: $doc?->tax80gCertificateNumber,
             // ReceiptDraft::fileAssetId() carries a bare ULID; the Receipt
             // entity stores the canonical typed EntityId, so re-attach the
             // `file_asset_` prefix here.

@@ -114,9 +114,25 @@ final class ReceiptEmailJob extends AbstractQueuedJob
         // Use a Mailable class so Mail::fake() and Mail::assertSent() can
         // track the dispatch in tests, and so future work can attach a
         // HTML view + PDF attachment by extending build() in one place.
+        // Canonical typed document — the email quotes the exact display
+        // values the rendered receipt document carries. Formatting lives
+        // in the receipt substrate; this job stays a transport. If the
+        // document service is unavailable (missing payment/donation rows),
+        // fall back to the domain Money formatter so delivery still works.
+        try {
+            $amountFormatted = app(\App\Payments\Receipts\ReceiptSubstrate::class)
+                ->documentFor($receipt)
+                ->amountDisplay;
+        } catch (\Throwable) {
+            $amountFormatted = (new \App\Payments\Domain\ValueObjects\Money(
+                $receipt->amountMinor(),
+                $receipt->currency(),
+            ))->format();
+        }
+
         Mail::to($email)->send(new ReceiptMailable(
             donorName: $receipt->donorName(),
-            amountFormatted: $this->formatAmount($receipt),
+            amountFormatted: $amountFormatted,
             receiptNumber: $receipt->receiptNumber(),
             campaignTitle: $receipt->campaignTitleSnapshot(),
             signedUrl: $signedUrl,
@@ -126,42 +142,6 @@ final class ReceiptEmailJob extends AbstractQueuedJob
             'receipt_id' => $this->receiptId->value(),
             'recipient' => $this->redactEmail($email),
         ]);
-    }
-
-    /**
-     * Plain-text body — the success page is the visual receipt; the
-     * email is a hand-off that points donors to it. We intentionally
-     * do NOT embed donor PII (PAN, address) in the email body — A3's
-     * signed-URL pattern keeps that gated.
-     */
-    private function renderBody(
-        string $donorName,
-        string $amountFormatted,
-        string $receiptNumber,
-        string $campaignTitle,
-        string $signedUrl,
-    ): string {
-        $appName = (string) config('app.name', 'Temple Trust');
-
-        return implode("\n\n", [
-            "Namaste {$donorName},",
-            "Thank you for your donation of {$amountFormatted} towards \"{$campaignTitle}\".",
-            "Your official receipt ({$receiptNumber}) is ready. Click the link below to view and download it as a PDF:",
-            $signedUrl,
-            "This link is unique to your receipt — please do not share it. The 80G certificate (if applicable) is available on the receipt page once your PAN is on file.",
-            "With gratitude,\n{$appName}",
-        ]);
-    }
-
-    private function formatAmount(Receipt $receipt): string
-    {
-        $currency = $receipt->currency();
-        $factor = $currency->minorUnitFactor();
-        $major = $currency->exponent() === 0
-            ? (string) $receipt->amountMinor()
-            : number_format($receipt->amountMinor() / $factor, $currency->exponent(), '.', ',');
-
-        return "{$currency->symbol()} {$major}";
     }
 
     /**

@@ -263,24 +263,35 @@ export interface ReceiptDraftProps {
 
 /**
  * Canonical public-read shape for the receipt detail page. Mirrors
- * `App\Payments\Domain\Entities\Receipt::toReadProjection()` exactly
- * (12 keys, snake_case). Supersedes the local `ReceiptSummaryProps`
- * interface that used to live in resources/js/domains/payments/Receipt.svelte.
+ * `App\Payments\Domain\DTOs\ReceiptDocument::toReadProjection()` exactly
+ * (snake_case). The document is produced by the receipt substrate's
+ * types worker — one typed snapshot shared with the rendered PDF and the
+ * receipt email, so these fields can never drift from the document.
  *
- * Keep this in sync with Receipt::toReadProjection() — both ends are
- * hand-maintained; the codegen at `php artisan inertia:dump-types` covers
- * DTOs/ValueObjects, not Entities, so this projection is not auto-generated.
+ * Keep this in sync with ReceiptDocument::toReadProjection() — both ends
+ * are hand-maintained; the codegen at `php artisan inertia:dump-types`
+ * covers DTOs/ValueObjects, not this projection.
+ *
+ * Access gating: the page (and its PDF links) require `?t=<access_token>`
+ * in the URL. The token is intentionally NOT echoed in this payload.
  */
 export interface ReceiptProps {
     receipt_number: string;
+    fy_label: string;
     campaign_title_snapshot: string;
     donor_name: string;
     donor_email: string | null;
     amount_minor: number;
     currency_code: string;
+    amount_display: string;
     amount_in_words: string | null;
+    payment_reference: string;
+    payment_date_display: string;
+    issued_date_display: string;
     is_tax_deductible: boolean;
     tax_80g_eligible: boolean;
+    tax_80g_certificate_number: string | null;
+    tax_80g_registration_number: string | null;
     content_hash: string;
     state: string;
     generated_at: string;
