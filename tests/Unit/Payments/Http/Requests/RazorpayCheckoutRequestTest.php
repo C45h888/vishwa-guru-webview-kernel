@@ -6,6 +6,7 @@ namespace Tests\Unit\Payments\Http\Requests;
 
 use App\Payments\Http\Requests\RazorpayCheckoutRequest;
 use App\Persistence\ValueObjects\EntityId;
+use App\Shared\Policies\LegalPolicyVersions;
 use Illuminate\Support\Facades\Validator;
 use Tests\TestCase;
 
@@ -13,14 +14,11 @@ final class RazorpayCheckoutRequestTest extends TestCase
 {
     public function test_canonical_typed_campaign_id_is_accepted(): void
     {
-        $validator = Validator::make(
-            [
-                'amount_minor' => 100,
-                'currency' => 'INR',
-                'campaign_id' => EntityId::generate('campaign')->value(),
-            ],
-            (new RazorpayCheckoutRequest)->rules(),
-        );
+        $validator = $this->validate([
+            'amount_minor' => 100,
+            'currency' => 'INR',
+            'campaign_id' => EntityId::generate('campaign')->value(),
+        ]);
 
         $this->assertFalse($validator->fails(), implode(', ', $validator->errors()->all()));
     }
@@ -28,17 +26,85 @@ final class RazorpayCheckoutRequestTest extends TestCase
     public function test_bare_campaign_ulid_is_rejected(): void
     {
         $campaignId = EntityId::generate('campaign');
-        $validator = Validator::make(
-            [
-                'amount_minor' => 100,
-                'currency' => 'INR',
-                'campaign_id' => $campaignId->ulid(),
-            ],
-            (new RazorpayCheckoutRequest)->rules(),
-        );
+        $validator = $this->validate([
+            'amount_minor' => 100,
+            'currency' => 'INR',
+            'campaign_id' => $campaignId->ulid(),
+        ]);
 
         $this->assertTrue($validator->fails());
         $this->assertNotEmpty($validator->errors()->get('campaign_id'));
+    }
+
+    public function test_terms_and_privacy_acknowledgement_are_required(): void
+    {
+        $validator = $this->validate([
+            'amount_minor' => 100,
+            'currency' => 'INR',
+            'campaign_id' => $this->campaignId(),
+            'donor' => ['name' => null, 'email' => null, 'phone' => null],
+        ], includePolicies: false);
+
+        $this->assertTrue($validator->fails());
+        $this->assertNotEmpty($validator->errors()->get('policy_acceptance.terms_accepted'));
+        $this->assertNotEmpty($validator->errors()->get('policy_acceptance.privacy_notice_acknowledged'));
+    }
+
+    public function test_stale_policy_version_is_rejected(): void
+    {
+        $validator = $this->validate([
+            'amount_minor' => 100,
+            'currency' => 'INR',
+            'campaign_id' => $this->campaignId(),
+            'policy_acceptance' => [
+                'terms_version' => '0.9',
+                'terms_accepted' => true,
+                'privacy_notice_version' => LegalPolicyVersions::PRIVACY,
+                'privacy_notice_acknowledged' => true,
+            ],
+        ]);
+
+        $this->assertTrue($validator->fails());
+        $this->assertNotEmpty($validator->errors()->get('policy_acceptance.terms_version'));
+    }
+
+    public function test_marketing_opt_in_requires_identified_email_but_is_not_required(): void
+    {
+        $anonymous = $this->validate([
+            'amount_minor' => 100,
+            'currency' => 'INR',
+            'campaign_id' => $this->campaignId(),
+            'marketing_email_opt_in' => true,
+        ]);
+
+        $this->assertTrue($anonymous->fails());
+        $this->assertNotEmpty($anonymous->errors()->get('marketing_email_opt_in'));
+
+        $identifiedWithoutMarketing = $this->validate([
+            'amount_minor' => 100,
+            'currency' => 'INR',
+            'campaign_id' => $this->campaignId(),
+            'donor' => [
+                'name' => 'A Devotee',
+                'email' => 'devotee@example.com',
+                'phone' => '+919876543210',
+            ],
+            'marketing_email_opt_in' => false,
+        ]);
+        $this->assertFalse($identifiedWithoutMarketing->fails(), implode(', ', $identifiedWithoutMarketing->errors()->all()));
+
+        $identifiedWithMarketing = $this->validate([
+            'amount_minor' => 100,
+            'currency' => 'INR',
+            'campaign_id' => $this->campaignId(),
+            'donor' => [
+                'name' => 'A Devotee',
+                'email' => 'devotee@example.com',
+                'phone' => '+919876543210',
+            ],
+            'marketing_email_opt_in' => true,
+        ]);
+        $this->assertFalse($identifiedWithMarketing->fails(), implode(', ', $identifiedWithMarketing->errors()->all()));
     }
 
     public function test_anonymous_donation_without_email_or_phone_is_accepted(): void
@@ -170,12 +236,18 @@ final class RazorpayCheckoutRequestTest extends TestCase
      *
      * @param  array<string, mixed>  $data
      */
-    private function validate(array $data): \Illuminate\Validation\Validator
+    private function validate(array $data, bool $includePolicies = true): \Illuminate\Validation\Validator
     {
         $request = new RazorpayCheckoutRequest();
+        if ($includePolicies) {
+            $data = $this->withPolicyAcceptance($data);
+        }
         $request->replace($data);
 
-        return Validator::make($request->all(), $request->rules());
+        $validator = Validator::make($request->all(), $request->rules());
+        $request->withValidator($validator);
+
+        return $validator;
     }
 
     /**
@@ -188,13 +260,30 @@ final class RazorpayCheckoutRequestTest extends TestCase
     private function validatePrepared(array $data): \Illuminate\Validation\Validator
     {
         $request = new RazorpayCheckoutRequest();
-        $request->replace($data);
+        $request->replace($this->withPolicyAcceptance($data));
 
         $prepare = new \ReflectionMethod($request, 'prepareForValidation');
         $prepare->setAccessible(true);
         $prepare->invoke($request);
 
-        return Validator::make($request->all(), $request->rules());
+        $validator = Validator::make($request->all(), $request->rules());
+        $request->withValidator($validator);
+
+        return $validator;
+    }
+
+    /** @param array<string, mixed> $data @return array<string, mixed> */
+    private function withPolicyAcceptance(array $data): array
+    {
+        $data['policy_acceptance'] ??= [
+            'terms_version' => LegalPolicyVersions::TERMS,
+            'terms_accepted' => true,
+            'privacy_notice_version' => LegalPolicyVersions::PRIVACY,
+            'privacy_notice_acknowledged' => true,
+        ];
+        $data['marketing_email_opt_in'] ??= false;
+
+        return $data;
     }
 
     private function campaignId(): string

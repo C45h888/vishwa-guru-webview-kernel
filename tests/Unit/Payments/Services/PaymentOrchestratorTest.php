@@ -96,7 +96,7 @@ final class PaymentOrchestratorTest extends TestCase
     public function testRefundReturnsFailureWhenPaymentNotFound(): void
     {
         $payments = $this->createMock(PaymentRepositoryContract::class);
-        $payments->method('findById')->willReturn(null);
+        $payments->method('lockByIdForUpdate')->willReturn(null);
 
         $orchestrator = $this->makeOrchestrator(payments: $payments);
 
@@ -156,7 +156,7 @@ final class PaymentOrchestratorTest extends TestCase
             captured: 5000,
             refunded: 0,
         );
-        $payment = $this->forceStatus($payment, TransactionStatus::SETTLED);
+        $payment = $this->forceStatus($payment, TransactionStatus::REFUNDED);
 
         $payments = $this->createMock(PaymentRepositoryContract::class);
         $payments->method('findById')->willReturn($payment);
@@ -172,7 +172,7 @@ final class PaymentOrchestratorTest extends TestCase
         $result = $orchestrator->getStatus(new Identifier($payment->id()->ulid()));
 
         $this->assertTrue($result->isOk());
-        $this->assertSame(TransactionStatus::SETTLED, $result->value());
+        $this->assertSame(TransactionStatus::REFUNDED, $result->value());
     }
 
     public function testHandleWebhookReturnsFailureWhenMetadataIsInsufficient(): void

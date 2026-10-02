@@ -38,6 +38,8 @@
         preselectRecurring,
         preselectAnonymous,
         eightyGThresholdMinor,
+        termsPolicyVersion,
+        privacyPolicyVersion,
         appName,
         appUrl,
     }: AppPageProps<{
@@ -49,6 +51,8 @@
         preselectAnonymous: boolean;
         /** 80G certificate threshold in minor units (paise), from backend config. */
         eightyGThresholdMinor: number;
+        termsPolicyVersion: string;
+        privacyPolicyVersion: string;
     }> = $props();
 
     let selectedCampaign = $state<string>(
@@ -121,6 +125,39 @@
 
     let submitting = $state(false);
     let errorMessage = $state<string | null>(null);
+    let consentDialogElement: HTMLDialogElement | undefined = $state();
+    let showConsentDialog = $state(false);
+    let termsAccepted = $state(false);
+    let privacyNoticeAcknowledged = $state(false);
+    let marketingEmailOptIn = $state(false);
+    let pendingAmountMinor = $state<number | null>(null);
+
+    $effect(() => {
+        if (!consentDialogElement) return;
+        if (showConsentDialog && !consentDialogElement.open) {
+            consentDialogElement.showModal();
+        } else if (!showConsentDialog && consentDialogElement.open) {
+            consentDialogElement.close();
+        }
+    });
+
+    function handleConsentDialogClose(): void {
+        showConsentDialog = false;
+        if (!submitting) {
+            termsAccepted = false;
+            privacyNoticeAcknowledged = false;
+            marketingEmailOptIn = false;
+            pendingAmountMinor = null;
+        }
+    }
+
+    function cancelConsent(): void {
+        showConsentDialog = false;
+        termsAccepted = false;
+        privacyNoticeAcknowledged = false;
+        marketingEmailOptIn = false;
+        pendingAmountMinor = null;
+    }
 
     const selectedCampaignData = $derived(
         campaigns.find((c) => c.slug === String(selectedCampaign)) ?? null,
@@ -159,6 +196,7 @@
      */
     async function submit(event: SubmitEvent): Promise<void> {
         event.preventDefault();
+        if (submitting) return;
 
         if (!selectedCampaign) {
             errorMessage = 'Please select a campaign.';
@@ -215,7 +253,25 @@
             return;
         }
 
+        errorMessage = null;
+        pendingAmountMinor = amountMinor;
+        termsAccepted = false;
+        privacyNoticeAcknowledged = false;
+        marketingEmailOptIn = false;
+        showConsentDialog = true;
+    }
+
+    async function confirmConsentAndCheckout(): Promise<void> {
+        if (submitting || pendingAmountMinor === null || !termsAccepted || !privacyNoticeAcknowledged) return;
+
+        const amountMinor = pendingAmountMinor;
+        const marketingOptIn = !isAnonymous && marketingEmailOptIn;
         submitting = true;
+        showConsentDialog = false;
+        termsAccepted = false;
+        privacyNoticeAcknowledged = false;
+        marketingEmailOptIn = false;
+        pendingAmountMinor = null;
         errorMessage = null;
 
         const idempotencyKey =
@@ -255,6 +311,13 @@
             donation_message: donorMessage || null,
             purpose: purpose || null,
             idempotency_key: idempotencyKey,
+            policy_acceptance: {
+                terms_version: termsPolicyVersion,
+                terms_accepted: true,
+                privacy_notice_version: privacyPolicyVersion,
+                privacy_notice_acknowledged: true,
+            },
+            marketing_email_opt_in: marketingOptIn,
         };
 
         try {
@@ -760,4 +823,93 @@
             </div>
         </div>
     </section>
+
+    <dialog
+        bind:this={consentDialogElement}
+        onclose={handleConsentDialogClose}
+        aria-labelledby="checkout-consent-title"
+        aria-describedby="checkout-consent-description"
+        class="m-auto max-h-[90vh] w-[calc(100%-2rem)] max-w-xl overflow-y-auto rounded-xl border border-border bg-card p-0 text-card-foreground shadow-2xl backdrop:bg-black/60"
+    >
+        <div class="space-y-6 p-6 sm:p-8">
+            <header class="space-y-2">
+                <p class="text-xs font-semibold uppercase tracking-[0.2em] text-primary">
+                    Before payment
+                </p>
+                <h2 id="checkout-consent-title" class="font-serif text-2xl font-semibold">
+                    Review your choices
+                </h2>
+                <p id="checkout-consent-description" class="text-sm leading-relaxed text-muted-foreground">
+                    We need your agreement to the donation terms and confirmation that you have read the privacy notice before opening the payment gateway. Campaign email is a separate, optional choice.
+                </p>
+            </header>
+
+            <fieldset class="space-y-4">
+                <legend class="sr-only">Required policy acknowledgements</legend>
+                <label for="terms-accepted" class="flex items-start gap-3 text-sm leading-relaxed">
+                    <input
+                        id="terms-accepted"
+                        type="checkbox"
+                        bind:checked={termsAccepted}
+                        aria-required="true"
+                        class="mt-1 h-4 w-4 shrink-0 rounded border-input text-primary focus-visible:ring-ring"
+                    />
+                    <span>
+                        I agree to the
+                        <a href="/terms" target="_blank" rel="noreferrer" class="font-medium text-primary underline underline-offset-4">
+                            Terms &amp; Conditions (v{termsPolicyVersion})
+                        </a>.
+                    </span>
+                </label>
+
+                <label for="privacy-acknowledged" class="flex items-start gap-3 text-sm leading-relaxed">
+                    <input
+                        id="privacy-acknowledged"
+                        type="checkbox"
+                        bind:checked={privacyNoticeAcknowledged}
+                        aria-required="true"
+                        class="mt-1 h-4 w-4 shrink-0 rounded border-input text-primary focus-visible:ring-ring"
+                    />
+                    <span>
+                        I have read the
+                        <a href="/privacy" target="_blank" rel="noreferrer" class="font-medium text-primary underline underline-offset-4">
+                            Privacy Policy (v{privacyPolicyVersion})
+                        </a>.
+                    </span>
+                </label>
+
+                {#if !isAnonymous}
+                    <label for="marketing-email-opt-in" class="flex items-start gap-3 border-t border-border pt-4 text-sm leading-relaxed">
+                        <input
+                            id="marketing-email-opt-in"
+                            type="checkbox"
+                            bind:checked={marketingEmailOptIn}
+                            class="mt-1 h-4 w-4 shrink-0 rounded border-input text-primary focus-visible:ring-ring"
+                        />
+                        <span>
+                            Optional: email me about future campaigns and the Trust’s activities. I can unsubscribe at any time. This is not required to donate.
+                        </span>
+                    </label>
+                {/if}
+            </fieldset>
+
+            <div class="flex flex-col-reverse justify-end gap-3 sm:flex-row">
+                <button
+                    type="button"
+                    onclick={cancelConsent}
+                    class="inline-flex h-10 items-center justify-center rounded-md border border-input bg-background px-4 text-sm font-medium transition hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                >
+                    Not now
+                </button>
+                <button
+                    type="button"
+                    onclick={() => void confirmConsentAndCheckout()}
+                    disabled={!termsAccepted || !privacyNoticeAcknowledged || submitting}
+                    class="inline-flex h-10 items-center justify-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground transition hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50"
+                >
+                    {submitting ? 'Opening payment…' : 'Agree & continue to payment'}
+                </button>
+            </div>
+        </div>
+    </dialog>
 </PublicLayout>

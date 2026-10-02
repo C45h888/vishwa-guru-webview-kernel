@@ -30,7 +30,8 @@
     // Legal and terms content use the existing public CMS routes.
     const legal = [
         { href: '/legal', label: 'Legal' },
-        { href: '/terms', label: 'Terms & Privacy' },
+        { href: '/privacy', label: 'Privacy Policy' },
+        { href: '/terms', label: 'Terms & Conditions' },
     ];
 </script>
 

@@ -36,21 +36,6 @@ final class MapperRoundTripTest extends TestCase
 {
     public function testStaticPageMapperRoundTrip(): void
     {
-        // Skipped: StaticPage::draft() requires PageBody, which requires
-        // the sealed `Block` interface (Block.php). Sealed interfaces
-        // are PHP 8.4+ syntax; the project's running PHP is 8.3 (per
-        // `php -v` in the dev container), so Block.php fails to parse
-        // when autoloaded. The CMS kernel has the same environmental
-        // issue — unskip this test when the runtime is upgraded to
-        // PHP 8.4 (and composer.json's "php" constraint is bumped).
-        //
-        // The other three mapper round-trip tests still validate the
-        // delegator pattern; this one is documented and skipped
-        // rather than deleted so the assertion coverage stays visible.
-        if (PHP_VERSION_ID < 80400) {
-            $this->markTestSkipped('Requires PHP 8.4+ for sealed interface syntax in Block.php');
-        }
-
         $body = new PageBody(
             version: 1,
             blocks: [

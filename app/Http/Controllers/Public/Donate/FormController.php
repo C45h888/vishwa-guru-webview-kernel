@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Public\Donate;
 
 use App\Campaigns\Contracts\CampaignsQueryContract;
+use App\Shared\Policies\LegalPolicyVersions;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -69,6 +70,8 @@ final class FormController
             'preselectRecurring' => $preselectRecurring,
             'preselectAnonymous' => $preselectAnonymous,
             'eightyGThresholdMinor' => $eightyGThresholdMinor,
+            'termsPolicyVersion' => LegalPolicyVersions::TERMS,
+            'privacyPolicyVersion' => LegalPolicyVersions::PRIVACY,
             'appName' => (string) config('app.name', 'Temple Trust'),
             'appUrl' => (string) config('app.url'),
         ]);

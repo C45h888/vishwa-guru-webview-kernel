@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace App\Payments\Http\Requests;
 
+use App\Shared\Policies\LegalPolicyVersions;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Validator;
 
 /**
  * Validates the public Razorpay Standard Checkout initialization request.
@@ -32,6 +34,26 @@ final class RazorpayCheckoutRequest extends FormRequest
     public function authorize(): bool
     {
         return true;
+    }
+
+    /**
+     * Marketing permission is available only for an identified donor with
+     * an email address. It remains optional and does not gate a donation.
+     */
+    public function withValidator(Validator $validator): void
+    {
+        $validator->after(function (Validator $validator): void {
+            if (! $this->boolean('marketing_email_opt_in')) {
+                return;
+            }
+
+            if (! $this->hasIdentifiedDonor() || ! $this->filled('donor.email')) {
+                $validator->errors()->add(
+                    'marketing_email_opt_in',
+                    'Email campaign consent requires an identified donor email address.',
+                );
+            }
+        });
     }
 
     /**
@@ -93,6 +115,19 @@ final class RazorpayCheckoutRequest extends FormRequest
                 'size:35',
                 'regex:/^campaign_[0-9A-HJKMNP-TV-Z]{26}$/',
             ],
+            'policy_acceptance' => [
+                'required',
+                'array:terms_version,terms_accepted,privacy_notice_version,privacy_notice_acknowledged',
+            ],
+            'policy_acceptance.terms_version' => [
+                'required', 'string', Rule::in([LegalPolicyVersions::TERMS]),
+            ],
+            'policy_acceptance.terms_accepted' => ['required', 'accepted'],
+            'policy_acceptance.privacy_notice_version' => [
+                'required', 'string', Rule::in([LegalPolicyVersions::PRIVACY]),
+            ],
+            'policy_acceptance.privacy_notice_acknowledged' => ['required', 'accepted'],
+            'marketing_email_opt_in' => ['required', 'boolean'],
 
             'donor' => ['sometimes', 'array'],
             'donor.name' => ['sometimes', 'nullable', 'string', 'min:1', 'max:120'],
@@ -145,6 +180,10 @@ final class RazorpayCheckoutRequest extends FormRequest
     {
         return [
             'currency.in' => 'Razorpay only supports INR at this time.',
+            'policy_acceptance.terms_accepted.accepted' => 'You must accept the Terms & Conditions before continuing.',
+            'policy_acceptance.privacy_notice_acknowledged.accepted' => 'Please acknowledge the Privacy Policy before continuing.',
+            'policy_acceptance.terms_version.in' => 'The Terms & Conditions changed. Refresh the donation page and review the current version.',
+            'policy_acceptance.privacy_notice_version.in' => 'The Privacy Policy changed. Refresh the donation page and review the current version.',
             'donor.email.required_if' => 'Email is required for identified donations.',
             'donor.phone.required_if' => 'Phone is required for identified donations.',
             'donor.pan.regex' => 'PAN must match the format AAAAA9999A.',

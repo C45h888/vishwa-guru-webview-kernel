@@ -18,8 +18,8 @@ use InvalidArgumentException;
  * The page body is a versioned block list. V1 carries grammar version 1
  * with 5 block types (paragraph, heading, image, cta_button, divider).
  * Adding a new block type requires:
- *   1. Implement the Block sealed interface
- *   2. Update the permits clause in Block.php
+ *   1. Implement the Block interface
+ *   2. Add the type to buildBlock() below
  *   3. Bump $version here
  *   4. Add a BlockRenderer for the new type
  *

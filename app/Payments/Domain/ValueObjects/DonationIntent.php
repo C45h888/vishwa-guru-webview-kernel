@@ -32,6 +32,8 @@ final class DonationIntent
         private readonly ?string $internalNotes = null,
         private readonly ?string $idempotencyKey = null,
         private readonly array $metadata = [],
+        private readonly ?CheckoutPolicyAcceptance $policyAcceptance = null,
+        private readonly ?MarketingEmailConsent $marketingEmailConsent = null,
     ) {
         if ($amountMinor <= 0) {
             throw new InvalidArgumentException(
@@ -41,6 +43,11 @@ final class DonationIntent
         if ($donor->isAnonymous() && ($dedication !== null || $donorMessage !== null)) {
             throw new InvalidArgumentException(
                 'Anonymous donations cannot carry dedication or donor message'
+            );
+        }
+        if ($marketingEmailConsent !== null && ($donor->isAnonymous() || ! $donor->hasEmail())) {
+            throw new InvalidArgumentException(
+                'Marketing email consent requires an identified donor with an email address'
             );
         }
     }
@@ -91,6 +98,16 @@ final class DonationIntent
     public function metadata(): array
     {
         return $this->metadata;
+    }
+
+    public function policyAcceptance(): ?CheckoutPolicyAcceptance
+    {
+        return $this->policyAcceptance;
+    }
+
+    public function marketingEmailConsent(): ?MarketingEmailConsent
+    {
+        return $this->marketingEmailConsent;
     }
 
     public function isAnonymous(): bool
@@ -149,6 +166,8 @@ final class DonationIntent
             'internal_notes' => $this->internalNotes,
             'idempotency_key' => $this->resolveIdempotencyKey(),
             'metadata' => $this->metadata,
+            'policy_acceptance' => $this->policyAcceptance?->toArray(),
+            'marketing_email_consent' => $this->marketingEmailConsent?->toArray(),
         ];
     }
 }

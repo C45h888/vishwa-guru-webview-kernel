@@ -90,7 +90,10 @@ final class DonationRepository implements DonationRepositoryContract
             donor_phone_snapshot, donor_pan_snapshot, donor_address_snapshot,
             amount_minor, currency_code, is_anonymous, dedication,
             donor_message, internal_notes, state, idempotency_key,
-            metadata, submitted_at, payment_initiated_at, payment_verified_at,
+            metadata, terms_version, terms_accepted_at,
+            privacy_notice_version, privacy_notice_acknowledged_at,
+            marketing_email_consent_version, marketing_email_consented_at,
+            submitted_at, payment_initiated_at, payment_verified_at,
             receipt_generated_at, completed_at, failed_at, cancelled_at,
             created_at, updated_at, deleted_at
         ) VALUES (
@@ -98,7 +101,10 @@ final class DonationRepository implements DonationRepositoryContract
             :donor_phone_snapshot, :donor_pan_snapshot, :donor_address_snapshot,
             :amount_minor, :currency_code, :is_anonymous, :dedication,
             :donor_message, :internal_notes, :state, :idempotency_key,
-            :metadata, :submitted_at, :payment_initiated_at, :payment_verified_at,
+            :metadata, :terms_version, :terms_accepted_at,
+            :privacy_notice_version, :privacy_notice_acknowledged_at,
+            :marketing_email_consent_version, :marketing_email_consented_at,
+            :submitted_at, :payment_initiated_at, :payment_verified_at,
             :receipt_generated_at, :completed_at, :failed_at, :cancelled_at,
             :created_at, :updated_at, :deleted_at
         )';
@@ -111,14 +117,13 @@ final class DonationRepository implements DonationRepositoryContract
             'donor_email_snapshot' => $row['donor_email_snapshot'],
             'donor_phone_snapshot' => $row['donor_phone_snapshot'],
             'donor_pan_snapshot' => $row['donor_pan_snapshot'],
-            // Doctrine: preserve NULL for JSONB columns. The previous
-            // `?? []` fallback encoded null → '[]', which violated the
-            // `donations_anonymous_no_pii` CHECK constraint (it requires
-            // NULL, not empty array). When a non-null array is provided
-            // (e.g. {'city': 'Mumbai'}), it must be JSON-encoded as text
-            // so PDO sends a valid JSON literal to the JSONB column.
+            // Anonymous donations must persist NULL to satisfy the
+            // donations_anonymous_no_pii constraint. Identified donations
+            // without an address use an empty JSON object because the SQLite
+            // mirror keeps this snapshot column NOT NULL. A real address is
+            // JSON-encoded so PDO sends a valid JSON literal to JSONB.
             'donor_address_snapshot' => $row['donor_address_snapshot'] === null
-                ? null
+                ? ((bool) $row['is_anonymous'] ? null : '{}')
                 : (is_string($row['donor_address_snapshot'])
                     ? $row['donor_address_snapshot']
                     : json_encode($row['donor_address_snapshot'], JSON_THROW_ON_ERROR)),
@@ -135,6 +140,12 @@ final class DonationRepository implements DonationRepositoryContract
                 : (is_string($row['metadata'])
                     ? $row['metadata']
                     : json_encode($row['metadata'], JSON_THROW_ON_ERROR)),
+            'terms_version' => $row['terms_version'],
+            'terms_accepted_at' => $row['terms_accepted_at'],
+            'privacy_notice_version' => $row['privacy_notice_version'],
+            'privacy_notice_acknowledged_at' => $row['privacy_notice_acknowledged_at'],
+            'marketing_email_consent_version' => $row['marketing_email_consent_version'],
+            'marketing_email_consented_at' => $row['marketing_email_consented_at'],
             'submitted_at' => $row['submitted_at'],
             'payment_initiated_at' => $row['payment_initiated_at'],
             'payment_verified_at' => $row['payment_verified_at'],
@@ -174,6 +185,12 @@ final class DonationRepository implements DonationRepositoryContract
             state = :state,
             idempotency_key = :idempotency_key,
             metadata = :metadata,
+            terms_version = :terms_version,
+            terms_accepted_at = :terms_accepted_at,
+            privacy_notice_version = :privacy_notice_version,
+            privacy_notice_acknowledged_at = :privacy_notice_acknowledged_at,
+            marketing_email_consent_version = :marketing_email_consent_version,
+            marketing_email_consented_at = :marketing_email_consented_at,
             submitted_at = :submitted_at,
             payment_initiated_at = :payment_initiated_at,
             payment_verified_at = :payment_verified_at,
@@ -192,14 +209,13 @@ final class DonationRepository implements DonationRepositoryContract
             'donor_email_snapshot' => $row['donor_email_snapshot'],
             'donor_phone_snapshot' => $row['donor_phone_snapshot'],
             'donor_pan_snapshot' => $row['donor_pan_snapshot'],
-            // Doctrine: preserve NULL for JSONB columns. The previous
-            // `?? []` fallback encoded null → '[]', which violated the
-            // `donations_anonymous_no_pii` CHECK constraint (it requires
-            // NULL, not empty array). When a non-null array is provided
-            // (e.g. {'city': 'Mumbai'}), it must be JSON-encoded as text
-            // so PDO sends a valid JSON literal to the JSONB column.
+            // Anonymous donations must persist NULL to satisfy the
+            // donations_anonymous_no_pii constraint. Identified donations
+            // without an address use an empty JSON object because the SQLite
+            // mirror keeps this snapshot column NOT NULL. A real address is
+            // JSON-encoded so PDO sends a valid JSON literal to JSONB.
             'donor_address_snapshot' => $row['donor_address_snapshot'] === null
-                ? null
+                ? ((bool) $row['is_anonymous'] ? null : '{}')
                 : (is_string($row['donor_address_snapshot'])
                     ? $row['donor_address_snapshot']
                     : json_encode($row['donor_address_snapshot'], JSON_THROW_ON_ERROR)),
@@ -216,6 +232,12 @@ final class DonationRepository implements DonationRepositoryContract
                 : (is_string($row['metadata'])
                     ? $row['metadata']
                     : json_encode($row['metadata'], JSON_THROW_ON_ERROR)),
+            'terms_version' => $row['terms_version'],
+            'terms_accepted_at' => $row['terms_accepted_at'],
+            'privacy_notice_version' => $row['privacy_notice_version'],
+            'privacy_notice_acknowledged_at' => $row['privacy_notice_acknowledged_at'],
+            'marketing_email_consent_version' => $row['marketing_email_consent_version'],
+            'marketing_email_consented_at' => $row['marketing_email_consented_at'],
             'submitted_at' => $row['submitted_at'],
             'payment_initiated_at' => $row['payment_initiated_at'],
             'payment_verified_at' => $row['payment_verified_at'],
@@ -300,8 +322,9 @@ final class DonationRepository implements DonationRepositoryContract
 
     public function lockByIdForUpdate(EntityId $id): ?Donation
     {
+        $lockClause = $this->adapter->driver() === 'pgsql' ? ' FOR UPDATE' : '';
         $result = $this->adapter->query(
-            'SELECT * FROM donations WHERE id = :id AND deleted_at IS NULL FOR UPDATE LIMIT 1',
+            'SELECT * FROM donations WHERE id = :id AND deleted_at IS NULL LIMIT 1'.$lockClause,
             ['id' => $id->value()],
         );
         if ($result->isFailure() || empty($result->value())) {
@@ -313,8 +336,9 @@ final class DonationRepository implements DonationRepositoryContract
 
     public function lockByIdempotencyKeyForUpdate(string $idempotencyKey): ?Donation
     {
+        $lockClause = $this->adapter->driver() === 'pgsql' ? ' FOR UPDATE' : '';
         $result = $this->adapter->query(
-            'SELECT * FROM donations WHERE idempotency_key = :key AND deleted_at IS NULL FOR UPDATE LIMIT 1',
+            'SELECT * FROM donations WHERE idempotency_key = :key AND deleted_at IS NULL LIMIT 1'.$lockClause,
             ['key' => $idempotencyKey],
         );
         if ($result->isFailure() || empty($result->value())) {

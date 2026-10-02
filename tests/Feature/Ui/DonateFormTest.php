@@ -30,6 +30,8 @@ final class DonateFormTest extends InfrastructureTestCase
             ->component('payments/Donate')
             ->has('campaigns', 2)
             ->has('defaultCurrency')
+            ->where('termsPolicyVersion', '1.0')
+            ->where('privacyPolicyVersion', '1.0')
             ->etc()
         );
     }

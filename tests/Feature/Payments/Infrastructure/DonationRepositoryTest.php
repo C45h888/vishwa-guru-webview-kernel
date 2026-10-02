@@ -7,9 +7,12 @@ namespace Tests\Feature\Payments\Infrastructure;
 use App\Payments\Domain\Entities\Donation;
 use App\Payments\Domain\Enums\Currency;
 use App\Payments\Domain\Enums\DonationState;
+use App\Payments\Domain\ValueObjects\CheckoutPolicyAcceptance;
 use App\Payments\Domain\ValueObjects\DonorIdentity;
+use App\Payments\Domain\ValueObjects\MarketingEmailConsent;
 use App\Payments\Infrastructure\Repositories\DonationRepository;
 use App\Persistence\ValueObjects\EntityId;
+use DateTimeImmutable;
 use RuntimeException;
 
 /**
@@ -46,6 +49,29 @@ final class DonationRepositoryTest extends InfrastructureTestCase
         $this->assertSame($donation->amountMinor(), $found->amountMinor());
         $this->assertSame(DonationState::DRAFT->value, $found->state()->value);
         $this->assertSame('Test Donor', $found->donorNameSnapshot());
+    }
+
+    public function testPolicyAcknowledgementsAndOptionalMarketingConsentRoundTrip(): void
+    {
+        $now = new DateTimeImmutable('2026-10-01T12:00:00+00:00');
+        $donation = Donation::draft(
+            campaignId: EntityId::generate('campaign'),
+            donor: DonorIdentity::identified('Consenting Donor', 'consent@example.com', '+919876543210'),
+            amountMinor: 10000,
+            currency: Currency::INR,
+            policyAcceptance: new CheckoutPolicyAcceptance('1.0', $now, '1.0', $now),
+            marketingEmailConsent: new MarketingEmailConsent('campaign-email-v1', $now),
+        );
+
+        $this->repo->save($donation);
+        $found = $this->repo->findById($donation->id());
+
+        $this->assertNotNull($found);
+        $this->assertSame('1.0', $found->policyAcceptance()?->termsVersion());
+        $this->assertSame('1.0', $found->policyAcceptance()?->privacyVersion());
+        $this->assertSame($now->getTimestamp(), $found->policyAcceptance()?->termsAcceptedAt()->getTimestamp());
+        $this->assertSame('campaign-email-v1', $found->marketingEmailConsent()?->consentVersion());
+        $this->assertSame($now->getTimestamp(), $found->marketingEmailConsent()?->consentedAt()->getTimestamp());
     }
 
     public function testFindByCampaignIdPagination(): void
@@ -93,9 +119,11 @@ final class DonationRepositoryTest extends InfrastructureTestCase
     {
         $campaignId = EntityId::generate('campaign');
         $donor = DonorIdentity::identified('Named Donor', 'named@test.com');
+        $donorId = EntityId::generate('donor');
         $donation = Donation::draft(
             campaignId: $campaignId,
             donor: $donor,
+            donorId: $donorId,
             amountMinor: 25000,
             currency: Currency::INR,
             idempotencyKey: 'don_idem_003',

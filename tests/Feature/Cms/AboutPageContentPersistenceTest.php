@@ -36,10 +36,6 @@ final class AboutPageContentPersistenceTest extends InfrastructureTestCase
 {
     public function test_about_content_round_trips_via_repository(): void
     {
-        if (PHP_VERSION_ID < 80400) {
-            $this->markTestSkipped('Requires PHP 8.4+ for sealed interface syntax in Block.php');
-        }
-
         $imageId = $this->insertMediaAsset('content_block_image', 'about-values');
         $photoId = $this->insertMediaAsset('content_block_image', 'about-trustee');
 
@@ -75,10 +71,6 @@ final class AboutPageContentPersistenceTest extends InfrastructureTestCase
 
     public function test_save_is_rejected_after_the_referenced_media_is_soft_deleted(): void
     {
-        if (PHP_VERSION_ID < 80400) {
-            $this->markTestSkipped('Requires PHP 8.4+ for sealed interface syntax in Block.php');
-        }
-
         $imageId = $this->insertMediaAsset('content_block_image', 'about-values');
 
         $payload = $this->validPayload($imageId, null);
@@ -104,8 +96,8 @@ final class AboutPageContentPersistenceTest extends InfrastructureTestCase
 
     private function insertMediaAsset(string $mediaType, string $seed): string
     {
-        $fileAssetId = 'file_asset_'.bin2hex(random_bytes(13));
-        $mediaAssetId = 'cms_media_'.bin2hex(random_bytes(13));
+        $fileAssetId = EntityId::generate('file_asset')->value();
+        $mediaAssetId = EntityId::generate('cms_media')->value();
 
         /** @var FileAssetRepositoryContract $fileRepo */
         $fileRepo = $this->app->make(FileAssetRepositoryContract::class);
@@ -129,6 +121,7 @@ final class AboutPageContentPersistenceTest extends InfrastructureTestCase
             mediaType: PublicMediaType::from($mediaType),
             state: PublicMediaState::PUBLISHED,
             altText: 'Test media',
+            publishedAt: new \DateTimeImmutable(),
             createdBy: 'test',
         ));
 
@@ -151,13 +144,40 @@ final class AboutPageContentPersistenceTest extends InfrastructureTestCase
         }
 
         return [
-            'version' => 1,
+            'version' => 2,
             'values' => [
                 'eyebrow' => 'Our Values',
                 'title' => 'Seva, Satya, and Smriti',
                 'body' => 'The trust is sustained by three commitments.',
                 'image_file_id' => $imageId,
                 'alt_text' => 'Trust values',
+            ],
+            'story' => [
+                'eyebrow' => 'Our Story',
+                'title' => 'A trust sustained by service',
+                'body' => 'The trust supports children through education and care.',
+                'image_file_id' => null,
+                'alt_text' => null,
+            ],
+            'stats' => [
+                ['number' => '15+', 'label' => 'Years of service', 'description' => 'Serving the community.'],
+                ['number' => '3', 'label' => 'Programmes', 'description' => 'Care, education, and service.'],
+                ['number' => 'Daily', 'label' => 'Meals', 'description' => 'Meals provided to children.'],
+            ],
+            'programs' => [
+                ['eyebrow' => 'Education', 'title' => 'Learning', 'body' => 'Supporting education.', 'icon_key' => 'community'],
+                ['eyebrow' => 'Care', 'title' => 'Daily care', 'body' => 'Providing daily care.', 'icon_key' => 'care'],
+                ['eyebrow' => 'Service', 'title' => 'Community', 'body' => 'Serving the community.', 'icon_key' => 'community'],
+            ],
+            'visit' => [
+                'eyebrow' => 'Visit',
+                'title' => 'Plan a visit',
+                'body' => 'Contact the trust before visiting.',
+                'address' => 'Mysore, Karnataka',
+                'timings' => 'By appointment',
+                'phone' => '+91 90000 00000',
+                'dress_code' => 'Modest clothing is preferred.',
+                'map_url' => null,
             ],
             'timeline' => [
                 [

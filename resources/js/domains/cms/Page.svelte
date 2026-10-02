@@ -8,6 +8,7 @@
     import SeoHead from '$shared/components/SeoHead.svelte';
 
     let { page, heroBanners, html, appName, appUrl }: CmsPageProps = $props();
+    const isPolicyPage = $derived(page.slug === 'terms' || page.slug === 'privacy');
 </script>
 
 <SeoHead title={page.title} {appName} {appUrl} description={page.meta_description} />
@@ -31,9 +32,11 @@
                         {page.meta_description}
                     </p>
                 {/if}
-                <div class="pt-2">
-                    <TrustBadgeRow />
-                </div>
+                {#if !isPolicyPage}
+                    <div class="pt-2">
+                        <TrustBadgeRow />
+                    </div>
+                {/if}
             </div>
         </div>
     </section>
@@ -78,5 +81,7 @@
         </section>
     {/if}
 
-    <BottomCtaBand />
+    {#if !isPolicyPage}
+        <BottomCtaBand />
+    {/if}
 </PublicLayout>

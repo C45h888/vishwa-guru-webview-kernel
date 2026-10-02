@@ -33,10 +33,6 @@ final class HomepageContentPersistenceTest extends InfrastructureTestCase
 {
     public function test_homepage_content_round_trips_via_repository(): void
     {
-        if (PHP_VERSION_ID < 80400) {
-            $this->markTestSkipped('Requires PHP 8.4+ for sealed interface syntax in Block.php');
-        }
-
         // Insert a cms_media_assets row.
         $mediaId = $this->insertMediaAsset('content_block_image', 'homepage-story');
 
@@ -75,10 +71,6 @@ final class HomepageContentPersistenceTest extends InfrastructureTestCase
 
     public function test_save_is_rejected_after_the_referenced_media_is_soft_deleted(): void
     {
-        if (PHP_VERSION_ID < 80400) {
-            $this->markTestSkipped('Requires PHP 8.4+ for sealed interface syntax in Block.php');
-        }
-
         $mediaId = $this->insertMediaAsset('content_block_image', 'homepage-story');
 
         /** @var HomepageContentFactory $factory */
@@ -99,8 +91,8 @@ final class HomepageContentPersistenceTest extends InfrastructureTestCase
 
     private function insertMediaAsset(string $mediaType, string $seed): string
     {
-        $fileAssetId = 'file_asset_'.bin2hex(random_bytes(13));
-        $mediaAssetId = 'cms_media_'.bin2hex(random_bytes(13));
+        $fileAssetId = EntityId::generate('file_asset')->value();
+        $mediaAssetId = EntityId::generate('cms_media')->value();
 
         /** @var FileAssetRepositoryContract $fileRepo */
         $fileRepo = $this->app->make(FileAssetRepositoryContract::class);
@@ -124,6 +116,7 @@ final class HomepageContentPersistenceTest extends InfrastructureTestCase
             mediaType: PublicMediaType::from($mediaType),
             state: PublicMediaState::PUBLISHED,
             altText: 'Test media',
+            publishedAt: new \DateTimeImmutable(),
             createdBy: 'test',
         ));
 

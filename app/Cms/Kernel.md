@@ -99,6 +99,12 @@ component, plus the generic `/{slug}` whitelist for content-only pages:
 - `/` (homepage) — `cms.homepage` → `HomeController`
 - `/about` — `cms.about` → `AboutController` (carries `about_page_content`)
 - `/legal` — `cms.legal` → `LegalController` (carries `legal_page_content`)
+- `/terms` — generic CMS page → `CmsPageController`; published from `TermsPageDefinition` by the isolated `Database\Seeders\LegalPolicyPagesSeeder`
+- `/privacy` — generic CMS page → `CmsPageController`; published from `PrivacyPageDefinition` by the same isolated seeder
+
+`LegalPolicyPagesSeeder` writes only these two `static_pages` records; it does not reseed or modify campaigns.
+
+The Terms and Privacy pages are rendered from ordinary versioned `static_pages.body_json` blocks and escaped `body_html` projections. The CMS owns the policy copy and versioned page definitions; the Payments kernel validates and persists checkout acceptance and the separate optional email-marketing choice.
 
 ### About-page featured galleries (DB-driven)
 
@@ -159,6 +165,8 @@ and is hydrated through `LegalPageContentFactory` into a typed
   unit tests (incl. `Persistence/` mappers).
 - `tests/Unit/Cms/StateMachines/` — `StaticPageStateMachine` allowed/
   forbidden transition tests.
+- `tests/Unit/Cms/Content/TermsPageDefinitionTest.php` — CMS block grammar and approved donation-purpose semantics.
+- `tests/Feature/Ui/TermsPageTest.php` — Terms/Privacy seeding, public routes, and Inertia page payloads.
 - `tests/Feature/Cms/CmsSchemaAndAdapterTest.php` — load-bearing
   verification that the renamed SQLite mirror
   (`2026_07_16_000005_k_cms_create_cms_tables_sqlite.php`) lands every

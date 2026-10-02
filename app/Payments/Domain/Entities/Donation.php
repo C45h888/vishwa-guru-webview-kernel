@@ -10,7 +10,9 @@ use App\Payments\Domain\Enums\TransactionStatus;
 use App\Payments\Domain\Exceptions\PaymentStateTransitionException;
 use App\Payments\Domain\StateMachines\StateTransitionEvent;
 use App\Payments\Domain\StateMachines\DonationStateMachine;
+use App\Payments\Domain\ValueObjects\CheckoutPolicyAcceptance;
 use App\Payments\Domain\ValueObjects\DonorIdentity;
+use App\Payments\Domain\ValueObjects\MarketingEmailConsent;
 use App\Persistence\Contracts\EntityContract;
 use App\Persistence\ValueObjects\EntityId;
 use App\Shared\ValueObjects\Identifier;
@@ -55,6 +57,8 @@ final class Donation implements EntityContract
         private readonly ?string $internalNotes,
         private readonly ?string $idempotencyKey,
         private readonly array $metadata,
+        private readonly ?CheckoutPolicyAcceptance $policyAcceptance,
+        private readonly ?MarketingEmailConsent $marketingEmailConsent,
         private readonly ?DateTimeImmutable $submittedAt,
         private readonly ?DateTimeImmutable $paymentInitiatedAt,
         private readonly ?DateTimeImmutable $paymentVerifiedAt,
@@ -85,11 +89,13 @@ final class Donation implements EntityContract
         ?string $idempotencyKey = null,
         array $metadata = [],
         ?EntityId $id = null,
+        ?CheckoutPolicyAcceptance $policyAcceptance = null,
+        ?MarketingEmailConsent $marketingEmailConsent = null,
     ): self {
         if ($amountMinor <= 0) {
             throw new InvalidArgumentException("Donation amount must be positive (got {$amountMinor})");
         }
-        self::assertPiiConsistency($donor, $dedication, $donorMessage);
+        self::assertPiiConsistency($donor, $dedication, $donorMessage, $marketingEmailConsent);
 
         $now = new DateTimeImmutable();
 
@@ -111,6 +117,8 @@ final class Donation implements EntityContract
             internalNotes: $internalNotes,
             idempotencyKey: $idempotencyKey,
             metadata: $metadata,
+            policyAcceptance: $policyAcceptance,
+            marketingEmailConsent: $marketingEmailConsent,
             submittedAt: null,
             paymentInitiatedAt: null,
             paymentVerifiedAt: null,
@@ -135,6 +143,9 @@ final class Donation implements EntityContract
             }
         }
 
+        $policyAcceptance = self::policyAcceptanceFromRow($row);
+        $marketingEmailConsent = self::marketingEmailConsentFromRow($row);
+
         return new self(
             id: EntityId::fromString($row['id']),
             campaignId: EntityId::fromString($row['campaign_id']),
@@ -157,6 +168,8 @@ final class Donation implements EntityContract
             internalNotes: $row['internal_notes'] ?? null,
             idempotencyKey: $row['idempotency_key'] ?? null,
             metadata: self::decodeJson($row['metadata'] ?? '{}'),
+            policyAcceptance: $policyAcceptance,
+            marketingEmailConsent: $marketingEmailConsent,
             submittedAt: self::parseDate($row['submitted_at'] ?? null),
             paymentInitiatedAt: self::parseDate($row['payment_initiated_at'] ?? null),
             paymentVerifiedAt: self::parseDate($row['payment_verified_at'] ?? null),
@@ -207,6 +220,12 @@ final class Donation implements EntityContract
             'internal_notes' => $this->internalNotes,
             'idempotency_key' => $this->idempotencyKey,
             'metadata' => json_encode($this->metadata, JSON_THROW_ON_ERROR),
+            'terms_version' => $this->policyAcceptance?->termsVersion(),
+            'terms_accepted_at' => $this->policyAcceptance?->termsAcceptedAt()->format(DATE_ATOM),
+            'privacy_notice_version' => $this->policyAcceptance?->privacyVersion(),
+            'privacy_notice_acknowledged_at' => $this->policyAcceptance?->privacyAcknowledgedAt()->format(DATE_ATOM),
+            'marketing_email_consent_version' => $this->marketingEmailConsent?->consentVersion(),
+            'marketing_email_consented_at' => $this->marketingEmailConsent?->consentedAt()->format(DATE_ATOM),
             'submitted_at' => $this->submittedAt?->format(DATE_ATOM),
             'payment_initiated_at' => $this->paymentInitiatedAt?->format(DATE_ATOM),
             'payment_verified_at' => $this->paymentVerifiedAt?->format(DATE_ATOM),
@@ -326,7 +345,13 @@ final class Donation implements EntityContract
         DonorIdentity $donor,
         ?string $dedication,
         ?string $donorMessage,
+        ?MarketingEmailConsent $marketingEmailConsent,
     ): void {
+        if ($marketingEmailConsent !== null && ($donor->isAnonymous() || ! $donor->hasEmail())) {
+            throw new InvalidArgumentException(
+                'Marketing email consent requires an identified donor with an email address'
+            );
+        }
         if (! $donor->isAnonymous()) {
             return;
         }
@@ -425,6 +450,16 @@ final class Donation implements EntityContract
         return $this->metadata;
     }
 
+    public function policyAcceptance(): ?CheckoutPolicyAcceptance
+    {
+        return $this->policyAcceptance;
+    }
+
+    public function marketingEmailConsent(): ?MarketingEmailConsent
+    {
+        return $this->marketingEmailConsent;
+    }
+
     public function submittedAt(): ?DateTimeImmutable
     {
         return $this->submittedAt;
@@ -502,6 +537,51 @@ final class Donation implements EntityContract
         $decoded = json_decode($value, true);
 
         return is_array($decoded) ? $decoded : [];
+    }
+
+    /**
+     * @param array<string, mixed> $row
+     */
+    private static function policyAcceptanceFromRow(array $row): ?CheckoutPolicyAcceptance
+    {
+        $termsVersion = $row['terms_version'] ?? null;
+        $termsAcceptedAt = self::parseDate($row['terms_accepted_at'] ?? null);
+        $privacyVersion = $row['privacy_notice_version'] ?? null;
+        $privacyAcknowledgedAt = self::parseDate($row['privacy_notice_acknowledged_at'] ?? null);
+        $values = [$termsVersion, $termsAcceptedAt, $privacyVersion, $privacyAcknowledgedAt];
+
+        if (count(array_filter($values, static fn (mixed $value): bool => $value !== null)) === 0) {
+            return null;
+        }
+        if (! is_string($termsVersion) || ! $termsAcceptedAt instanceof DateTimeImmutable
+            || ! is_string($privacyVersion) || ! $privacyAcknowledgedAt instanceof DateTimeImmutable) {
+            throw new InvalidArgumentException('Donation policy acceptance columns must be all set or all null');
+        }
+
+        return new CheckoutPolicyAcceptance(
+            termsVersion: $termsVersion,
+            termsAcceptedAt: $termsAcceptedAt,
+            privacyVersion: $privacyVersion,
+            privacyAcknowledgedAt: $privacyAcknowledgedAt,
+        );
+    }
+
+    /**
+     * @param array<string, mixed> $row
+     */
+    private static function marketingEmailConsentFromRow(array $row): ?MarketingEmailConsent
+    {
+        $version = $row['marketing_email_consent_version'] ?? null;
+        $consentedAt = self::parseDate($row['marketing_email_consented_at'] ?? null);
+
+        if ($version === null && $consentedAt === null) {
+            return null;
+        }
+        if (! is_string($version) || ! $consentedAt instanceof DateTimeImmutable) {
+            throw new InvalidArgumentException('Donation marketing consent columns must be both set or both null');
+        }
+
+        return new MarketingEmailConsent($version, $consentedAt);
     }
 
     private static function parseDate(mixed $value): ?DateTimeImmutable

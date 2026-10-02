@@ -6,10 +6,14 @@ namespace App\Payments\Http\Controllers;
 
 use App\Payments\Http\Requests\RazorpayCheckoutRequest;
 use App\Payments\Domain\Enums\Currency;
+use App\Payments\Domain\ValueObjects\CheckoutPolicyAcceptance;
 use App\Payments\Domain\ValueObjects\DonationIntent;
 use App\Payments\Domain\ValueObjects\DonorIdentity;
+use App\Payments\Domain\ValueObjects\MarketingEmailConsent;
 use App\Payments\Services\PaymentService;
 use App\Persistence\ValueObjects\EntityId;
+use App\Shared\Policies\LegalPolicyVersions;
+use App\Shared\Support\Clock;
 use Illuminate\Http\JsonResponse;
 
 /**
@@ -39,9 +43,11 @@ final class RazorpayCheckoutController
         private readonly PaymentService $payments,
     ) {}
 
-    public function store(RazorpayCheckoutRequest $request): JsonResponse
+    public function store(RazorpayCheckoutRequest $request, Clock $clock): JsonResponse
     {
         $validated = $request->validated();
+        $acceptedAt = $clock->now();
+        $marketingEmailOptIn = (bool) $validated['marketing_email_opt_in'];
 
         $intent = new DonationIntent(
             campaignId: EntityId::fromString((string) $validated['campaign_id']),
@@ -51,6 +57,18 @@ final class RazorpayCheckoutController
             donorMessage: isset($validated['donation_message']) ? (string) $validated['donation_message'] : null,
             internalNotes: isset($validated['internal_notes']) ? (string) $validated['internal_notes'] : null,
             idempotencyKey: isset($validated['idempotency_key']) ? (string) $validated['idempotency_key'] : null,
+            policyAcceptance: new CheckoutPolicyAcceptance(
+                termsVersion: LegalPolicyVersions::TERMS,
+                termsAcceptedAt: $acceptedAt,
+                privacyVersion: LegalPolicyVersions::PRIVACY,
+                privacyAcknowledgedAt: $acceptedAt,
+            ),
+            marketingEmailConsent: $marketingEmailOptIn
+                ? new MarketingEmailConsent(
+                    consentVersion: LegalPolicyVersions::MARKETING_EMAIL,
+                    consentedAt: $acceptedAt,
+                )
+                : null,
         );
 
         $result = $this->payments->initialize($intent);

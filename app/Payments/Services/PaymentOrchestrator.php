@@ -172,6 +172,8 @@ class PaymentOrchestrator
                 idempotencyKey: $intent->idempotencyKey(),
                 metadata: $intent->metadata(),
                 id: $donationId,
+                policyAcceptance: $intent->policyAcceptance(),
+                marketingEmailConsent: $intent->marketingEmailConsent(),
             );
             $donation = $donation->transitionTo(
                 machine: $this->donationStateMachine,
@@ -730,7 +732,13 @@ class PaymentOrchestrator
             return $commit;
         }
 
-        return $commit;
+        // TransactionCoordinator wraps the callback's Result in its own
+        // transaction Result. Return the business result, not the outer
+        // successful transaction envelope, so a rejected refund remains a
+        // failure to the HTTP/service caller.
+        $value = $commit->value();
+
+        return $value instanceof Result ? $value : $commit;
     }
 
     /**

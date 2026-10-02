@@ -7,9 +7,10 @@
 
 **Owns:** the architectural root — primitive contracts and concrete
 implementations every kernel depends on. Configuration, environment,
-identifier generation (`EntityId` is in `Persistence/ValueObjects` but
-is consumed universally), exceptions, enums, support classes, and value
-objects.
+shared legal-policy version identifiers (`App\Shared\Policies\LegalPolicyVersions`),
+identifier generation (`EntityId` is in `Persistence/ValueObjects` but is
+consumed universally), exceptions,
+enums, support classes, and value objects.
 
 **Does NOT own:** persistence (the `EntityId` lives in `Persistence/ValueObjects/`),
 queueing, caching, HTTP — those are separate kernels with their own
