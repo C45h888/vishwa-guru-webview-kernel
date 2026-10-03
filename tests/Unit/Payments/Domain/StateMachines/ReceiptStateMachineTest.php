@@ -138,4 +138,58 @@ class ReceiptStateMachineTest extends TestCase
         ));
     }
 
+    // 2026-10-03 email backfill doctrine: re-delivery edges.
+
+    public function testFailedRedispatchThatDelivers(): void
+    {
+        $result = $this->machine->transition(
+            ReceiptDeliveryState::FAILED,
+            StateTransitionEvent::DELIVERY_DISPATCHED,
+            ['channel' => 'email', 'address' => 'donor@example.com'],
+        );
+        $this->assertSame(ReceiptDeliveryState::DELIVERED, $result->toState());
+        $this->assertArrayHasKey('delivered_at', $result->timestampChanges());
+        // Channel/address context rides through for persistence.
+        $this->assertSame('email', $result->entityChanges()['delivery_channel']);
+        $this->assertSame('donor@example.com', $result->entityChanges()['delivery_address']);
+    }
+
+    public function testBouncedRedispatchThatDelivers(): void
+    {
+        $result = $this->machine->transition(
+            ReceiptDeliveryState::BOUNCED,
+            StateTransitionEvent::DELIVERY_DISPATCHED,
+        );
+        $this->assertSame(ReceiptDeliveryState::DELIVERED, $result->toState());
+    }
+
+    public function testFailedRetryThatFailsAgain(): void
+    {
+        $result = $this->machine->transition(
+            ReceiptDeliveryState::FAILED,
+            StateTransitionEvent::DELIVERY_FAILED,
+        );
+        $this->assertSame(ReceiptDeliveryState::FAILED, $result->toState());
+    }
+
+    public function testBouncedRetryThatBouncesAgain(): void
+    {
+        $result = $this->machine->transition(
+            ReceiptDeliveryState::BOUNCED,
+            StateTransitionEvent::DELIVERY_BOUNCED,
+        );
+        $this->assertSame(ReceiptDeliveryState::BOUNCED, $result->toState());
+    }
+
+    public function testRedispatchClearsDeliveredAt(): void
+    {
+        $result = $this->machine->transition(
+            ReceiptDeliveryState::FAILED,
+            StateTransitionEvent::DELIVERY_REDISPATCHED,
+            ['redispatched_at' => '2026-10-03T12:00:00+00:00'],
+        );
+        $this->assertSame(ReceiptDeliveryState::PENDING, $result->toState());
+        $this->assertNull($result->timestampChanges()['delivered_at']);
+    }
+
 }

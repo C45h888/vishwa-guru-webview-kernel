@@ -69,7 +69,20 @@ final class LaravelDbAdapter implements PersistenceAdapterContract
         try {
             $value = $this->connection->transaction($callback);
 
-            return Result::success($value);
+            // The callback may itself return a Result (e.g. the Payments
+            // orchestrator's transaction closures). Wrapping it again would
+            // produce a nested Result whose domain methods (isSuccessful(),
+            // status()) the post-commit code cannot call — this was the root
+            // cause of the 2026-10-03 PaymentOrchestrator:592 production
+            // crash ("Call to undefined method Result::isSuccessful()"),
+            // which silently killed the PaymentValidated signal on the
+            // checkout-callback + reconcile paths. Normalize: a Result
+            // return passes through as-is; any other value gets the
+            // success envelope. An inner Result::failure now also surfaces
+            // as a real transaction failure instead of being masked.
+            return $value instanceof Result
+                ? $value
+                : Result::success($value);
         } catch (\Throwable $e) {
             return Result::failure('transaction_failed: '.$e->getMessage());
         }

@@ -245,11 +245,11 @@ final class Receipt implements EntityContract
             ? 'tax_80g_certificate_number'
             : 'certificate_80g_number';
 
-        // The DB schema currently has no `delivery_status` column; the
-        // entity tracks it as a separate concept from `state`. When the
-        // row doesn't carry it (current schema), fall back to PENDING so
-        // round-trips through the repository still hydrate. The MCP
-        // schema agent is responsible for adding the column.
+        // delivery_status IS persisted (column from
+        // 2026_10_02_000001_k_payments_align_receipt_typed_columns; written
+        // by ReceiptRepository::save/update). Rows predating the column —
+        // or the pre-2026-10-03 gap where update() dropped it — fall back
+        // to PENDING so round-trips through the repository still hydrate.
         $deliveryStatus = (string) ($row['delivery_status'] ?? self::DELIVERY_PENDING);
 
         return new self(

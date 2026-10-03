@@ -35,10 +35,13 @@ final class TransactionCoordinator
      * Run the callback inside a transaction. Commits on a successful
      * (non-throwing) return; rolls back on Throwable.
      *
-     * The callback may return any type. Its return value is wrapped
-     * into Result::success. If the callback throws, Result::failure
-     * is returned carrying the exception's message; the transaction
-     * has already been rolled back before this return.
+     * The callback may return any type. A plain (non-Result) return value
+     * is wrapped into Result::success; a Result return passes through
+     * unwrapped (both persistence adapters normalize this), so a callback
+     * that returns Result::failure surfaces as a real failure to the
+     * caller. If the callback throws, Result::failure is returned carrying
+     * the exception's message; the transaction has already been rolled
+     * back before this return.
      *
      * @template T
      *

@@ -4,53 +4,99 @@ declare(strict_types=1);
 
 namespace App\Payments\Console\Commands;
 
+use App\Jobs\ReceiptEmailJob;
 use App\Payments\Domain\Repositories\PaymentRepositoryContract;
+use App\Payments\Domain\Repositories\ReceiptRepositoryContract;
 use App\Payments\Jobs\GenerateReceiptJob;
 use App\Shared\ValueObjects\Identifier;
 use Illuminate\Console\Command;
 
 /**
- * receipts:reconcile — backfill receipts for successfully validated
- * payments that have none.
+ * receipts:reconcile — two-pass backfill safety net.
  *
- * Safety net for the event → job path: a job that exhausted its retries, a
- * signal lost during a deploy, or a receipt row that never persisted. Runs
- * on a schedule; idempotent because GenerateReceiptJob / ReceiptService::
- * issue() are idempotent per payment.
+ * Pass 1 — MISSING RECEIPTS: dispatch receipt generation for successfully
+ * validated payments that have none. Covers a job that exhausted its
+ * retries, a signal lost during a deploy, or a receipt row that never
+ * persisted. Idempotent: GenerateReceiptJob / ReceiptService::issue() are
+ * idempotent per payment.
+ *
+ * Pass 2 — UNDELIVERED EMAILS (2026-10-03): re-dispatch ReceiptEmailJob
+ * for receipts whose email delivery never durably completed —
+ * delivery_status 'failed' rows, plus 'pending' rows older than the grace
+ * window (an in-flight email job is not racing). The MailDispatchCoordinator's
+ * persisted already_delivered guard makes re-dispatch a no-op for anything
+ * that actually delivered. Idempotent for the same reason.
  */
 final class ReconcileReceiptsCommand extends Command
 {
     /**
-     * @var string
+     * Grace window before a pending receipt's email is considered lost.
+     * ReceiptEmailJob normally runs within seconds; an hour is far beyond
+     * any legitimate queue dwell, so a pending row this old has no job
+     * carrying it anywhere.
      */
-    protected $signature = 'receipts:reconcile {--limit=200 : Max payments to scan}';
+    private const PENDING_GRACE_SECONDS = 3600;
 
     /**
      * @var string
      */
-    protected $description = 'Dispatch receipt generation for captured payments that have no receipt.';
+    protected $signature = 'receipts:reconcile {--limit=200 : Max payments/receipts to scan per pass}';
 
-    public function handle(PaymentRepositoryContract $payments): int
-    {
+    /**
+     * @var string
+     */
+    protected $description = 'Backfill receipt generation and email delivery for captured payments.';
+
+    public function handle(
+        PaymentRepositoryContract $payments,
+        ReceiptRepositoryContract $receipts,
+    ): int {
         $limit = (int) $this->option('limit');
 
-        $missing = $payments->findSuccessfulWithoutReceipt($limit);
+        $dispatchedReceipts = $this->reconcileMissingReceipts($payments, $limit);
+        $dispatchedEmails = $this->reconcileUndeliveredEmails($receipts, $limit);
 
-        if ($missing === []) {
-            $this->info('receipts:reconcile — no missing receipts.');
+        if ($dispatchedReceipts === 0 && $dispatchedEmails === 0) {
+            $this->info('receipts:reconcile — nothing to backfill.');
 
             return self::SUCCESS;
         }
+
+        $this->info(sprintf(
+            'receipts:reconcile — dispatched %d receipt generation job(s), %d email job(s).',
+            $dispatchedReceipts,
+            $dispatchedEmails,
+        ));
+
+        return self::SUCCESS;
+    }
+
+    private function reconcileMissingReceipts(
+        PaymentRepositoryContract $payments,
+        int $limit,
+    ): int {
+        $missing = $payments->findSuccessfulWithoutReceipt($limit);
 
         foreach ($missing as $payment) {
             GenerateReceiptJob::dispatch(new Identifier($payment->id()->ulid()));
         }
 
-        $this->info(sprintf(
-            'receipts:reconcile — dispatched %d receipt generation job(s).',
-            count($missing),
-        ));
+        return count($missing);
+    }
 
-        return self::SUCCESS;
+    private function reconcileUndeliveredEmails(
+        ReceiptRepositoryContract $receipts,
+        int $limit,
+    ): int {
+        $stale = $receipts->findUncompletedDeliveries(
+            pendingOlderThanSeconds: self::PENDING_GRACE_SECONDS,
+            limit: $limit,
+        );
+
+        foreach ($stale as $receipt) {
+            ReceiptEmailJob::dispatch(new Identifier($receipt->id()->ulid()));
+        }
+
+        return count($stale);
     }
 }

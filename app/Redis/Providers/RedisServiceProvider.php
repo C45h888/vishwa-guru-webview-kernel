@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Redis\Providers;
 
+use App\Redis\Console\Commands\RedisInfoCommand;
 use App\Redis\Contracts\RedisConnectorContract;
 use App\Redis\Infrastructure\LaravelRedisConnector;
 use Illuminate\Contracts\Redis\Factory as RedisFactory;
@@ -42,5 +43,17 @@ final class RedisServiceProvider extends ServiceProvider
                 is_array($config) ? $config : [],
             );
         });
+    }
+
+    public function boot(): void
+    {
+        // 2026-10-03 fix: the scheduler runs `temple:redis:info` every
+        // minute, but the command was never registered — every run errored
+        // with "command not found" (thousands of occurrences in logs).
+        if ($this->app->runningInConsole()) {
+            $this->commands([
+                RedisInfoCommand::class,
+            ]);
+        }
     }
 }

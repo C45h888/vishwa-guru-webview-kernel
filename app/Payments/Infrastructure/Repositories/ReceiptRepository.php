@@ -100,12 +100,10 @@ final class ReceiptRepository implements ReceiptRepositoryContract
     {
         $row = $receipt->toArray();
 
-        // The current schema declares `certificate_80g_number` (not
-        // `tax_80g_certificate_number`) and has no `delivery_status`
-        // column. The schema agent will reconcile this in a follow-up
-        // migration; until then, persist to the columns that actually
-        // exist and leave delivery_status out of the INSERT. The entity
-        // still tracks it for in-memory state-machine logic.
+        // delivery_status and delivery_address ARE persisted: the column
+        // landed via 2026_10_02_000001_k_payments_align_receipt_typed_columns.
+        // Delivery state is the durable truth that MailDispatchCoordinator's
+        // already_delivered guard and receipts:reconcile read back.
         $sql = 'INSERT INTO receipts (
             id, receipt_number, donation_id, payment_id, campaign_id,
             campaign_title_snapshot, donor_name, donor_email, donor_pan,
@@ -113,7 +111,7 @@ final class ReceiptRepository implements ReceiptRepositoryContract
             is_tax_deductible, tax_80g_eligible, certificate_80g_number,
             receipt_file_id, certificate_80g_file_id,
             content_hash, state, generated_at,
-            delivered_at, delivery_channel,
+            delivered_at, delivery_channel, delivery_status, delivery_address,
             delivery_metadata, metadata, created_at, updated_at, deleted_at,
             access_token
         ) VALUES (
@@ -123,7 +121,7 @@ final class ReceiptRepository implements ReceiptRepositoryContract
             :is_tax_deductible, :tax_80g_eligible, :certificate_80g_number,
             :receipt_file_id, :certificate_80g_file_id,
             :content_hash, :state, :generated_at,
-            :delivered_at, :delivery_channel,
+            :delivered_at, :delivery_channel, :delivery_status, :delivery_address,
             :delivery_metadata, :metadata, :created_at, :updated_at, :deleted_at,
             :access_token
         )';
@@ -154,6 +152,8 @@ final class ReceiptRepository implements ReceiptRepositoryContract
             'generated_at' => $row['generated_at'],
             'delivered_at' => $row['delivered_at'],
             'delivery_channel' => $row['delivery_channel'],
+            'delivery_status' => $row['delivery_status'],
+            'delivery_address' => $row['delivery_address'],
             'delivery_metadata' => is_string($row['delivery_metadata'])
                 ? $row['delivery_metadata']
                 : json_encode($row['delivery_metadata'] ?? [], JSON_THROW_ON_ERROR),
@@ -178,13 +178,15 @@ final class ReceiptRepository implements ReceiptRepositoryContract
         // Financial fields are immutable post-issue.
         $row = $receipt->toArray();
 
-        // delivery_status is tracked in-memory on the entity but the
-        // current schema has no column for it; update only the columns
-        // that exist. When the schema agent adds delivery_status, extend
-        // this SET clause.
+        // delivery_status + delivery_address persist here (column from
+        // 2026_10_02_000001_k_payments_align_receipt_typed_columns). This is
+        // the durable delivery state consumed by MailDispatchCoordinator's
+        // already_delivered guard and the receipts:reconcile email backfill.
         $sql = 'UPDATE receipts SET
             delivered_at = :delivered_at,
             delivery_channel = :delivery_channel,
+            delivery_status = :delivery_status,
+            delivery_address = :delivery_address,
             delivery_metadata = :delivery_metadata,
             updated_at = :updated_at
         WHERE id = :id';
@@ -193,6 +195,8 @@ final class ReceiptRepository implements ReceiptRepositoryContract
             'id' => $row['id'],
             'delivered_at' => $row['delivered_at'],
             'delivery_channel' => $row['delivery_channel'],
+            'delivery_status' => $row['delivery_status'],
+            'delivery_address' => $row['delivery_address'],
             'delivery_metadata' => is_string($row['delivery_metadata'])
                 ? $row['delivery_metadata']
                 : json_encode($row['delivery_metadata'] ?? [], JSON_THROW_ON_ERROR),
@@ -287,5 +291,41 @@ final class ReceiptRepository implements ReceiptRepositoryContract
     private function getStateMachine(): ReceiptStateMachine
     {
         return self::$stateMachine ??= new ReceiptStateMachine();
+    }
+
+    public function findUncompletedDeliveries(int $pendingOlderThanSeconds, int $limit = 200): array
+    {
+        // Email delivery backfill candidates for receipts:reconcile:
+        //   - failed/bounced receipts (mail never succeeded), regardless of age
+        //   - pending receipts whose email job has been silent for a while
+        //     (grace window avoids racing an in-flight ReceiptEmailJob)
+        // Receipts without a donor email are excluded — there is nothing
+        // to send and ReceiptEmailJob would skip them anyway.
+        $cutoff = (new DateTimeImmutable('now'))
+            ->modify(sprintf('-%d seconds', $pendingOlderThanSeconds))
+            ->format(DATE_ATOM);
+
+        $result = $this->adapter->query(
+            'SELECT * FROM receipts
+             WHERE deleted_at IS NULL
+               AND donor_email IS NOT NULL AND donor_email <> \'\'
+               AND (
+                     delivery_status IN (\'failed\', \'bounced\')
+                     OR (delivery_status = \'pending\' AND updated_at <= :cutoff)
+                   )
+             ORDER BY updated_at ASC
+             LIMIT :limit',
+            ['cutoff' => $cutoff, 'limit' => $limit],
+        );
+
+        if ($result->isFailure() || empty($result->value())) {
+            return [];
+        }
+
+        $receipts = [];
+        foreach ($result->value() as $row) {
+            $receipts[] = Receipt::fromRow($row);
+        }
+        return $receipts;
     }
 }

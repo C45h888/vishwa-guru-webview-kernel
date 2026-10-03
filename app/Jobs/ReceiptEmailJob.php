@@ -23,18 +23,23 @@ use RuntimeException;
  *   - Queue = 'receipts' (dedicated worker container).
  *   - Idempotency key = "receipt:{receiptId}:email" (7d TTL) — operator
  *     re-dispatch within the window is a no-op, not a duplicate email.
- *   - Financial subclass: tries=1, backoff=[0] — SMTP/API outages must
- *     surface to ops immediately instead of silently retrying.
+ *     (Note: the durable delivery guard is the MailDispatchCoordinator's
+ *     persisted already_delivered check — see Mail Kernel.md Boundary 3.)
+ *   - Retry policy (2026-10-03 fix): tries=3 with backoff [10,60,300].
+ *     Delivery IS idempotent (FSM + persisted delivery_status guard), so
+ *     retrying a transient Hostinger API/auth blip is safe and preferable
+ *     to failing permanently. The receipts:reconcile email backfill is the
+ *     final safety net for anything that exhausts its retries.
  *   - Dispatched from GenerateReceiptJob AFTER receipt issuance commits
  *     (delivery never blocks or undoes a verified receipt).
  */
 final class ReceiptEmailJob extends AbstractQueuedJob
 {
-    /** Financial — fail-fast on transport errors so ops sees the gap. */
-    public int $tries = 1;
+    /** Retryable: delivery is idempotent via persisted delivery state. */
+    public int $tries = 3;
 
-    /** @var array<int, int> */
-    public array $backoff = [0];
+    /** @var array<int, int> seconds between attempts */
+    public array $backoff = [10, 60, 300];
 
     /**
      * Wave 1 fix (2026-08-06): Laravel's Queueable trait declares

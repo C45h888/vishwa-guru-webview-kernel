@@ -92,4 +92,22 @@ interface ReceiptRepositoryContract
      * @return string|null e.g. "TR-2026-000042" or null if none yet
      */
     public function findMaxReceiptNumberForFY(int $fiscalYear): ?string;
+
+    /**
+     * Email delivery backfill candidates for the receipts:reconcile loop.
+     *
+     * Returns receipts whose email delivery is not durably complete:
+     * delivery_status in ('failed','bounced') at any age, plus 'pending'
+     * receipts whose updated_at is older than the grace window (to avoid
+     * racing an in-flight ReceiptEmailJob). Rows without a donor email
+     * are excluded (nothing to send). Returned oldest-first, capped.
+     *
+     * @param  int  $pendingOlderThanSeconds  grace window for pending rows
+     * @param  int  $limit                    result cap (default 200)
+     * @return array<int, \App\Payments\Domain\Entities\Receipt>
+     */
+    public function findUncompletedDeliveries(
+        int $pendingOlderThanSeconds,
+        int $limit = 200,
+    ): array;
 }

@@ -58,8 +58,13 @@ dispatches the domain event
 `App\Payments\Services\ReceiptIssuanceCoordinator` listens, and dispatches
 `App\Payments\Jobs\GenerateReceiptJob` onto the dedicated `receipts`
 queue (owned by the `receipts-worker` container). `receipts:reconcile`
-(scheduled by the `scheduler` container) backfills any miss. Delivery at
-launch is the success-page PDF download; email is a later pass.
+(scheduled by the `scheduler` container) backfills any miss — both missing
+receipts and (since 2026-10-03) undelivered receipt emails, re-dispatching
+`ReceiptEmailJob` for `delivery_status` failed/pending-stale rows. Email
+delivery is automated via `ReceiptEmailJob`; delivery state is durable
+(`receipts.delivery_status` persisted by `ReceiptRepository`), which is
+what makes the coordinator's `already_delivered` guard and the reconcile
+backfill safe.
 
 **Receipt substrate package** (`app/Payments/Receipts/`) — the canonical
 receipt generation surface. `ReceiptSubstrate` is the parent that holds
@@ -68,13 +73,25 @@ money/date/FY/address formatting, donee identity); semantic work is
 split across worker boundaries that import their logic from the parent:
 
 - `Workers/DataWorker.php` — pure transport of data (payment, donation,
-  campaign, existing receipt rows). No logic.
+  campaign, existing receipt rows, canonical trust row). No logic.
 - `Workers/TypesWorker.php` — builds the typed `ReceiptDocument`
   (`App\Payments\Domain\DTOs\ReceiptDocument`) — the single snapshot the
   designed PDF renders AND the persisted receipts row is issued from.
+  Donee PRESENTATION fields (name/address/email/phone) resolve DB-first
+  with a substrate config fallback; donee CREDENTIALS (PAN, TAN, 80G +
+  12A numbers) resolve DB-ONLY from the transported trust row — no
+  config/env fallback exists for them by design. Also carries the full
+  donation breakdown (campaign title + description) and re-derives the
+  80G note live on re-render (`buildForReceipt`) so re-rendered PDFs
+  match issuance.
 - `Workers/DesignWorker.php` — compiles
   `resources/views/receipts/design/` (template + tokenised style layer)
   into PDF bytes. Design lives only there; generation never sees CSS.
+  Tokens converge with the web kernel (`resources/css/app.css`: saffron
+  primary, ivory paper, serif display headings, gold rule accents).
+  Embeds the trust seal + trustee signature as data URIs (dompdf-safe),
+  prints the statutory donee strip (PAN | TAN | 80G | 12A) in header +
+  footer, a signatory block, and the content-hash verification line.
 - `Workers/WorkerCadence.php` — per-worker timeout budget + bounded
   retries (config `receipts.workers`), so stage failures fall into the
   queue-level retry ladder instead of hanging it.
@@ -83,6 +100,21 @@ Supersedes (absorbed, files deleted): `ReceiptRenderer`,
 `ReceiptFormatter`, `Receipt80GValidator`, `ReceiptPdfGenerator`,
 `StubReceiptGenerator`, and the loose `resources/views/receipts/*.blade.php`
 templates. The design file system is `resources/views/receipts/design/`.
+
+**Trust identity (DB plane).** Statutory donee credentials live
+EXCLUSIVELY in table `trust_identities` (single-row aggregate,
+`key='canonical'`: name, address, email, phone, PAN, TAN `BLRS60956A`,
+80G `F.No.S-504/80G/CIT/MYS/2011-12`, 12A `S-504/12AA/CIT/MYs/2010-11`),
+seeded by the `k_payments` trust_identities migrations (postgres +
+ sqlite mirror). There are deliberately NO `TRUST_*` env keys for
+credentials — `config/receipts.php` carries only operational flags
+(`trust_registered`, threshold). Flow: `TrustIdentityRepositoryContract`
+→ `TrustIdentityRepository` (raw-SQL via `PersistenceAdapterContract`)
+→ transported by `DataWorker` as `trust_identity` → typed by
+`TypesWorker` into `ReceiptDocument` → rendered by `DesignWorker`, the
+web `Receipt.svelte` page (via `toReadProjection()`), email, and Form
+10BD (which additionally carries the donee TAN column). Value object:
+`App\Payments\Domain\ValueObjects\TrustIdentity`.
 
 **Mail seam (standalone `Mail` kernel).** Outbound mail lives in its own
 package (`app/Mail/`, see `app/Mail/Kernel.md`) headed by the mother file
@@ -134,7 +166,15 @@ Four handwritten FSMs (the kernel owns the most state machines):
 - `App\Payments\Domain\StateMachines\DonationStateMachine` — donation
   record lifecycle (initiated → paid → receipted → failed).
 - `App\Payments\Domain\StateMachines\ReceiptStateMachine` — receipt
-  generation state (pending → rendered → delivered → invalidated).
+  DELIVERY lifecycle: `pending → delivered | failed | bounced`, with
+  re-dispatch edges (`failed|bounced → pending`) and, since 2026-10-03,
+  re-delivery edges (`failed|bounced + delivery_dispatched → delivered`,
+  `failed|bounced + delivery_failed|bounced` self-edges) so a re-sent
+  email lands in a durable state instead of throwing inside the
+  bookkeeping adapter. Also carries `channel`/`address` context through
+  to `delivery_channel`/`delivery_address` for persistence. The separate
+  `state` column (pending → rendered → delivered → invalidated) is the
+  receipt-document lifecycle, validated at the FormRequest boundary.
 - Shared types: `StateTransitionEvent`, `StateTransitionResult` (the
   return-type envelope every Payments FSM uses).
 
@@ -172,8 +212,10 @@ The largest test surface in the codebase:
   storage, amount-in-words, Form 10BD).
 - `tests/Unit/Payments/Receipts/` — receipt substrate package
   (`ReceiptSubstrateTest`: generation logic + verify80G + formatting +
-  document-is-persisted-snapshot guarantee; `Workers/WorkerCadenceTest`,
-  `Workers/DesignWorkerTest`).
+  document-is-persisted-snapshot guarantee + DB-only credential rule
+  (`testVerify80gRegistrationIsDbOnlyNeverFromEnv`); `Workers/WorkerCadenceTest`,
+  `Workers/DesignWorkerTest` — incl. TAN/12A view-data + rendered-HTML
+  assertions against the real Blade design).
 - `tests/Unit/Payments/Services/` — payment + idempotency service tests.
 - `tests/Unit/Payments/Jobs/` — async job handler tests.
 - `tests/Feature/Payments/Infrastructure/` — end-to-end payment flow

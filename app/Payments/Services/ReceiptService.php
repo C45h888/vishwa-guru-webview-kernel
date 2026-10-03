@@ -213,6 +213,9 @@ class ReceiptService
                     'channel' => $channel,
                     'address' => $address,
                     'transitioned_at' => $this->clock->now()->format(DATE_ATOM),
+                    // A PENDING-target transition IS a re-dispatch: the
+                    // state machine clears delivered_at on this key.
+                    'redispatched_at' => $this->clock->now()->format(DATE_ATOM),
                 ],
             );
         } catch (\App\Payments\Domain\Exceptions\PaymentStateTransitionException $e) {

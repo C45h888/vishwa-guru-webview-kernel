@@ -106,7 +106,12 @@ final class InMemoryAdapter implements PersistenceAdapterContract
             $value = $callback();
             $this->pdo->commit();
 
-            return Result::success($value);
+            // Pass a callback-returned Result through instead of wrapping it
+            // again (nested Results break post-commit domain calls — see
+            // LaravelDbAdapter::transaction for the 2026-10-03 incident note).
+            return $value instanceof Result
+                ? $value
+                : Result::success($value);
         } catch (\Throwable $e) {
             if ($this->pdo->inTransaction()) {
                 $this->pdo->rollBack();

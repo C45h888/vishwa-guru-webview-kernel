@@ -43,6 +43,16 @@ final class ReceiptStateMachine
         $entityChanges = ['delivery_status' => $to->value];
         $timestampChanges = [];
 
+        // Bookkeeping context rides through to the entity so the
+        // repository can persist the channel/address the delivery
+        // actually used (receipts.delivery_channel / delivery_address).
+        if (array_key_exists('channel', $context)) {
+            $entityChanges['delivery_channel'] = $context['channel'];
+        }
+        if (array_key_exists('address', $context)) {
+            $entityChanges['delivery_address'] = $context['address'];
+        }
+
         if ($to === ReceiptDeliveryState::DELIVERED) {
             $timestampChanges['delivered_at'] = new DateTimeImmutable();
         } elseif ($to === ReceiptDeliveryState::PENDING && isset($context['redispatched_at'])) {
@@ -94,9 +104,19 @@ final class ReceiptStateMachine
             ],
             ReceiptDeliveryState::FAILED => [
                 StateTransitionEvent::DELIVERY_REDISPATCHED,
+                // 2026-10-03 email backfill doctrine: a re-dispatched
+                // delivery that completes (or fails/bounces again) must
+                // land in a real durable state, otherwise the FSM throws
+                // inside DeliveryBookkeepingAdapter and the row stays
+                // 'failed' forever even though mail went out.
+                StateTransitionEvent::DELIVERY_DISPATCHED,
+                StateTransitionEvent::DELIVERY_FAILED,
+                StateTransitionEvent::DELIVERY_BOUNCED,
             ],
             ReceiptDeliveryState::BOUNCED => [
                 StateTransitionEvent::DELIVERY_REDISPATCHED,
+                StateTransitionEvent::DELIVERY_DISPATCHED,
+                StateTransitionEvent::DELIVERY_BOUNCED,
             ],
             ReceiptDeliveryState::DELIVERED => [],
         };
@@ -114,6 +134,11 @@ final class ReceiptStateMachine
 
             'failed|delivery_redispatched' => ReceiptDeliveryState::PENDING,
             'bounced|delivery_redispatched' => ReceiptDeliveryState::PENDING,
+
+            'failed|delivery_dispatched' => ReceiptDeliveryState::DELIVERED,
+            'bounced|delivery_dispatched' => ReceiptDeliveryState::DELIVERED,
+            'failed|delivery_failed' => ReceiptDeliveryState::FAILED,
+            'bounced|delivery_bounced' => ReceiptDeliveryState::BOUNCED,
         ];
 
         if (! isset($table[$key])) {

@@ -121,14 +121,16 @@ final class ReceiptEmailJobTest extends TestCase
         );
     }
 
-    public function testIsFinancialJobWithSingleAttemptAndNoBackoff(): void
+    public function testEmailJobRetriesWithBackoff(): void
     {
         $job = new ReceiptEmailJob(new Identifier('01ARZ3NDEKTSV4RRFFQ69G5FAV'));
 
-        // Doctrine: financial jobs fail-fast so transport outages surface
-        // to ops instead of silently retrying.
-        $this->assertSame(1, $job->tries);
-        $this->assertSame([0], $job->backoff);
+        // Doctrine (2026-10-03 fix): delivery is idempotent via the
+        // persisted delivery_status guard, so transient Hostinger blips
+        // retry instead of leaving the receipt permanently unmailed.
+        // receipts:reconcile is the final backfill safety net.
+        $this->assertSame(3, $job->tries);
+        $this->assertSame([10, 60, 300], $job->backoff);
         $this->assertSame('receipts', $job->queue);
     }
 

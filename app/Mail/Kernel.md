@@ -59,7 +59,10 @@ and `MailDispatchCoordinator` (the seam).
 
 None — the mail package mutates no state. Delivery state lives in the
 payments kernel (`ReceiptStateMachine`, driven through
-`DeliveryBookkeepingContract`); webhook event normalization
+`DeliveryBookkeepingContract`; since 2026-10-03 durably persisted as
+`receipts.delivery_status` — the `already_delivered` guard reads that
+durable state, and `receipts:reconcile` re-dispatches `ReceiptEmailJob`
+for failed/stale-pending rows); webhook event normalization
 (`MailSubstrate::normalizeWebhookEvent`) is pure mapping, not a state
 machine.
 
