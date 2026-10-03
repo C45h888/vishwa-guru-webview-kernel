@@ -44,7 +44,7 @@ final class SimulateReceiptDeliveryCommand extends Command
     protected $signature = 'receipts:simulate-delivery
         {--to= : Recipient email (the simulated donor)}
         {--amount=100000 : Donation amount in minor units (default ₹1,000.00)}
-        {--expect-from=siramguruji@vsrsms.in : Fail unless the canonical sender resolves to this address}';
+        {--expect-from=sriramguruji@vsrsms.in : Fail unless the canonical sender resolves to this address}';
 
     protected $description = 'Simulate a full receipt delivery (no gateway) through the canonical queue + substrate + mail seam.';
 
