@@ -52,14 +52,7 @@
     }
 </script>
 
-<SeoHead
-    title={event.title}
-    {appName}
-    {appUrl}
-    description={event.short_description}
-    image={heroImage?.url ?? null}
-    imageAlt={heroImage?.alt_text ?? null}
-/>
+<SeoHead />
 
 <PublicLayout>
     <article>

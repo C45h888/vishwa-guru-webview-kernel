@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Cms\Services;
+namespace App\Seo\Services;
 
 /**
  * Single sitemap entry.

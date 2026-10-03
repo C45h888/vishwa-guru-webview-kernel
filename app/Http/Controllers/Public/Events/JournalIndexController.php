@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Public\Events;
 
+use App\Seo\Contracts\SeoMetaContract;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -16,7 +17,7 @@ use Inertia\Response;
  */
 final class JournalIndexController
 {
-    public function __invoke(): Response
+    public function __invoke(SeoMetaContract $seo): Response
     {
         $articles = require app_path('Events/Content/event-articles.php');
 
@@ -55,6 +56,10 @@ final class JournalIndexController
             'categories' => $categories,
             'appName' => config('app.name', 'Temple Trust'),
             'appUrl' => config('app.url'),
+            'seo' => $seo->forPage(
+                title: 'Events Journal',
+                description: "Stories and reflections from the trust's festivals, schools, and community life.",
+            ),
         ]);
     }
 }

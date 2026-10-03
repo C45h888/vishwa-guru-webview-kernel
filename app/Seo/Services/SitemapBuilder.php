@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Cms\Services;
+namespace App\Seo\Services;
 
 use App\Campaigns\Contracts\CampaignsQueryContract;
 use App\Events\Contracts\EventsQueryContract;
@@ -89,11 +89,19 @@ final class SitemapBuilder
     /**
      * Redis-cached XML for the controller. TTL is the invalidation —
      * crawler traffic is far too low to warrant mutation wiring.
+     *
+     * The cache key carries the canonical host. The previous static
+     * `seo:sitemap:v1` key meant that changing APP_URL (e.g. moving the
+     * site from `www.` to the apex) left the OLD host baked into the
+     * cached XML for up to the full TTL — which is how the live sitemap
+     * and the live canonical tags came to disagree.
      */
     public function cachedXml(): string
     {
+        $host = rtrim((string) config('app.url', ''), '/');
+
         return Cache::remember(
-            self::CACHE_KEY,
+            self::CACHE_KEY.':'.($host === '' ? 'no-host' : $host),
             now()->addHours(self::CACHE_TTL_HOURS),
             fn (): string => $this->toXml($this->build()),
         );

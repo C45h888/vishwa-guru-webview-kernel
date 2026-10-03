@@ -10,6 +10,7 @@ use App\Cms\Domain\DTOs\RenderedStaticPage;
 use App\Cms\Domain\ValueObjects\HomepageContent;
 use App\Cms\Domain\ValueObjects\PageSlug;
 use App\Cms\Services\PublicMediaPresentationService;
+use App\Seo\Contracts\SeoMetaContract;
 use App\Events\Contracts\EventsQueryContract;
 use App\Gallery\Contracts\GalleryQueryContract;
 use Inertia\Inertia;
@@ -44,6 +45,7 @@ final class HomeController
         EventsQueryContract $events,
         GalleryQueryContract $gallery,
         PublicMediaPresentationService $media,
+        SeoMetaContract $seo,
     ): Response {
         $payload = $this->homePayload($campaigns, $events, $gallery, $media);
 
@@ -75,6 +77,7 @@ final class HomeController
                 'homepageContent' => null,
                 'appName' => $appName,
                 'appUrl' => $appUrl,
+                'seo' => $this->homeSeo($seo, $appName, $appUrl, $rendered, $media),
             ],
         );
 
@@ -91,6 +94,53 @@ final class HomeController
                 $base,
                 $this->renderedProps($rendered, $media),
             ),
+        );
+    }
+
+    /**
+     * Homepage SEO metadata.
+     *
+     * The homepage title is the trust name ALONE (no " — {appName}"
+     * suffix): the page title field is "Home", which would otherwise
+     * produce "Home — SRI VISHWAGURU SRI SRI SRIRAM SHISHYAVRUNDHAM
+     * MAHASAMSTHANAM" — 68 characters, truncated in every SERP and in
+     * every link preview.
+     *
+     * The `HinduTemple` graph is emitted here rather than in
+     * cms/Home.svelte so it is present in the initial HTML, where
+     * scrapers and rich-result parsers can see it without running JS.
+     */
+    private function homeSeo(
+        SeoMetaContract $seo,
+        string $appName,
+        string $appUrl,
+        ?RenderedStaticPage $rendered,
+        PublicMediaPresentationService $media,
+    ): array {
+        $description = $rendered === null
+            ? 'Free schooling for children in need of care — including blind and deaf pupils — sustained by daily annadanam, plus the proposed healing and service campus near Nanjangud.'
+            : ($rendered->page->toReadSummary()['meta_description'] ?? null);
+
+        $heroImage = null;
+        $heroAlt = null;
+
+        foreach ($rendered?->heroBanners ?? [] as $banner) {
+            $resolved = $media->enrich($banner->toArray(), 'image_file_id', 'image');
+            $image = $resolved['image'] ?? null;
+            if (is_array($image) && ! empty($image['url'])) {
+                $heroImage = $image['url'];
+                $heroAlt = $image['alt_text'] ?? null;
+                break;
+            }
+        }
+
+        return $seo->forPage(
+            title: $appName,
+            description: $description,
+            imageUrl: $heroImage,
+            imageAlt: $heroAlt,
+            jsonLd: $seo->trustGraph(),
+            appendTrustName: false,
         );
     }
 

@@ -119,7 +119,7 @@
     }
 </script>
 
-<SeoHead title={page.title} {appName} {appUrl} description={page.meta_description} />
+<SeoHead />
 
 <PublicLayout>
     <!-- ═══ MAGAZINE HERO ═══ -->

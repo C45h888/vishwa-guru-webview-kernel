@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Public\Donate;
 
 use App\Campaigns\Contracts\CampaignsQueryContract;
+use App\Seo\Contracts\SeoMetaContract;
 use App\Shared\Policies\LegalPolicyVersions;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -26,7 +27,7 @@ use Inertia\Response;
  */
 final class FormController
 {
-    public function __invoke(CampaignsQueryContract $campaigns): Response
+    public function __invoke(CampaignsQueryContract $campaigns, SeoMetaContract $seo): Response
     {
         $paged = $campaigns->listDisplayable(1, 50);
 
@@ -74,6 +75,10 @@ final class FormController
             'privacyPolicyVersion' => LegalPolicyVersions::PRIVACY,
             'appName' => (string) config('app.name', 'Temple Trust'),
             'appUrl' => (string) config('app.url'),
+            'seo' => $seo->forPage(
+                title: 'Donate',
+                description: 'Support daily annadanam and schooling for children in need of care — including blind and deaf pupils — and the proposed healing and service campus near Nanjangud.',
+            ),
         ]);
     }
 }

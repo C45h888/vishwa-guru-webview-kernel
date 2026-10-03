@@ -55,7 +55,7 @@
     }
 </script>
 
-<SeoHead title={`Receipt ${receipt.receipt_number}`} {appName} {appUrl} noindex />
+<SeoHead />
 
 <PublicLayout>
     <section class="relative overflow-hidden bg-background">

@@ -26,12 +26,7 @@
     const isAdmin = $derived($page.props.authUser?.role === 'admin');
 </script>
 
-<SeoHead
-    title="Events"
-    {appName}
-    {appUrl}
-    description="Upcoming poojas, festivals, and gatherings at the trust, plus past celebrations."
-/>
+<SeoHead />
 
 <PublicLayout>
     {#if isAdmin}

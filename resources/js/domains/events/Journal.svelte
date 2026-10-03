@@ -59,12 +59,7 @@
     );
 </script>
 
-<SeoHead
-    title="Events Journal"
-    {appName}
-    {appUrl}
-    description="Stories and reflections from the trust's festivals, schools, and community life."
-/>
+<SeoHead />
 
 <PublicLayout>
     <section class="relative overflow-hidden bg-background">

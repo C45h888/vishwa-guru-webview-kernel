@@ -6,6 +6,7 @@ namespace App\Http\Controllers\Public\Donate;
 
 use App\Payments\Domain\Entities\Receipt;
 use App\Payments\Domain\Repositories\ReceiptRepositoryContract;
+use App\Seo\Contracts\SeoMetaContract;
 use App\Payments\Receipts\ReceiptSubstrate;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -27,6 +28,7 @@ final class ReceiptController
     public function __invoke(
         ReceiptRepositoryContract $receipts,
         ReceiptSubstrate $substrate,
+        SeoMetaContract $seo,
         string $receiptNumber,
         \Illuminate\Http\Request $request,
     ): Response {
@@ -50,6 +52,12 @@ final class ReceiptController
             'receipt' => $document->toReadProjection(),
             'appName' => config('app.name', 'Temple Trust'),
             'appUrl' => config('app.url'),
+            // Receipt URLs carry a single-use access token and must never
+            // enter a search index.
+            'seo' => $seo->forPage(
+                title: 'Receipt '.((string) ($document->toReadProjection()['receipt_number'] ?? '')),
+                noindex: true,
+            ),
         ]);
     }
 }

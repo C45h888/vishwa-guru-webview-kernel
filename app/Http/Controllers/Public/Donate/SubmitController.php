@@ -7,6 +7,7 @@ namespace App\Http\Controllers\Public\Donate;
 use App\Payments\Domain\Repositories\PaymentRepositoryContract;
 use App\Payments\Domain\Repositories\ReceiptRepositoryContract;
 use App\Payments\Http\Resources\PaymentStatusResource;
+use App\Seo\Contracts\SeoMetaContract;
 use App\Payments\Services\PaymentService;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -34,6 +35,7 @@ final class SubmitController
         PaymentRepositoryContract $payments,
         ReceiptRepositoryContract $receipts,
         PaymentService $paymentService,
+        SeoMetaContract $seo,
     ): Response {
         $request = request();
         $gatewayOrderId = (string) $request->query('gateway_order_id', '');
@@ -80,6 +82,7 @@ final class SubmitController
             'payment' => $status,
             'appName' => config('app.name', 'Temple Trust'),
             'appUrl' => config('app.url'),
+            'seo' => $seo->forPage(title: 'Donation status', noindex: true),
         ]);
     }
 }

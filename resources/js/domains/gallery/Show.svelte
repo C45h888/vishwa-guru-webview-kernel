@@ -87,14 +87,7 @@
     );
 </script>
 
-<SeoHead
-    title={gallery.title}
-    {appName}
-    {appUrl}
-    description={gallery.short_description}
-    image={heroImage?.url ?? null}
-    imageAlt={heroImage?.alt_text ?? null}
-/>
+<SeoHead />
 
 <PublicLayout>
     <!-- ═══ BREADCRUMBS ═══ -->

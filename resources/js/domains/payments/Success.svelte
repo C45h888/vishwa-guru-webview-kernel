@@ -240,7 +240,7 @@
     }
 </script>
 
-<SeoHead title="Donation status" {appName} {appUrl} noindex />
+<SeoHead />
 
 <PublicLayout>
     <section class="relative overflow-hidden bg-background">

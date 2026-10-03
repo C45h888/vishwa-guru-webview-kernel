@@ -102,19 +102,7 @@
     );
 </script>
 
-<SeoHead
-    title={page.title}
-    {appName}
-    {appUrl}
-    description={page.meta_description}
-    jsonLd={{
-        '@context': 'https://schema.org',
-        '@type': 'HinduTemple',
-        name: appName,
-        url: appUrl,
-        logo: `${appUrl}/icon-512.png`,
-    }}
-/>
+<SeoHead />
 
 <PublicLayout>
     <!-- ═══ 1. HERO SLIDESHOW ═══ -->

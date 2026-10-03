@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Public;
 
 use App\Cms\Services\ContactInformationService;
+use App\Seo\Contracts\SeoMetaContract;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -32,7 +33,7 @@ use Inertia\Response;
  */
 final class ContactController
 {
-    public function __invoke(ContactInformationService $contacts): Response
+    public function __invoke(ContactInformationService $contacts, SeoMetaContract $seo): Response
     {
         $points = array_map(
             static fn ($entity) => $entity->toArray(),
@@ -90,6 +91,10 @@ final class ContactController
             'mapOpenUrl' => $mapOpenUrl,
             'appName' => (string) config('app.name', 'Temple Trust'),
             'appUrl' => (string) config('app.url'),
+            'seo' => $seo->forPage(
+                title: 'Contact',
+                description: 'Reach the trust — visit, call, or write about donations, volunteering, and temple services.',
+            ),
         ]);
     }
 }

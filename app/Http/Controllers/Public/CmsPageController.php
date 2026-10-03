@@ -6,6 +6,7 @@ namespace App\Http\Controllers\Public;
 
 use App\Cms\Contracts\StaticPageRendererContract;
 use App\Cms\Services\PublicMediaPresentationService;
+use App\Seo\Contracts\SeoMetaContract;
 use App\Cms\Domain\ValueObjects\PageSlug;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -25,6 +26,7 @@ final class CmsPageController
     public function show(
         StaticPageRendererContract $renderer,
         PublicMediaPresentationService $media,
+        SeoMetaContract $seo,
         string $slug,
     ): Response {
         $rendered = $renderer->renderBySlug(new PageSlug($slug));
@@ -51,6 +53,10 @@ final class CmsPageController
             'resolvedAt' => $rendered->resolvedAt->format(\DATE_ATOM),
             'appName' => (string) config('app.name', 'Temple Trust'),
             'appUrl' => (string) config('app.url'),
+            'seo' => $seo->forPage(
+                title: (string) ($rendered->page->toReadSummary()['title'] ?? ''),
+                description: $rendered->page->toReadSummary()['meta_description'] ?? null,
+            ),
         ]);
     }
 }

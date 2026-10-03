@@ -21,14 +21,18 @@ never by importing another kernel's implementation code.
 - Into Payments via `App\Payments\Contracts\CampaignQueryContract` (Shape A
   bridge — Payments owns the contract because the producing kernel declares
   the boundary).
-- Into Campaigns via `App\Campaigns\Contracts\CampaignsQueryContract`
-  (SEO sitemap enumeration — `listDisplayable` slugs only; a campaign
-  that isn't publicly displayable can never enter the sitemap).
-- Into Events via `App\Events\Contracts\EventsQueryContract`
-  (`listUpcoming` + `listPast` slugs).
-- Into Gallery via `App\Gallery\Contracts\GalleryQueryContract`
-  (`listDisplayable` slugs only).
 - Into Shared for identifier generation and configuration.
+
+**Sitemap enumeration moved (Pass 5, 2026-10-03).** `SitemapBuilder`
+and `SitemapUrl` previously lived here and read
+`CampaignsQueryContract` / `EventsQueryContract` /
+`GalleryQueryContract` purely to enumerate the public URL set. That is
+SEO discoverability, not CMS content, so both classes now belong to the
+`Seo` kernel (`app/Seo/Services/`), which owns the sitemap alongside the
+per-page metadata it must stay consistent with. Those three read
+contracts are therefore **outbound edges of `Seo`, not of `Cms`**. The
+Cms boundary is unchanged: static pages, hero banners, contact
+information, media, and the rendering pipeline.
 
 ## Contracts
 
@@ -62,9 +66,8 @@ Bindings (see `register()` for axis labels A–G):
   `ReferenceResolutionService`, `PublicMediaPresentationService`,
   `HomepageContentFactory`, `AboutPageContentFactory`,
   `LegalPageContentFactory`, `StaticPageRendererService`)
-- `SitemapBuilder` (transient, constructor-injected with the Campaigns /
-  Events / Gallery query contracts; serves `Public\Seo` controllers —
-  no binding, resolved by autowiring)
+- ~~`SitemapBuilder`~~ — **moved to the `Seo` kernel** in Pass 5. It is
+  no longer constructed or bound here. See `app/Seo/Kernel.md`.
 
 `boot()` registers 4 entity types against `RepositoryRegistryContract`
 and subscribes `CacheInvalidationListener` to 9 Cms domain events
@@ -159,8 +162,9 @@ and is hydrated through `LegalPageContentFactory` into a typed
 
 - `tests/Unit/Cms/Domain/` — entity + value-object unit tests (incl.
   `ValueObjects/` — blocks, page bodies, SEO metadata).
-- `tests/Unit/Cms/SitemapBuilderTest.php` — sitemap URL shaping,
-  lastmod rules, XML escaping (contracts mocked).
+- ~~`tests/Unit/Cms/SitemapBuilderTest.php`~~ — **moved** to
+  `tests/Unit/Seo/SitemapBuilderTest.php` in Pass 5, alongside the
+  builder it covers.
 - `tests/Unit/Cms/Infrastructure/` — repository + rendering pipeline
   unit tests (incl. `Persistence/` mappers).
 - `tests/Unit/Cms/StateMachines/` — `StaticPageStateMachine` allowed/
@@ -171,12 +175,13 @@ and is hydrated through `LegalPageContentFactory` into a typed
   verification that the renamed SQLite mirror
   (`2026_07_16_000005_k_cms_create_cms_tables_sqlite.php`) lands every
   expected CMS table.
-- `tests/Feature/Seo/` — `RobotsTest` (static text, no mocks) +
-  `SitemapTest` (mocked query contracts; proves routing, content type,
-  slug inclusion, admin exclusion). Controllers live under
-  `App\Http\Controllers\Public\Seo\` with routes `/robots.txt`
-  (`seo.robots`) + `/sitemap.xml` (`seo.sitemap`) registered in
-  `routes/web.php` BEFORE the generic `{slug}` fallback.
+- `tests/Feature/Seo/` — `HeadTagsTest` (Pass 5 acceptance: a plain
+  GET returns the Open Graph quartet without JS), `RobotsTest` (static
+  text, no mocks) + `SitemapTest` (mocked query contracts; proves
+  routing, content type, slug inclusion, admin exclusion). Controllers
+  live under `App\Http\Controllers\Public\Seo\` with routes
+  `/robots.txt` (`seo.robots`) + `/sitemap.xml` (`seo.sitemap`)
+  registered in `routes/web.php` BEFORE the generic `{slug}` fallback.
 
 The `/legal` surface is verified end-to-end through the running
 application at `localhost:8000/legal` — no PHPUnit abstraction. The

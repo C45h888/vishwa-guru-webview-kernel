@@ -11,7 +11,7 @@
     const isPolicyPage = $derived(page.slug === 'terms' || page.slug === 'privacy');
 </script>
 
-<SeoHead title={page.title} {appName} {appUrl} description={page.meta_description} />
+<SeoHead />
 
 <PublicLayout>
     <section class="relative overflow-hidden bg-background">

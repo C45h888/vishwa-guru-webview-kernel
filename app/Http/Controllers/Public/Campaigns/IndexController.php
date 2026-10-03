@@ -6,6 +6,7 @@ namespace App\Http\Controllers\Public\Campaigns;
 
 use App\Campaigns\Contracts\CampaignsQueryContract;
 use App\Cms\Services\PublicMediaPresentationService;
+use App\Seo\Contracts\SeoMetaContract;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -29,6 +30,7 @@ final class IndexController
         Request $request,
         CampaignsQueryContract $campaigns,
         PublicMediaPresentationService $media,
+        SeoMetaContract $seo,
     ): Response {
         $page = max(1, (int) $request->query('page', 1));
         $perPage = 12;
@@ -76,6 +78,10 @@ final class IndexController
             'currentSort' => $currentSort,
             'appName' => config('app.name', 'Temple Trust'),
             'appUrl' => config('app.url'),
+            'seo' => $seo->forPage(
+                title: 'Campaigns',
+                description: 'Browse donation campaigns — the pooled fund for daily school support and the staged campus programme.',
+            ),
         ]);
     }
 

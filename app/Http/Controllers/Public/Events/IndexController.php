@@ -6,6 +6,7 @@ namespace App\Http\Controllers\Public\Events;
 
 use App\Events\Contracts\EventsQueryContract;
 use App\Cms\Services\PublicMediaPresentationService;
+use App\Seo\Contracts\SeoMetaContract;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -23,7 +24,7 @@ use Inertia\Response;
  */
 final class IndexController
 {
-    public function __invoke(EventsQueryContract $events, PublicMediaPresentationService $media): Response
+    public function __invoke(EventsQueryContract $events, PublicMediaPresentationService $media, SeoMetaContract $seo): Response
     {
         $page = max(1, (int) request()->query('page', 1));
         $perPage = 12;
@@ -51,6 +52,10 @@ final class IndexController
             ],
             'appName' => config('app.name', 'Temple Trust'),
             'appUrl' => config('app.url'),
+            'seo' => $seo->forPage(
+                title: 'Events',
+                description: 'Upcoming poojas, festivals, and gatherings at the trust, plus past celebrations.',
+            ),
         ]);
     }
 }

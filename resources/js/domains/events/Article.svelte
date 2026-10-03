@@ -41,7 +41,7 @@
     const hasRelated = $derived(related.length > 0);
 </script>
 
-<SeoHead title={article.title} {appName} {appUrl} description={article.excerpt} type="article" />
+<SeoHead />
 
 <PublicLayout>
     <article>

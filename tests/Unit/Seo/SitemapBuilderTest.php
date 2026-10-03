@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Tests\Unit\Cms;
+namespace Tests\Unit\Seo;
 
 use App\Campaigns\Contracts\CampaignsQueryContract;
 use App\Campaigns\Domain\DTOs\CampaignPagedResultDTO;
 use App\Campaigns\Domain\DTOs\CampaignSummaryDTO;
-use App\Cms\Services\SitemapBuilder;
-use App\Cms\Services\SitemapUrl;
+use App\Seo\Services\SitemapBuilder;
+use App\Seo\Services\SitemapUrl;
 use App\Events\Contracts\EventsQueryContract;
 use App\Events\Domain\DTOs\EventPagedResultDTO;
 use App\Events\Domain\DTOs\EventSummaryDTO;

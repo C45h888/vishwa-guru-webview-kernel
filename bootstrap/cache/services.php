@@ -43,6 +43,7 @@
     39 => 'App\\Campaigns\\Providers\\CampaignsServiceProvider',
     40 => 'App\\Gallery\\Providers\\GalleryServiceProvider',
     41 => 'App\\Events\\Providers\\EventsServiceProvider',
+    42 => 'App\\Seo\\Providers\\SeoServiceProvider',
   ),
   'eager' => 
   array (
@@ -74,6 +75,7 @@
     25 => 'App\\Campaigns\\Providers\\CampaignsServiceProvider',
     26 => 'App\\Gallery\\Providers\\GalleryServiceProvider',
     27 => 'App\\Events\\Providers\\EventsServiceProvider',
+    28 => 'App\\Seo\\Providers\\SeoServiceProvider',
   ),
   'deferred' => 
   array (

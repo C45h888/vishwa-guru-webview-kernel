@@ -7,6 +7,7 @@ namespace App\Http\Controllers\Public\Campaigns;
 use App\Campaigns\Contracts\CampaignsQueryContract;
 use App\Cms\Services\PublicMediaPresentationService;
 use App\Payments\Domain\Repositories\DonationRepositoryContract;
+use App\Seo\Contracts\SeoMetaContract;
 use Inertia\Inertia;
 use Inertia\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -28,6 +29,7 @@ final class ShowController
         CampaignsQueryContract $campaigns,
         PublicMediaPresentationService $media,
         DonationRepositoryContract $donations,
+        SeoMetaContract $seo,
         string $slug,
     ): Response {
         $detail = $campaigns->findBySlug($slug);
@@ -51,18 +53,29 @@ final class ShowController
             $detail->id,
         );
 
+        $enriched = $media->enrich(
+            $detail->toArray(),
+            'cover_image_file_id',
+            'cover_image',
+        );
+
+        $cover = is_array($enriched['cover_image'] ?? null) ? $enriched['cover_image'] : [];
+
         return Inertia::render('campaigns/Show', [
-            'campaign' => $media->enrich(
-                $detail->toArray(),
-                'cover_image_file_id',
-                'cover_image',
-            ),
+            'campaign' => $enriched,
             'progress' => $progress,
             'relatedCampaigns' => $relatedCampaigns,
             'recentDonorCount' => $recentDonorCount,
             'recentWindowDays' => self::RECENT_WINDOW_DAYS,
             'appName' => config('app.name', 'Temple Trust'),
             'appUrl' => config('app.url'),
+            'seo' => $seo->forPage(
+                title: (string) ($enriched['title'] ?? ''),
+                description: $enriched['short_description'] ?? null,
+                imageUrl: $cover['url'] ?? null,
+                imageAlt: $cover['alt_text'] ?? null,
+                type: 'article',
+            ),
         ]);
     }
 

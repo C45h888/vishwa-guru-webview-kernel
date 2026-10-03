@@ -10,7 +10,7 @@
     let { appName, appUrl }: AppPageProps = $props();
 </script>
 
-<SeoHead title="Donation cancelled" {appName} {appUrl} noindex />
+<SeoHead />
 
 <PublicLayout>
     <section class="relative overflow-hidden bg-background">

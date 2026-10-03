@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Public\Seo;
 
-use App\Cms\Services\SitemapBuilder;
+use App\Seo\Services\SitemapBuilder;
 use Illuminate\Http\Response;
 
 /**

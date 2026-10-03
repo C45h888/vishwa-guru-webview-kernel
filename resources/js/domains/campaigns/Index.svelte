@@ -122,12 +122,7 @@
     const PILLARS = PILLAR_COPY;
 </script>
 
-<SeoHead
-    title="Campaigns"
-    {appName}
-    {appUrl}
-    description="Browse donation campaigns — the pooled fund for daily school support and the staged campus programme."
-/>
+<SeoHead />
 
 <PublicLayout>
     <!-- ═══ 1. THREE PILLARS — main header (Isha-style 3-image row) ═══ -->

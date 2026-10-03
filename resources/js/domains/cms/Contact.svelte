@@ -68,12 +68,7 @@
     });
 </script>
 
-<SeoHead
-    title="Contact"
-    {appName}
-    {appUrl}
-    description="Reach the trust — visit, call, or write about donations, volunteering, and temple services."
-/>
+<SeoHead />
 
 <PublicLayout>
     <section class="relative overflow-hidden bg-background">

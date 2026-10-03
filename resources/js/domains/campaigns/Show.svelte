@@ -289,14 +289,7 @@
     );
 </script>
 
-<SeoHead
-    title={displayTitle}
-    {appName}
-    {appUrl}
-    description={displayShortDescription}
-    image={campaign.cover_image?.url ?? null}
-    imageAlt={campaign.cover_image?.alt_text ?? null}
-/>
+<SeoHead />
 
 <PublicLayout>
     <article>

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Public\Events;
 
+use App\Seo\Contracts\SeoMetaContract;
 use Inertia\Inertia;
 use Inertia\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -19,7 +20,7 @@ final class JournalShowController
 {
     private const RELATED_LIMIT = 3;
 
-    public function __invoke(string $slug): Response
+    public function __invoke(SeoMetaContract $seo, string $slug): Response
     {
         $articles = require app_path('Events/Content/event-articles.php');
 
@@ -62,6 +63,11 @@ final class JournalShowController
             'related' => $related,
             'appName' => config('app.name', 'Temple Trust'),
             'appUrl' => config('app.url'),
+            'seo' => $seo->forPage(
+                title: (string) ($current['title'] ?? ''),
+                description: $current['excerpt'] ?? null,
+                type: 'article',
+            ),
         ]);
     }
 }

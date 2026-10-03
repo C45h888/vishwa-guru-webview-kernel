@@ -59,7 +59,7 @@
     }
 </script>
 
-<SeoHead title={page.title} {appName} {appUrl} description={page.meta_description} />
+<SeoHead />
 
 <PublicLayout>
     <!-- ═══ PAGE TITLE STRIP (no hero — content-only page) ═══ -->

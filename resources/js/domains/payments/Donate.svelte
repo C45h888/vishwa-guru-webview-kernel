@@ -437,12 +437,7 @@
     }
 </script>
 
-<SeoHead
-    title="Donate"
-    {appName}
-    {appUrl}
-    description="Choose the campaign your gift supports and give securely through Razorpay. An official receipt is issued for every donation."
-/>
+<SeoHead />
 
 <PublicLayout>
     <section class="relative overflow-hidden bg-background">

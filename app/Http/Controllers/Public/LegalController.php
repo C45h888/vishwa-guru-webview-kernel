@@ -7,6 +7,7 @@ namespace App\Http\Controllers\Public;
 use App\Cms\Contracts\StaticPageRendererContract;
 use App\Cms\Domain\DTOs\RenderedStaticPage;
 use App\Cms\Domain\ValueObjects\PageSlug;
+use App\Seo\Contracts\SeoMetaContract;
 use Inertia\Inertia;
 use Inertia\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -38,6 +39,7 @@ final class LegalController
 {
     public function index(
         StaticPageRendererContract $renderer,
+        SeoMetaContract $seo,
     ): Response {
         $rendered = $renderer->renderBySlug(new PageSlug('legal'));
 
@@ -48,7 +50,7 @@ final class LegalController
         $appName = (string) config('app.name', 'Temple Trust');
         $appUrl = (string) config('app.url');
 
-        return Inertia::render('cms/Legal', $this->props($rendered, $appName, $appUrl));
+        return Inertia::render('cms/Legal', $this->props($rendered, $appName, $appUrl, $seo));
     }
 
     /**
@@ -61,12 +63,19 @@ final class LegalController
         RenderedStaticPage $rendered,
         string $appName,
         string $appUrl,
+        SeoMetaContract $seo,
     ): array {
+        $page = $rendered->page->toReadSummary();
+
         return [
-            'page' => $rendered->page->toReadSummary(),
+            'page' => $page,
             'legalContent' => $rendered->legalPageContent?->toArray() ?? null,
             'appName' => $appName,
             'appUrl' => $appUrl,
+            'seo' => $seo->forPage(
+                title: (string) ($page['title'] ?? ''),
+                description: $page['meta_description'] ?? null,
+            ),
         ];
     }
 }

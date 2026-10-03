@@ -6,6 +6,7 @@ namespace App\Http\Controllers\Public\Events;
 
 use App\Events\Contracts\EventsQueryContract;
 use App\Cms\Services\PublicMediaPresentationService;
+use App\Seo\Contracts\SeoMetaContract;
 use Inertia\Inertia;
 use Inertia\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -20,17 +21,32 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
  */
 final class ShowController
 {
-    public function __invoke(EventsQueryContract $events, PublicMediaPresentationService $media, string $slug): Response
-    {
+    public function __invoke(
+        EventsQueryContract $events,
+        PublicMediaPresentationService $media,
+        SeoMetaContract $seo,
+        string $slug,
+    ): Response {
         $detail = $events->findBySlug($slug);
         if ($detail === null) {
             throw new NotFoundHttpException("Event [{$slug}] not found");
         }
 
+        $enriched = $media->enrich($detail->toArray(), 'banner_file_id', 'banner_image');
+
+        $banner = is_array($enriched['banner_image'] ?? null) ? $enriched['banner_image'] : [];
+
         return Inertia::render('events/Show', [
-            'event' => $media->enrich($detail->toArray(), 'banner_file_id', 'banner_image'),
+            'event' => $enriched,
             'appName' => config('app.name', 'Temple Trust'),
             'appUrl' => config('app.url'),
+            'seo' => $seo->forPage(
+                title: (string) ($enriched['title'] ?? ''),
+                description: $enriched['short_description'] ?? null,
+                imageUrl: $banner['url'] ?? null,
+                imageAlt: $banner['alt_text'] ?? null,
+                type: 'article',
+            ),
         ]);
     }
 }

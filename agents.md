@@ -635,3 +635,119 @@ The Phase 4 admin kernel surfaces a floating pencil affordance on the public eve
   - The admin events form already supports a banner image upload via the shared `/admin/media/upload` endpoint. The public show page hydrates `event.banner_image` (resolved URL + alt) from `event.banner_file_id` via `PublicMediaPresentationService::enrich` in the controller. The DTO surface (`event.banner_image`) is consumed by `resources/js/domains/events/Show.svelte` via `<PublicMediaImage media={heroImage!} />`.
   - Intentionally NOT in this pass: pencil on `EventsList` (custom date-block row layout, used on the home page), pencil on `EventsRow` (component is unused in the current codebase), pencil on `events/Journal.svelte` / `events/Article.svelte` (these are static past-article content).
 
+
+## Pass 5 — SEO Optimisation (server-rendered head)
+
+Lands in this pass. The `Seo` kernel (`app/Seo/`) owns the public
+webview's discoverability surface: per-page metadata, the XML sitemap,
+and robots.txt.
+
+## Why this pass exists
+
+The public webview is an Inertia SPA. Before this pass every SEO tag
+was authored inside `<svelte:head>`, which means the tags only exist
+after the browser executes JavaScript. Two consequences:
+
+  - **Link previews were completely broken.** WhatsApp, Facebook
+    (`facebookexternalhit`) and iMessage (Apple's unfurl service) never
+    execute JavaScript. They `GET` a URL and read `<head>` directly.
+    A shared link rendered as a bare 62-character trust name with no
+    description and no image.
+  - **Google indexed the JS-rendered document in a second pass** —
+    slower, and ranking lower than a server-rendered equivalent.
+
+## The mechanism
+
+Inertia hands the root Blade shell the fully-resolved page object as
+`$page` (`vendor/inertiajs/inertia-laravel/src/Response.php:219`). So
+the `seo` prop built on the backend is available server-side for free —
+no second query, no extra round trip.
+
+  1. A controller calls `SeoMetaContract::forPage(title:, description:,
+     imageUrl:, ...)`. It passes **domain values only** and never
+     constructs `og:` keys.
+  2. The result rides as a normal Inertia prop named `seo`, so it
+     exists in the initial HTML *and* in every later JSON navigation.
+  3. `resources/views/app.blade.php` prints it with a single generic
+     loop over `{tag, attrs}` pairs. The view owns no SEO logic.
+  4. `resources/js/shared/components/SeoHead.svelte` renders the same
+     values on the client and **takes no props**.
+
+Step 4 exists for exactly one reason: Inertia client-side navigations
+return JSON (they carry the `X-Inertia` header) and therefore never
+re-render the Blade shell. Without it, tapping from the homepage to
+`/campaigns` would leave the tab title frozen on the homepage's.
+Both writers consume the identical payload — including a pre-encoded
+`jsonLdString` — so they cannot drift.
+
+## Doctrine
+
+  - **One implementation, three scrapers.** The Open Graph quartet
+    (`og:title` / `og:description` / `og:url` / `og:image`) is a single
+    set of tags that WhatsApp, Facebook and iMessage all read. There is
+    no per-platform SEO path in this codebase and there must never be
+    one.
+  - **The backend is the single source of truth.** `SeoHead.svelte` is
+    now a pure renderer. Every call site is the prop-less
+    `<SeoHead />`. Page titles, descriptions and the `HinduTemple`
+    JSON-LD graph live in controllers, never in components.
+  - **The `seo` prop is not optional on a public route.** A public
+    controller that renders Inertia without it silently produces a page
+    with no link preview. `tests/Feature/Seo/HeadTagsTest.php` is the
+    acceptance gate.
+  - **Server tags precede `@inertiaHead` in document order.** Scrapers
+    read first-occurrence.
+  - **Duplicate tags after hydration are accepted, not engineered
+    around.** On first load the server writes the tags and Svelte
+    writes the same ones again. Google ignores identical duplicate meta
+    tags and every scraper reads the server copy. The alternative —
+    Svelte adopting and mutating the server's nodes — adds a
+    hydration-order dependency for no gain the crawlers care about.
+  - **Transactional pages are `noindex` server-side**: `/donate/success`,
+    `/donate/cancel`, and the token-gated receipt surface. The `robots`
+    tag is emitted *only* when it deviates from index/follow.
+  - **The homepage title is the trust name alone** (no ` — {appName}`
+    suffix). The `page.title` field is `"Home"`, which would otherwise
+    produce a 68-character string that is truncated in every result and
+    every link preview.
+  - **The root view stays the only Blade template.** `SeoMetaBuilder`
+    emits a flat tag list precisely so the shell can render it with one
+    loop and no new `.blade.php` file.
+
+## Canonical host pinning
+
+`AppServiceProvider::boot()` calls
+`URL::forceRootUrl(rtrim(config('app.url'), '/'))` when `app.url`
+carries a scheme. This is load-bearing: `route()` and `url()` derive
+absolute URLs from the host a request *arrived on*, which is how the
+live site came to advertise `https://www.vsrsms.in/...` in its sitemap
+while its canonical tags advertised `https://vsrsms.in`. Pinning the
+root URL makes generated URLs, canonical tags and `og:url` all derive
+from one configured value. `SitemapBuilder::cachedXml()` appends the
+host to its cache key so a host change invalidates the cached XML
+rather than serving the previous host for a full TTL.
+
+## Kernel relocation
+
+`SitemapBuilder` and `SitemapUrl` moved from `App\Cms\Services\` to
+`App\Seo\Services\` (`tests/Unit/Cms/SitemapBuilderTest.php` moved to
+`tests/Unit/Seo/` accordingly). Sitemap enumeration is discoverability,
+not CMS content, and the sitemap must stay consistent with the
+canonical tags — splitting one concern across two kernels is
+architectural drift. `app/Cms/Kernel.md` records the relocation.
+
+## Explicitly out of scope for this pass
+
+  - Image weight and Core Web Vitals. The homepage hero is a ~2 MB
+    uncompressed PNG served with `Cache-Control: max-age=86400`, and
+    `HeroSlideshow.svelte:69` evaluates `image ?? mobile_image` — the
+    desktop image is tested first, so the `mobile_image_file_id`
+    column can never win. This is a real and significant ranking
+    factor, and it is a PERFORMANCE pass, not this one.
+  - Full Inertia SSR. The `Dockerfile` pins "ONE runtime" and Node is
+    present only to run the frontend build. SSR would add a
+    long-running Node process and contradict a stated doctrine. It is
+    a genuine future option, to be decided on measured evidence, not a
+    config toggle.
+  - Local listings and multilingual content (a Kannada surface, a
+    Google Business Profile). Outside the codebase.

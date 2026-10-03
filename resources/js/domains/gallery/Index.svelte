@@ -26,12 +26,7 @@
     const hasContent = $derived(galleries.length > 0);
 </script>
 
-<SeoHead
-    title="Gallery"
-    {appName}
-    {appUrl}
-    description="School life, daily annadanam, festivals, and community moments from the trust."
-/>
+<SeoHead />
 
 <PublicLayout>
     <!-- ═══ INTRO HEAD ═══ -->

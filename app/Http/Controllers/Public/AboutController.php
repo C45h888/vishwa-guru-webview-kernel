@@ -8,6 +8,7 @@ use App\Cms\Contracts\StaticPageRendererContract;
 use App\Cms\Domain\DTOs\RenderedStaticPage;
 use App\Cms\Domain\ValueObjects\PageSlug;
 use App\Cms\Services\PublicMediaPresentationService;
+use App\Seo\Contracts\SeoMetaContract;
 use App\Gallery\Contracts\GalleryQueryContract;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -47,6 +48,7 @@ final class AboutController
         StaticPageRendererContract $renderer,
         PublicMediaPresentationService $media,
         GalleryQueryContract $galleries,
+        SeoMetaContract $seo,
     ): Response {
         $rendered = $renderer->renderBySlug(new PageSlug('about'));
 
@@ -58,7 +60,7 @@ final class AboutController
         $appUrl = (string) config('app.url');
 
         return Inertia::render('cms/About', $this->props(
-            $rendered, $media, $galleries, $appName, $appUrl
+            $rendered, $media, $galleries, $appName, $appUrl, $seo
         ));
     }
 
@@ -75,6 +77,7 @@ final class AboutController
         GalleryQueryContract $galleries,
         string $appName,
         string $appUrl,
+        SeoMetaContract $seo,
     ): array {
         $aboutContent = $rendered->aboutPageContent?->toArray() ?? null;
 
@@ -137,6 +140,11 @@ final class AboutController
             'resolvedAt' => $rendered->resolvedAt->format(\DATE_ATOM),
             'appName' => $appName,
             'appUrl' => $appUrl,
+            'seo' => $seo->forPage(
+                title: (string) ($rendered->page->toArray()['title'] ?? ''),
+                description: $rendered->page->toArray()['meta_description'] ?? null,
+                type: 'article',
+            ),
         ];
     }
 }

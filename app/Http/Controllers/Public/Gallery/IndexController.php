@@ -6,6 +6,7 @@ namespace App\Http\Controllers\Public\Gallery;
 
 use App\Gallery\Contracts\GalleryQueryContract;
 use App\Cms\Services\PublicMediaPresentationService;
+use App\Seo\Contracts\SeoMetaContract;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -18,7 +19,7 @@ use Inertia\Response;
  */
 final class IndexController
 {
-    public function __invoke(GalleryQueryContract $gallery, PublicMediaPresentationService $media): Response
+    public function __invoke(GalleryQueryContract $gallery, PublicMediaPresentationService $media, SeoMetaContract $seo): Response
     {
         $page = max(1, (int) request()->query('page', 1));
         $perPage = 12;
@@ -38,6 +39,10 @@ final class IndexController
             ],
             'appName' => config('app.name', 'Temple Trust'),
             'appUrl' => config('app.url'),
+            'seo' => $seo->forPage(
+                title: 'Gallery',
+                description: 'School life, daily annadanam, festivals, and community moments from the trust.',
+            ),
         ]);
     }
 }

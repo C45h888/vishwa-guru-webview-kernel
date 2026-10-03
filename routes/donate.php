@@ -34,9 +34,10 @@ Route::get('/donate', DonateFormController::class)->name('donate.form');
 Route::get('/donate/success', DonateSubmitController::class)->name(
     'donate.status',
 );
-Route::get('/donate/cancel', function () {
+Route::get('/donate/cancel', function (\App\Seo\Contracts\SeoMetaContract $seo) {
     return \Inertia\Inertia::render('payments/Cancel', [
         'appName' => (string) config('app.name', 'Temple Trust'),
         'appUrl' => (string) config('app.url'),
+        'seo' => $seo->forPage(title: 'Donation cancelled', noindex: true),
     ]);
 })->name('donate.cancel');

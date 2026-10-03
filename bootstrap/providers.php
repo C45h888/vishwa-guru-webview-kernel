@@ -33,6 +33,8 @@
 |                                   both share reference-resolution plumbing)
 |       Campaigns → Gallery     (independent kernels, ordered for symmetry)
 |       Gallery   → Events      (independent kernels, ordered for symmetry)
+|       Events    → Seo         (Seo is a leaf; it reads the three public
+|                                   read contracts via SitemapBuilder)
 |
 | Future phases must extend this list without reordering existing entries.
 | When the Laravel framework is upgraded to 11.x and bootstrap/app.php
@@ -54,4 +56,5 @@ return [
     App\Campaigns\Providers\CampaignsServiceProvider::class,
     App\Gallery\Providers\GalleryServiceProvider::class,
     App\Events\Providers\EventsServiceProvider::class,
+    App\Seo\Providers\SeoServiceProvider::class,
 ];
