@@ -44,3 +44,19 @@ Thumbs.db
 
 # Codegen output for php artisan inertia:dump-types
 resources/js/shared/lib/inertia.generated.ts
+
+# TypeScript build artefacts (Pass 5 hygiene fix)
+#
+# This repo is type-checked, never emitted: `npm run check` (svelte-check)
+# owns type checking and Vite owns the build. tsconfig.json sets
+# noEmit, and tsconfig.node.json parks its declaration output in
+# node_modules/.tmp — so nothing below should ever be generated.
+#
+# These entries are a BACKSTOP, not a licence: if any of them reappear in
+# `git status`, something is running `tsc` with emit enabled instead of
+# using `npm run check`, and that needs fixing rather than ignoring.
+*.tsbuildinfo
+/vite.config.js
+/vite.config.d.ts
+/resources/js/**/*.js
+/resources/js/**/*.js.map

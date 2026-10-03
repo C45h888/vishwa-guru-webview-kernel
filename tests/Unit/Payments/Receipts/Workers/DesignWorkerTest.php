@@ -25,6 +25,7 @@ final class DesignWorkerTest extends TestCase
             receiptNumber: 'TR-2026-000042-A7c3ZpQ9',
             fyLabel: 'FY 2026-27',
             campaignTitle: 'Temple Renovation',
+            campaignDescription: 'Restoration of the temple sanctum and tower.',
             donorName: 'Priya Sharma',
             donorEmail: 'priya@example.in',
             donorPan: 'ABCTY1234D',
@@ -48,6 +49,8 @@ final class DesignWorkerTest extends TestCase
             trustEmail: 'trust@example.com',
             trustPhone: '+91-98765-43210',
             trustPan: 'AAACT1234D',
+            trustTan: 'BLRS60956A',
+            trustTwelveANumber: 'S-504/12AA/CIT/MYs/2010-11',
         );
     }
 
@@ -62,6 +65,8 @@ final class DesignWorkerTest extends TestCase
         self::assertSame('ABCTY1234D', $data['donor_pan']);
         self::assertSame('80G/2026/AAATS1234R/AB12CD', $data['tax_80g_certificate_number']);
         self::assertSame('AAATS1234R', $data['tax_80g_registration_number']);
+        self::assertSame('BLRS60956A', $data['trust_tan']);
+        self::assertSame('S-504/12AA/CIT/MYs/2010-11', $data['trust_12a_number']);
         self::assertSame('16 July 2026', $data['issued_date']);
     }
 
@@ -90,6 +95,8 @@ final class DesignWorkerTest extends TestCase
         self::assertStringContainsString('ABCTY1234D', $html);   // donor PAN
         self::assertStringContainsString('80G/2026/AAATS1234R/AB12CD', $html);
         self::assertStringContainsString('AAATS1234R', $html);   // registration ≠ certificate
+        self::assertStringContainsString('BLRS60956A', $html);   // donee TAN (DB plane)
+        self::assertStringContainsString('12AA/CIT', $html);     // 12A number
         self::assertStringContainsString('16 July 2026', $html);
         self::assertStringContainsString('12 Temple Lane', $html);
     }

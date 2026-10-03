@@ -80,6 +80,8 @@ final class DesignWorker
             'trust_email' => $d->trustEmail,
             'trust_phone' => $d->trustPhone,
             'trust_pan' => $d->trustPan,
+            'trust_tan' => $d->trustTan,
+            'trust_12a_number' => $d->trustTwelveANumber,
 
             'receipt_number' => $d->receiptNumber,
             'fy_label' => $d->fyLabel,
@@ -97,6 +99,7 @@ final class DesignWorker
             'donor_address' => $d->donorAddressBlock,
 
             'campaign_title' => $d->campaignTitle,
+            'campaign_description' => $d->campaignDescription,
 
             'is_tax_deductible' => $d->isTaxDeductible,
             'tax_80g_eligible' => $d->tax80gEligible,
@@ -105,6 +108,29 @@ final class DesignWorker
             'tax_80g_note' => $d->tax80gNote,
 
             'content_hash' => $d->contentHash,
+
+            'trust_seal_data_uri' => $this->assetDataUri('receipts/Assets/trust-seal.svg'),
+            'signature_data_uri' => $this->assetDataUri('receipts/Assets/signature-trustee.png'),
         ];
+    }
+
+    /**
+     * Embed a design asset as a data URI so dompdf renders it without
+     * filesystem/URL access. Missing assets yield null — the template
+     * guards each with @isset. SVG + PNG both safe to inline.
+     */
+    private function assetDataUri(string $viewRelativePath): ?string
+    {
+        $full = resource_path('views/'.$viewRelativePath);
+        if (! is_file($full)) {
+            return null;
+        }
+        $bytes = @file_get_contents($full);
+        if ($bytes === false || $bytes === '') {
+            return null;
+        }
+        $mime = str_ends_with($full, '.svg') ? 'image/svg+xml' : 'image/png';
+
+        return 'data:'.$mime.';base64,'.base64_encode($bytes);
     }
 }

@@ -187,6 +187,7 @@ final class MailDispatchCoordinatorTest extends TestCase
             receiptNumber: 'TR-2026-000042-A7c3ZpQ9',
             fyLabel: 'FY 2026-27',
             campaignTitle: 'Temple Renovation',
+            campaignDescription: '',
             donorName: 'Priya Sharma',
             donorEmail: $donorEmail,
             donorPan: null,

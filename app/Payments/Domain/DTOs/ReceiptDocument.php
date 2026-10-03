@@ -35,6 +35,7 @@ final readonly class ReceiptDocument
         public string $receiptNumber,
         public string $fyLabel,
         public string $campaignTitle,
+        public string $campaignDescription,
 
         // Donor (snapshot as rendered)
         public string $donorName,
@@ -64,12 +65,18 @@ final readonly class ReceiptDocument
         public ?string $tax80gRegistrationNumber,
         public ?string $tax80gNote,
 
-        // Donee (trust) block
+        // Donee (trust) block — DB plane (trust_identities, key
+        // `canonical`) is the EXCLUSIVE source for credentials (PAN,
+        // TAN, 80G + 12A numbers): there is no env/config fallback for
+        // them by design. Presentation strings (name/address/email/phone)
+        // are DB-first with a config fallback for unseeded environments.
         public string $trustName,
         public string $trustAddress,
         public string $trustEmail,
         public string $trustPhone,
         public ?string $trustPan,
+        public ?string $trustTan,
+        public ?string $trustTwelveANumber,
 
         // Runtime state echo (populated when a persisted receipt exists)
         public string $contentHash = '',
@@ -95,6 +102,7 @@ final readonly class ReceiptDocument
             'receipt_number'            => $this->receiptNumber,
             'fy_label'                  => $this->fyLabel,
             'campaign_title_snapshot'   => $this->campaignTitle,
+            'campaign_description'      => $this->campaignDescription,
             'donor_name'                => $this->donorName,
             'donor_email'               => $this->donorEmail,
             'amount_minor'              => $this->amountMinor,
@@ -108,6 +116,13 @@ final readonly class ReceiptDocument
             'tax_80g_eligible'          => $this->tax80gEligible,
             'tax_80g_certificate_number' => $this->tax80gCertificateNumber,
             'tax_80g_registration_number' => $this->tax80gRegistrationNumber,
+            'trust_name'                => $this->trustName,
+            'trust_address'             => $this->trustAddress,
+            'trust_email'               => $this->trustEmail,
+            'trust_phone'               => $this->trustPhone,
+            'trust_pan'                 => $this->trustPan,
+            'trust_tan'                 => $this->trustTan,
+            'trust_12a_number'          => $this->trustTwelveANumber,
             'content_hash'              => $this->contentHash,
             'state'                     => $this->state,
             'generated_at'              => $this->generatedAt->format(DATE_ATOM),

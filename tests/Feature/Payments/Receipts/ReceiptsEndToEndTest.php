@@ -217,6 +217,14 @@ class ReceiptsEndToEndTest extends TestCase
         );
         $receiptNumberAllocator = new ReceiptNumberAllocator($receipts, $clock);
 
+        // DB plane: canonical trust row (credentials never come from env).
+        $trustIdentities = $this->createMock(\App\Payments\Domain\Repositories\TrustIdentityRepositoryContract::class);
+        $trustIdentities->method('findCanonical')->willReturn(new \App\Payments\Domain\ValueObjects\TrustIdentity(
+            tan: 'BLRS60956A',
+            eightyGNumber: 'F.No.S-504/80G/CIT/MYS/2011-12',
+            twelveANumber: 'S-504/12AA/CIT/MYs/2010-11',
+        ));
+
         return new ReceiptSubstrate(
             payments: $payments,
             donations: $donations,
@@ -229,6 +237,7 @@ class ReceiptsEndToEndTest extends TestCase
             clock: $clock,
             views: $viewFactory,
             pdf: $pdfWrapper,
+            trustIdentities: $trustIdentities,
         );
     }
 }

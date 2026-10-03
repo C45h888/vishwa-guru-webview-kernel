@@ -279,6 +279,7 @@ export interface ReceiptProps {
     receipt_number: string;
     fy_label: string;
     campaign_title_snapshot: string;
+    campaign_description: string;
     donor_name: string;
     donor_email: string | null;
     amount_minor: number;
@@ -292,6 +293,13 @@ export interface ReceiptProps {
     tax_80g_eligible: boolean;
     tax_80g_certificate_number: string | null;
     tax_80g_registration_number: string | null;
+    trust_name: string;
+    trust_address: string;
+    trust_email: string;
+    trust_phone: string;
+    trust_pan: string | null;
+    trust_tan: string | null;
+    trust_12a_number: string | null;
     content_hash: string;
     state: string;
     generated_at: string;

@@ -19,19 +19,25 @@ use DateTimeImmutable;
  * Form 10BD is the quarterly statement of donations eligible for 80G deduction.
  * It is filed electronically via the ITD portal as a CSV upload.
  *
- * Columns (per ITD specification):
+ * Columns (per ITD specification, + donee TAN required for TDS
+ * cross-reference on the filing):
  *   1.  Serial Number
  *   2.  Name of the donee (Trust)
  *   3.  Address of the donee
  *   4.  PAN of the donee
- *   5.  Registration Number (80G)
- *   6.  Name of the donor
- *   7.  Address of the donor
- *   8.  PAN of the donor
- *   9.  Mode of payment (Cash/Cheque/Bank Draft/Others)
- *   10. Amount of donation (₹)
- *   11. Date of donation (DD/MM/YYYY)
- *   12. Amount in words
+ *   5.  TAN of the donee
+ *   6.  Registration Number (80G)
+ *   7.  Name of the donor
+ *   8.  Address of the donor
+ *   9.  PAN of the donor
+ *   10. Mode of payment (Cash/Cheque/Bank Draft/Others)
+ *   11. Amount of donation (₹)
+ *   12. Date of donation (DD/MM/YYYY)
+ *   13. Amount in words
+ *
+ * Donee credentials (name/address/PAN/TAN/80G) MUST be supplied from
+ * the DB plane (`trust_identities`, key `canonical`) by the caller —
+ * never from env/config. There are no TRUST_* env keys by design.
  *
  * Only receipts with tax80gEligible=true and above the minimum threshold
  * are included.
@@ -43,6 +49,7 @@ final class Form10BDExporter
         'Name of Donee',
         'Address of Donee',
         'PAN of Donee',
+        'TAN of Donee',
         'Registration No (80G)',
         'Name of Donor',
         'Address of Donor',
@@ -68,6 +75,7 @@ final class Form10BDExporter
      * @param  string             $trustName
      * @param  string             $trustAddress
      * @param  string             $trustPan
+     * @param  string             $trustTan
      * @param  string             $trust80gRegNumber
      *
      * @return Result<string> CSV bytes
@@ -78,6 +86,7 @@ final class Form10BDExporter
         string $trustName,
         string $trustAddress,
         string $trustPan,
+        string $trustTan,
         string $trust80gRegNumber,
     ): Result {
         try {
@@ -99,6 +108,7 @@ final class Form10BDExporter
                     $trustName,
                     $trustAddress,
                     $trustPan,
+                    $trustTan,
                     $trust80gRegNumber,
                 );
             }
@@ -153,6 +163,7 @@ final class Form10BDExporter
         string $trustName,
         string $trustAddress,
         string $trustPan,
+        string $trustTan,
         string $trust80gRegNumber,
     ): array {
         $amountMajor = $receipt->amountMinor() / 100;
@@ -166,6 +177,7 @@ final class Form10BDExporter
             $trustName,
             $trustAddress,
             $trustPan,
+            $trustTan,
             $trust80gRegNumber,
             $receipt->donorName(),
             $this->formatDonorAddress($donation?->donorAddressSnapshot()),

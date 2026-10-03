@@ -20,6 +20,7 @@ use App\Payments\Domain\Repositories\PaymentDocumentRepositoryContract;
 use App\Payments\Domain\Repositories\IdempotencyKeyRepositoryContract;
 use App\Payments\Domain\Repositories\PaymentRepositoryContract;
 use App\Payments\Domain\Repositories\ReceiptRepositoryContract;
+use App\Payments\Domain\Repositories\TrustIdentityRepositoryContract;
 use App\Payments\Domain\Repositories\WebhookEventRepositoryContract;
 use App\Payments\Domain\StateMachines\DonationStateMachine;
 use App\Payments\Domain\StateMachines\PaymentStateMachine;
@@ -49,6 +50,7 @@ use App\Payments\Infrastructure\Repositories\PaymentDocumentRepository;
 use App\Payments\Infrastructure\Repositories\IdempotencyKeyRepository;
 use App\Payments\Infrastructure\Repositories\PaymentRepository;
 use App\Payments\Infrastructure\Repositories\ReceiptRepository;
+use App\Payments\Infrastructure\Repositories\TrustIdentityRepository;
 use App\Payments\Infrastructure\Repositories\WebhookEventRepository;
 use App\Payments\Services\FailureStateService;
 use App\Payments\Services\PaymentOrchestrator;
@@ -202,6 +204,7 @@ final class PaymentsServiceProvider extends ServiceProvider
             AuditEventRepositoryContract::class    => AuditEventRepository::class,
             FileAssetRepositoryContract::class      => FileAssetRepository::class,
             PaymentDocumentRepositoryContract::class => PaymentDocumentRepository::class,
+            TrustIdentityRepositoryContract::class   => TrustIdentityRepository::class,
         ];
         foreach ($repoBindings as $contract => $impl) {
             $app->bind($contract, $impl);
@@ -360,6 +363,7 @@ final class PaymentsServiceProvider extends ServiceProvider
             AuditEventRepositoryContract::class,
             FileAssetRepositoryContract::class,
             PaymentDocumentRepositoryContract::class,
+            TrustIdentityRepositoryContract::class,
             // Services
             ReceiptGenerationContract::class,
             PaymentProviderSelector::class,

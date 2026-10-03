@@ -279,6 +279,7 @@ final class MailSubstrateTest extends TestCase
             receiptNumber: 'TR-2026-000042-A7c3ZpQ9',
             fyLabel: 'FY 2026-27',
             campaignTitle: 'Temple Renovation',
+            campaignDescription: '',
             donorName: 'Priya Sharma',
             donorEmail: 'priya@example.in',
             donorPan: 'ABCTY1234D',
@@ -302,6 +303,8 @@ final class MailSubstrateTest extends TestCase
             trustEmail: 'trust@example.com',
             trustPhone: '+91-98765-43210',
             trustPan: 'AAACT1234D',
+            trustTan: 'BLRS60956A',
+            trustTwelveANumber: 'S-504/12AA/CIT/MYs/2010-11',
         );
     }
 }

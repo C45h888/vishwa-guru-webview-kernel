@@ -17,10 +17,12 @@ namespace App\Payments\Domain\ValueObjects;
  *
  * plus the presentation identity (name, address, email, phone).
  *
- * DB-first doctrine: the receipts pipeline reads this row via
+ * DB-only doctrine: the receipts pipeline reads this row via
  * TrustIdentityRepositoryContract (transported by DataWorker, typed by
- * TypesWorker). `config/receipts.php` (+ TRUST_* env) remains ONLY as the
- * fallback for environments where the row is absent (fresh test DBs).
+ * TypesWorker). Statutory credentials (PAN, TAN, 80G + 12A numbers) have
+ * NO env/config fallback anywhere — a missing row yields null, never a
+ * fabricated value. Presentation strings (name/address/email/phone) are
+ * DB-first with a substrate config fallback for unseeded environments.
  * The canonical seeded values live in the k_payments trust_identities
  * migrations, not in env files.
  */

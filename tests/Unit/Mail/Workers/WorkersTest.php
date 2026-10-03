@@ -143,6 +143,7 @@ final class WorkersTest extends TestCase
             receiptNumber: 'TR-2026-000042-A7c3ZpQ9',
             fyLabel: 'FY 2026-27',
             campaignTitle: 'Temple Renovation',
+            campaignDescription: '',
             donorName: 'Priya Sharma',
             donorEmail: 'priya@example.in',
             donorPan: null,

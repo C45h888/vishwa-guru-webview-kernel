@@ -63,11 +63,13 @@ return [
         // an 80G certificate is issued. Default ₹500 = 500_00 minor units.
         'certificate_threshold_minor' => (int) env('RECEIPT_80G_THRESHOLD_MINOR', 500_00),
 
-        // Trust's 80G registration number (as allotted by ITD)
-        'trust_registration_number' => env('TRUST_80G_NUMBER', null),
-
-        // Trust PAN (required on the 80G certificate)
-        'trust_pan' => env('TRUST_PAN', null),
+        // NOTE: statutory donee credentials (trust PAN, TAN, 80G
+        // registration number, 12A number) live EXCLUSIVELY in the DB
+        // plane — table `trust_identities`, key `canonical` — seeded by
+        // the k_payments trust_identities migrations. There are
+        // deliberately NO TRUST_* env keys for them: credentials must
+        // flow DB → DataWorker → TypesWorker → ReceiptDocument, never
+        // through env/config. Only the operational flags above stay here.
     ],
 
     /*

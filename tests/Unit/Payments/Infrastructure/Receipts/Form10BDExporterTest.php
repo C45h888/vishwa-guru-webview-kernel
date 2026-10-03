@@ -83,6 +83,7 @@ class Form10BDExporterTest extends TestCase
             trustName: 'Temple Trust',
             trustAddress: '123 Temple St',
             trustPan: 'AAACT1234D',
+            trustTan: 'BLRS60956A',
             trust80gRegNumber: 'REG1234',
         );
 
@@ -135,6 +136,7 @@ class Form10BDExporterTest extends TestCase
             trustName: 'Temple Trust',
             trustAddress: '',
             trustPan: '',
+            trustTan: '',
             trust80gRegNumber: '',
         );
 
@@ -178,6 +180,7 @@ class Form10BDExporterTest extends TestCase
             trustName: 'Temple Trust',
             trustAddress: '123 Temple St',
             trustPan: 'AAACT1234D',
+            trustTan: 'BLRS60956A',
             trust80gRegNumber: 'REG1234',
         );
 
@@ -209,18 +212,19 @@ class Form10BDExporterTest extends TestCase
 
         $row = $method->invoke($this->exporter,
             1, $receipt, $donation,
-            'Temple Trust', '123 Temple St', 'AAACT1234D', 'REG1234',
+            'Temple Trust', '123 Temple St', 'AAACT1234D', 'BLRS60956A', 'REG1234',
         );
 
         $this->assertSame('1', $row[0]);
         $this->assertSame('Temple Trust', $row[1]);
-        $this->assertSame('789 Donor Lane, Pune, MH, 411001', $row[6]);
-        $this->assertSame('XYZPA1234M', $row[7]);
-        $this->assertSame('10000.00', $row[9]);
+        $this->assertSame('789 Donor Lane, Pune, MH, 411001', $row[7]);
+        $this->assertSame('BLRS60956A', $row[4]);
+        $this->assertSame('XYZPA1234M', $row[8]);
+        $this->assertSame('10000.00', $row[10]);
         // generatedAt is set to clock::now() inside Receipt::issue(),
         // not via factory argument; the formatting is exercised via the
         // date-format unit, here we just confirm the row shape.
-        $this->assertMatchesRegularExpression('/^\d{2}\/\d{2}\/\d{4}$/', $row[10]);
+        $this->assertMatchesRegularExpression('/^\d{2}\/\d{2}\/\d{4}$/', $row[11]);
     }
 
     /**

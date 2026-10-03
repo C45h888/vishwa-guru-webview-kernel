@@ -16,8 +16,10 @@ use App\Payments\Domain\Repositories\DonationRepositoryContract;
 use App\Payments\Domain\Repositories\FileAssetRepositoryContract;
 use App\Payments\Domain\Repositories\PaymentRepositoryContract;
 use App\Payments\Domain\Repositories\ReceiptRepositoryContract;
+use App\Payments\Domain\Repositories\TrustIdentityRepositoryContract;
 use App\Payments\Domain\StateMachines\PaymentStateMachine;
 use App\Payments\Domain\ValueObjects\DonorIdentity;
+use App\Payments\Domain\ValueObjects\TrustIdentity;
 use App\Payments\Domain\ValueObjects\FileAssetRecord;
 use App\Payments\Domain\ValueObjects\ReceiptDraft;
 use App\Payments\Infrastructure\Receipts\Pdf\InMemoryPdfWrapper;
@@ -52,6 +54,7 @@ final class ReceiptSubstrateTest extends TestCase
     private FrozenClock $clock;
     private InMemoryPdfWrapper $pdf;
     private ConfigurationContract $config;
+    private TrustIdentityRepositoryContract $trustIdentities;
     private ReceiptSubstrate $substrate;
 
     /** @var array<string, mixed> */
@@ -71,8 +74,8 @@ final class ReceiptSubstrateTest extends TestCase
         $this->configValues = [
             'receipts.enabled' => true,
             'receipts.80g.trust_registered' => true,
-            'receipts.80g.trust_registration_number' => 'AAATS1234R',
-            'receipts.80g.trust_pan' => 'AAACT1234D',
+            // NOTE: statutory credentials (PAN/TAN/80G/12A) have NO config
+            // keys by design — they arrive DB-only via the trust row mock.
             'receipts.80g.certificate_threshold_minor' => 500_00,
             'receipts.branding.trust_name' => 'Temple Trust',
             'receipts.branding.trust_address' => '12 Temple St',
@@ -140,6 +143,9 @@ final class ReceiptSubstrateTest extends TestCase
             public function replaceNamespace($namespace, $hints) { return $this; }
         };
 
+        $this->trustIdentities = $this->createMock(TrustIdentityRepositoryContract::class);
+        $this->trustIdentities->method('findCanonical')->willReturn($this->makeTrustIdentity());
+
         $this->substrate = new ReceiptSubstrate(
             payments: $this->payments,
             donations: $this->donations,
@@ -152,6 +158,7 @@ final class ReceiptSubstrateTest extends TestCase
             clock: $this->clock,
             views: $viewFactory,
             pdf: $this->pdf,
+            trustIdentities: $this->trustIdentities,
         );
     }
 
@@ -262,7 +269,7 @@ final class ReceiptSubstrateTest extends TestCase
 
     public function testVerify80gRejectsNonInr(): void
     {
-        $r = $this->substrate->verify80G('ABCTY1234D', 5_000_00, Currency::USD, new \DateTimeImmutable());
+        $r = $this->substrate->verify80G('ABCTY1234D', 5_000_00, Currency::USD, new \DateTimeImmutable(), $this->makeTrustIdentity());
 
         self::assertFalse($r['eligible']);
         self::assertStringContainsString('INR', (string) $r['reason']);
@@ -272,14 +279,14 @@ final class ReceiptSubstrateTest extends TestCase
     {
         $this->setConfig('receipts.80g.trust_registered', false);
 
-        $r = $this->substrate->verify80G('ABCTY1234D', 5_000_00, Currency::INR, new \DateTimeImmutable());
+        $r = $this->substrate->verify80G('ABCTY1234D', 5_000_00, Currency::INR, new \DateTimeImmutable(), $this->makeTrustIdentity());
 
         self::assertFalse($r['eligible']);
     }
 
     public function testVerify80gRequiresPanAboveThreshold(): void
     {
-        $r = $this->substrate->verify80G(null, 1_000_00, Currency::INR, new \DateTimeImmutable());
+        $r = $this->substrate->verify80G(null, 1_000_00, Currency::INR, new \DateTimeImmutable(), $this->makeTrustIdentity());
 
         self::assertFalse($r['eligible']);
         self::assertTrue($r['certificate_required']);
@@ -288,7 +295,7 @@ final class ReceiptSubstrateTest extends TestCase
 
     public function testVerify80gRejectsInvalidPan(): void
     {
-        $r = $this->substrate->verify80G('NOTAPAN', 5_000_00, Currency::INR, new \DateTimeImmutable());
+        $r = $this->substrate->verify80G('NOTAPAN', 5_000_00, Currency::INR, new \DateTimeImmutable(), $this->makeTrustIdentity());
 
         self::assertFalse($r['eligible']);
         self::assertStringContainsString('PAN', (string) $r['reason']);
@@ -296,7 +303,7 @@ final class ReceiptSubstrateTest extends TestCase
 
     public function testVerify80gEligibleIssuesCertificateAboveThreshold(): void
     {
-        $r = $this->substrate->verify80G('ABCTY1234D', 5_000_00, Currency::INR, new \DateTimeImmutable('2026-07-16'));
+        $r = $this->substrate->verify80G('ABCTY1234D', 5_000_00, Currency::INR, new \DateTimeImmutable('2026-07-16'), $this->makeTrustIdentity());
 
         self::assertTrue($r['eligible']);
         self::assertTrue($r['certificate_required']);
@@ -306,7 +313,7 @@ final class ReceiptSubstrateTest extends TestCase
 
     public function testVerify80gEligibleWithoutCertificateBelowThreshold(): void
     {
-        $r = $this->substrate->verify80G('ABCTY1234D', 100_00, Currency::INR, new \DateTimeImmutable('2026-07-16'));
+        $r = $this->substrate->verify80G('ABCTY1234D', 100_00, Currency::INR, new \DateTimeImmutable('2026-07-16'), $this->makeTrustIdentity());
 
         self::assertTrue($r['eligible']);
         self::assertFalse($r['certificate_required']);
@@ -419,6 +426,30 @@ final class ReceiptSubstrateTest extends TestCase
             currency: Currency::INR,
             contentHash: str_repeat('a', 64),
             receiptFileId: EntityId::fromString('file_asset_'.EntityId::generate('file_asset')->ulid()),
+        );
+    }
+
+    public function testVerify80gRegistrationIsDbOnlyNeverFromEnv(): void
+    {
+        // No trust row → registration is null, NOT a config value.
+        $r = $this->substrate->verify80G('ABCTY1234D', 5_000_00, Currency::INR, new \DateTimeImmutable('2026-07-16'), null);
+
+        self::assertTrue($r['eligible']);
+        self::assertNull($r['trust_registration_number']);
+        self::assertNull($r['certificate_number'], 'no registration number means no certificate number can be minted');
+    }
+
+    private function makeTrustIdentity(): TrustIdentity
+    {
+        return new TrustIdentity(
+            name: 'Temple Trust',
+            address: '12 Temple St',
+            email: 'trust@example.com',
+            phone: '+91-98765-43210',
+            pan: 'AAACT1234D',
+            tan: 'BLRS60956A',
+            eightyGNumber: 'AAATS1234R',
+            twelveANumber: 'S-504/12AA/CIT/MYs/2010-11',
         );
     }
 

@@ -72,7 +72,7 @@
                     <p
                         class="text-xs font-semibold uppercase tracking-[0.25em] text-primary"
                     >
-                        Official receipt
+                        {receipt.trust_name || appName}
                     </p>
                     <div class="flex flex-wrap items-center gap-3">
                         <h1
@@ -90,6 +90,17 @@
                     <p class="font-mono text-sm text-muted-foreground">
                         {receipt.receipt_number}
                     </p>
+                    {#if receipt.trust_pan || receipt.trust_tan || receipt.tax_80g_registration_number || receipt.trust_12a_number}
+                        <p class="text-xs leading-relaxed text-muted-foreground">
+                            {#if receipt.trust_pan}PAN: {receipt.trust_pan}{/if}
+                            {#if receipt.trust_pan && receipt.trust_tan} · {/if}
+                            {#if receipt.trust_tan}TAN: {receipt.trust_tan}{/if}
+                            {#if (receipt.trust_pan || receipt.trust_tan) && receipt.tax_80g_registration_number}<br />{/if}
+                            {#if receipt.tax_80g_registration_number}80G No: {receipt.tax_80g_registration_number}{/if}
+                            {#if receipt.tax_80g_registration_number && receipt.trust_12a_number} · {/if}
+                            {#if receipt.trust_12a_number}12A No: {receipt.trust_12a_number}{/if}
+                        </p>
+                    {/if}
                 </header>
 
                 <Card>
@@ -103,6 +114,11 @@
                                 {receipt.campaign_title_snapshot}
                             </span>
                         </div>
+                        {#if receipt.campaign_description}
+                            <p class="text-xs leading-relaxed text-muted-foreground">
+                                {receipt.campaign_description}
+                            </p>
+                        {/if}
                         <div class="flex items-baseline justify-between">
                             <span class="text-muted-foreground">Donor</span>
                             <span class="font-medium">{receipt.donor_name}</span>

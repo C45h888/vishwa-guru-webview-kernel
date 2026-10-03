@@ -76,6 +76,7 @@ final class ReceiptSubstrate implements ReceiptGenerationContract
         private readonly Clock $clock,
         private readonly ViewFactory $views,
         private readonly PdfWrapper $pdf,
+        private readonly \App\Payments\Domain\Repositories\TrustIdentityRepositoryContract $trustIdentities,
     ) {
     }
 
@@ -281,8 +282,14 @@ final class ReceiptSubstrate implements ReceiptGenerationContract
         int $amountMinor,
         Currency $currency,
         \DateTimeImmutable $paymentDate,
+        ?\App\Payments\Domain\ValueObjects\TrustIdentity $trust = null,
     ): array {
-        $registration = $this->trustRegistrationNumber();
+        // DB-ONLY: the 80G registration number comes exclusively from
+        // the transported trust row (DataWorker → TypesWorker). There is
+        // deliberately no config/env fallback — credentials never flow
+        // through env. A missing row means "registered flag on, number
+        // unknown" rather than a fabricated number.
+        $registration = $trust?->eightyGNumber;
 
         $ineligible = fn (string $reason, bool $certRequired = false, ?string $note = null): array => [
             'eligible' => false,
@@ -426,7 +433,16 @@ final class ReceiptSubstrate implements ReceiptGenerationContract
         return $this->clock->now();
     }
 
-    // ─── Donee (trust) identity — pulled once, used by every surface ──
+    // ─── Donee (trust) PRESENTATION identity — config fallback ───────
+    //
+    // Name / address / email / phone are presentation strings, NOT
+    // credentials, so a config/env fallback is legitimate here: the DB
+    // row (transported by DataWorker, preferred by TypesWorker) wins,
+    // these getters cover only the row-absent case (unseeded test DBs).
+    //
+    // Statutory CREDENTIALS (PAN, TAN, 80G + 12A numbers) have NO
+    // getter here by design — they live exclusively in the DB plane
+    // and reach the document only via $data['trust_identity'].
 
     public function trustName(): string
     {
@@ -446,20 +462,6 @@ final class ReceiptSubstrate implements ReceiptGenerationContract
     public function trustPhone(): string
     {
         return (string) $this->config->get('receipts.branding.trust_phone', '');
-    }
-
-    public function trustPan(): ?string
-    {
-        $pan = $this->config->get('receipts.80g.trust_pan');
-
-        return $pan !== null && $pan !== '' ? (string) $pan : null;
-    }
-
-    public function trustRegistrationNumber(): ?string
-    {
-        $reg = $this->config->get('receipts.80g.trust_registration_number');
-
-        return $reg !== null && $reg !== '' ? (string) $reg : null;
     }
 
     // ════════════════════════════════════════════════════════════════
@@ -497,7 +499,7 @@ final class ReceiptSubstrate implements ReceiptGenerationContract
 
     private function dataWorker(): DataWorker
     {
-        return new DataWorker($this->payments, $this->donations, $this->campaigns, $this->receipts);
+        return new DataWorker($this->payments, $this->donations, $this->campaigns, $this->receipts, $this->trustIdentities);
     }
 
     private function typesWorker(): TypesWorker

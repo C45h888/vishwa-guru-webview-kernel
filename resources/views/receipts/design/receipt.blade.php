@@ -1,11 +1,18 @@
 {{-- receipts/design/receipt.blade.php — THE canonical receipt document design. --}}
 {{-- Data contract: DesignWorker::viewData() — typed fields from ReceiptDocument only. --}}
+{{-- Statutory credentials (PAN/TAN/80G/12A) arrive DB-sourced via the --}}
+{{-- document; there is no env/config read here or anywhere upstream of it. --}}
 {{-- Design rules live in receipts/design/styles.blade.php. No logic beyond display conditionals. --}}
 
 <div class="receipt-page">
 
     {{-- ── Header / donee identity ─────────────────────────────────── --}}
     <div class="header">
+        @isset($trust_seal_data_uri)
+            @if($trust_seal_data_uri)
+                <div class="seal-row"><img src="{{ $trust_seal_data_uri }}" alt="Trust seal"></div>
+            @endif
+        @endisset
         <div class="trust-name">{{ $trust_name }}</div>
         @if($trust_address !== '')
             <div class="trust-line">{{ $trust_address }}</div>
@@ -17,9 +24,13 @@
                 @if($trust_phone !== ''){{ $trust_phone }}@endif
             </div>
         @endif
-        @if($trust_pan)
-            <div class="trust-line">PAN: {{ $trust_pan }}</div>
-        @endif
+        {{-- Statutory donee strip — printed on EVERY receipt surface. --}}
+        <div class="statutory-strip">
+            @if($trust_pan)<strong>PAN:</strong> {{ $trust_pan }} &nbsp;|&nbsp; @endif
+            @if($trust_tan)<strong>TAN:</strong> {{ $trust_tan }} &nbsp;|&nbsp; @endif
+            @if($tax_80g_registration_number)<strong>80G No:</strong> {{ $tax_80g_registration_number }} &nbsp;|&nbsp; @endif
+            @if($trust_12a_number)<strong>12A No:</strong> {{ $trust_12a_number }}@endif
+        </div>
         <div class="receipt-title">Donation Receipt</div>
         <div class="receipt-fy">{{ $fy_label }}</div>
     </div>
@@ -94,11 +105,28 @@
         @endif
     </div>
 
-    {{-- ── Campaign ────────────────────────────────────────────────── --}}
+    {{-- ── Donation breakdown ──────────────────────────────────────── --}}
     @if($campaign_title !== '')
         <div class="section">
             <div class="section-title">Donation Towards</div>
-            <div style="font-size:12px; margin-top:4px;">{{ $campaign_title }}</div>
+            <div style="font-size:12px; margin-top:4px; font-weight:bold;">{{ $campaign_title }}</div>
+            @isset($campaign_description)
+                @if($campaign_description !== '')
+                    <div class="campaign-desc">{{ $campaign_description }}</div>
+                @endif
+            @endisset
+            <table width="100%" cellpadding="4" cellspacing="0" style="margin-top:8px;">
+                <tr>
+                    <td width="50%">
+                        <div class="field-label">Amount Received</div>
+                        <div class="field-value">{{ $amount_display }}</div>
+                    </td>
+                    <td width="50%">
+                        <div class="field-label">Payment Reference</div>
+                        <div class="field-value ref">{{ $payment_reference }}</div>
+                    </td>
+                </tr>
+            </table>
         </div>
     @endif
 
@@ -147,8 +175,14 @@
                 @if($trust_pan)
                     <div style="margin-top:3px;"><span class="field-label">Donee PAN</span><br>{{ $trust_pan }}</div>
                 @endif
+                @if($trust_tan)
+                    <div style="margin-top:3px;"><span class="field-label">Donee TAN</span><br>{{ $trust_tan }}</div>
+                @endif
                 @if($tax_80g_registration_number)
                     <div style="margin-top:3px;"><span class="field-label">80G Registration No.</span><br>{{ $tax_80g_registration_number }}</div>
+                @endif
+                @if($trust_12a_number)
+                    <div style="margin-top:3px;"><span class="field-label">12A Registration No.</span><br>{{ $trust_12a_number }}</div>
                 @endif
                 @if($tax_80g_certificate_number)
                     <div style="margin-top:3px;"><span class="field-label">Certificate No.</span><br>{{ $tax_80g_certificate_number }}</div>
@@ -165,14 +199,40 @@
         </div>
     @endif
 
+    {{-- ── Signatory + seal ────────────────────────────────────────── --}}
+    <table class="signatory" cellpadding="0" cellspacing="0">
+        <tr>
+            <td width="60%">
+                @isset($signature_data_uri)
+                    @if($signature_data_uri)
+                        <img class="signature-img" src="{{ $signature_data_uri }}" alt="Authorised signatory">
+                    @endif
+                @endisset
+                <div class="sign-line">Authorised Signatory — for {{ $trust_name }}</div>
+            </td>
+            <td width="40%" style="text-align:right;">
+                @isset($trust_seal_data_uri)
+                    @if($trust_seal_data_uri)
+                        <img class="seal-img" src="{{ $trust_seal_data_uri }}" alt="Trust seal">
+                    @endif
+                @endisset
+            </td>
+        </tr>
+    </table>
+
     {{-- ── Footer ──────────────────────────────────────────────────── --}}
     <div class="footer">
         <div>
             <strong>{{ $trust_name }}</strong>
             @if($trust_pan) &nbsp;|&nbsp; PAN: {{ $trust_pan }} @endif
-            &nbsp;|&nbsp; Receipt {{ $receipt_number }}
-            &nbsp;|&nbsp; Issued {{ $issued_date }}
+            @if($trust_tan) &nbsp;|&nbsp; TAN: {{ $trust_tan }} @endif
+            @if($tax_80g_registration_number) &nbsp;|&nbsp; 80G: {{ $tax_80g_registration_number }} @endif
+            @if($trust_12a_number) &nbsp;|&nbsp; 12A: {{ $trust_12a_number }} @endif
+            <br>Receipt {{ $receipt_number }} &nbsp;|&nbsp; Issued {{ $issued_date }}
         </div>
+        @if($content_hash)
+            <div class="content-hash">Verification hash: {{ $content_hash }}</div>
+        @endif
         <div class="verify-line">
             This is a computer-generated receipt and does not require a signature.
             Verify this receipt using the secure link provided in your donation confirmation email.
