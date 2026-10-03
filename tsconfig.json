@@ -11,7 +11,27 @@
             "$shared/*": ["resources/js/shared/*"],
             "$domains/*": ["resources/js/domains/*"]
         },
-        "types": ["svelte"]
+        "types": ["svelte"],
+
+        // THIS PROJECT IS TYPE-CHECKED, NEVER EMITTED.
+        //
+        // Vite owns the build. TypeScript's job here is `npm run check`
+        // (svelte-check), which reads sources and writes nothing.
+        //
+        // Without this flag, `tsc -b` compiled every .ts file and wrote
+        // the .js / .js.map NEXT TO ITS SOURCE inside resources/js/ —
+        // e.g. resources/js/app.js sitting beside resources/js/app.ts,
+        // and resources/js/shared/ui/*/index.js beside index.svelte.
+        // That is not cosmetic: Vite and Node resolve `./x` by
+        // extension order, so a stale emitted ./x.js can shadow the
+        // real .ts/.svelte, and the .tsbuildinfo files make a second
+        // run skip checking entirely.
+        "noEmit": true,
+
+        // Keep the incremental cache out of the repo root. With noEmit
+        // this project writes no JS, but tsc -b still wants somewhere
+        // to keep its build state.
+        "tsBuildInfoFile": "node_modules/.tmp/tsconfig.tsbuildinfo"
     },
     "include": [
         "resources/js/**/*.ts",

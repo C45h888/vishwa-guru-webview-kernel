@@ -4,7 +4,33 @@
         "module": "ESNext",
         "moduleResolution": "Bundler",
         "target": "ES2022",
-        "allowSyntheticDefaultImports": true
+        "allowSyntheticDefaultImports": true,
+        "esModuleInterop": true,
+        "strict": true,
+        "skipLibCheck": true,
+
+        // `composite: true` FORCES emit. TypeScript 5.9 still rejects a
+        // plain `noEmit: true` on a REFERENCED project (TS6310), so the
+        // escape hatch is emitDeclarationOnly + an outDir parked inside
+        // node_modules. Without this, `tsc -b` wrote vite.config.js and
+        // vite.config.d.ts into the repository root, and a stale
+        // vite.config.js can shadow the real vite.config.ts during
+        // Vite's config resolution.
+        "emitDeclarationOnly": true,
+        "declaration": true,
+        "outDir": "node_modules/.tmp/node-types",
+        "tsBuildInfoFile": "node_modules/.tmp/tsconfig.node.tsbuildinfo",
+
+        // svelte.config.js is listed in `include` below, but TypeScript
+        // silently ignores .js files unless allowJs is true — so the
+        // entry was decorative until now. checkJs stays off: this file
+        // is config, and linting it is svelte-check's job.
+        "allowJs": true,
+        "checkJs": false,
+
+        // vite.config.ts calls node:path / node:url, so the Node
+        // globals must be in scope for it to type-check at all.
+        "types": ["node"]
     },
     "include": ["vite.config.ts", "svelte.config.js"]
 }
