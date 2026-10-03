@@ -174,6 +174,11 @@ final class SimulateReceiptDeliveryCommand extends Command
         }
 
         $page = $campaigns->listDisplayable(1, 0);
+        if ($page === []) {
+            // Simulation only needs a referable row — widen past the
+            // display-window filter to any real campaign.
+            $page = $campaigns->listAllIncludingDrafts(1, 0);
+        }
 
         return $page[0] ?? null;
     }
