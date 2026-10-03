@@ -310,7 +310,10 @@ final class PaymentsServiceProvider extends ServiceProvider
         );
 
         if ($this->app->runningInConsole()) {
-            $this->commands([ReconcileReceiptsCommand::class]);
+            $this->commands([
+                ReconcileReceiptsCommand::class,
+                \App\Payments\Console\Commands\SimulateReceiptDeliveryCommand::class,
+            ]);
         }
     }
 
@@ -367,6 +370,7 @@ final class PaymentsServiceProvider extends ServiceProvider
             ReceiptIssuanceCoordinator::class,
             GenerateReceiptJob::class,
             ReconcileReceiptsCommand::class,
+            \App\Payments\Console\Commands\SimulateReceiptDeliveryCommand::class,
             FailureStateService::class,
             TransactionCoordinator::class,
             // Registry contract (we depend on it in boot())
