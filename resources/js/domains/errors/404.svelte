@@ -10,6 +10,7 @@
 </script>
 
 <svelte:head>
+    <meta name="robots" content="noindex, nofollow" />
     <title>Not found — {appName}</title>
 </svelte:head>
 

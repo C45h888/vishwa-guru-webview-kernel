@@ -22,6 +22,7 @@
 </script>
 
 <svelte:head>
+    <meta name="robots" content="noindex, nofollow" />
     <title>Temporarily unavailable — {appName}</title>
 </svelte:head>
 

@@ -13,6 +13,7 @@
         AppPageProps,
     } from '$shared/lib/inertia';
     import { openRazorpayCheckout } from '$shared/lib/razorpay';
+    import { trackBeginCheckout } from '$shared/lib/analytics';
     import type { RazorpaySuccessResponse } from '$shared/lib/razorpay';
     import { toE164, countryByCode } from '$shared/lib/phone';
     import {
@@ -367,6 +368,7 @@
             // fails to load or throws, fall back to the success page
             // polling UX (preserves the previous no-modal path).
             try {
+                trackBeginCheckout({ orderId, amountMinor: amount, currency });
                 await openRazorpayCheckout({
                     orderId,
                     keyId,

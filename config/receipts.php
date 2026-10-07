@@ -94,7 +94,7 @@ return [
     'branding' => [
         'trust_name' => env('TRUST_NAME', 'Temple Trust'),
         'trust_address' => env('TRUST_ADDRESS', ''),
-        'trust_email' => env('TRUST_EMAIL', ''),
+        'trust_email' => env('TRUST_EMAIL', 'sriramguruji@vsrsms.in'),
         'trust_phone' => env('TRUST_PHONE', ''),
     ],
 

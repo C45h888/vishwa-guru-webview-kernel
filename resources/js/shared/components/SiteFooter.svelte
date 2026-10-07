@@ -1,4 +1,5 @@
 <script lang="ts">
+    import { page } from '@inertiajs/svelte';
     import MandalaDecoration from './MandalaDecoration.svelte';
 
     interface Props {
@@ -18,14 +19,19 @@
         { href: '/contact', label: 'Contact' },
     ];
 
-    // Social destinations remain plain text until the trust confirms
-    // which channels are active, so coming-soon labels are not tabbable links.
-    const social = [
+    // Social destinations: a channel becomes a real link once it has a URL
+    // (single source: config/trust.php -> shared `trust` Inertia prop).
+    // Channels without a URL stay as non-tabbable coming-soon text.
+    const instagramUrl = $derived($page.props.trust?.instagramUrl ?? '');
+    const trustEmail = $derived($page.props.trust?.email ?? '');
+    const social = $derived<{ label: string; ariaLabel: string; href?: string }[]>([
         { label: 'Facebook', ariaLabel: 'Facebook (coming soon)' },
         { label: 'X', ariaLabel: 'X (coming soon)' },
-        { label: 'Instagram', ariaLabel: 'Instagram (coming soon)' },
+        instagramUrl
+            ? { label: 'Instagram', ariaLabel: 'Instagram (opens in a new tab)', href: instagramUrl }
+            : { label: 'Instagram', ariaLabel: 'Instagram (coming soon)' },
         { label: 'YouTube', ariaLabel: 'YouTube (coming soon)' },
-    ];
+    ]);
 
     // Legal and terms content use the existing public CMS routes.
     const legal = [
@@ -99,6 +105,16 @@
                             +91 98441 32318
                         </a>
                     </p>
+                    {#if trustEmail}
+                        <p>
+                            <a
+                                href={`mailto:${trustEmail}`}
+                                class="transition-colors hover:text-primary"
+                            >
+                                {trustEmail}
+                            </a>
+                        </p>
+                    {/if}
                     <p>
                         <a
                             href="/contact"
@@ -133,13 +149,25 @@
                     <ul class="flex flex-wrap gap-x-4 gap-y-2 text-sm">
                         {#each social as link (link.label)}
                             <li>
-                                <span
-                                    aria-label={link.ariaLabel}
-                                    aria-disabled="true"
-                                    class="text-foreground/40"
-                                >
-                                    {link.label}
-                                </span>
+                                {#if link.href}
+                                    <a
+                                        href={link.href}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        aria-label={link.ariaLabel}
+                                        class="text-foreground/80 transition-colors hover:text-primary"
+                                    >
+                                        {link.label}
+                                    </a>
+                                {:else}
+                                    <span
+                                        aria-label={link.ariaLabel}
+                                        aria-disabled="true"
+                                        class="text-foreground/40"
+                                    >
+                                        {link.label}
+                                    </span>
+                                {/if}
                             </li>
                         {/each}
                     </ul>

@@ -21,6 +21,11 @@ export interface SharedPageProps {
      * flow without env access on the client.
      */
     razorpayMode: 'live' | 'test';
+    /** Public trust identity from config/trust.php. */
+    trust?: {
+        email: string;
+        instagramUrl: string;
+    };
 }
 
 export interface PublicMediaProps {

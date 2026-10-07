@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Seo\Services;
 
 use App\Campaigns\Contracts\CampaignsQueryContract;
+use App\Cms\Contracts\StaticPageRendererContract;
+use App\Cms\Domain\ValueObjects\PageSlug;
 use App\Events\Contracts\EventsQueryContract;
 use App\Gallery\Contracts\GalleryQueryContract;
 use Illuminate\Support\Facades\Cache;
@@ -44,6 +46,7 @@ final class SitemapBuilder
         private CampaignsQueryContract $campaigns,
         private EventsQueryContract $events,
         private GalleryQueryContract $galleries,
+        private ?StaticPageRendererContract $pages = null,
     ) {
     }
 
@@ -60,9 +63,17 @@ final class SitemapBuilder
             new SitemapUrl(route('cms.about'), null, 'monthly', '0.7'),
             new SitemapUrl(route('cms.contact'), null, 'monthly', '0.5'),
             new SitemapUrl(route('cms.legal'), null, 'yearly', '0.3'),
+            new SitemapUrl(route('donate.form'), null, 'monthly', '0.9'),
         ];
 
+        // Only advertise CMS slugs that resolve to a published page —
+        // an unpublished /trustee or /mission must never appear here
+        // (they 301 to /about instead; see CmsPageController).
         foreach (self::CMS_PAGE_SLUGS as $slug) {
+            if (! $this->cmsPageExists($slug)) {
+                continue;
+            }
+
             $urls[] = new SitemapUrl(
                 route('cms.public-page.show', ['slug' => $slug]),
                 null,
@@ -84,6 +95,19 @@ final class SitemapBuilder
         }
 
         return $urls;
+    }
+
+    private function cmsPageExists(string $slug): bool
+    {
+        if ($this->pages === null) {
+            return false;
+        }
+
+        try {
+            return $this->pages->renderBySlug(new PageSlug($slug)) !== null;
+        } catch (\Throwable) {
+            return false;
+        }
     }
 
     /**

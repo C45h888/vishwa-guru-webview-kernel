@@ -10,7 +10,9 @@
         MapPin,
         Link as LinkIcon,
         MessageCircle,
+        Instagram,
     } from 'lucide-svelte';
+    import { page } from '@inertiajs/svelte';
     import type { ContactPageProps } from './types';
     import SeoHead from '$shared/components/SeoHead.svelte';
 
@@ -30,6 +32,10 @@
     const WHATSAPP_NUMBER = '919844132318';
     const WHATSAPP_URL = `https://wa.me/${WHATSAPP_NUMBER}`;
     const WHATSAPP_DISPLAY = '+91 98441 32318';
+
+    // Instagram — shared `trust` prop (config/trust.php), same source as
+    // the header and footer.
+    const instagramUrl = $derived($page.props.trust?.instagramUrl ?? '');
 
     function iconFor(type: string) {
         const t = type.toLowerCase();
@@ -136,6 +142,22 @@
                 </span>
             </div>
         </a>
+        {#if instagramUrl}
+            <a
+                href={instagramUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                class="mt-4 flex items-center gap-4 rounded-md border border-border bg-background px-5 py-4 text-foreground shadow-sm transition-colors hover:border-primary/50 hover:text-primary sm:px-7"
+            >
+                <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-muted">
+                    <Instagram class="h-5 w-5" aria-hidden="true" />
+                </span>
+                <span class="space-y-0.5">
+                    <span class="block font-medium">Follow us on Instagram</span>
+                    <span class="block text-sm text-muted-foreground">@vishwagurushishyavrundham.in</span>
+                </span>
+            </a>
+        {/if}
     </section>
 
     <section class="container pb-16 lg:pb-24">
