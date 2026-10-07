@@ -36,4 +36,8 @@ return [
         'branch'   => env('NEON_BRANCH', 'main'),
         'role'     => env('NEON_ROLE', 'app'),
     ],
+    // Analytics (Phase 1) — read by resources/views/app.blade.php.
+    'gtm' => ['id' => env('GTM_ID')],
+    'ga4' => ['id' => env('GA4_ID')],
+    'meta_pixel' => ['id' => env('META_PIXEL_ID')],
 ];

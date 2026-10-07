@@ -144,7 +144,7 @@ final class SeoMetaBuilderTest extends TestCase
         $builder = $this->builder();
         $payload = $builder->forPage(title: 'Home', jsonLd: $builder->trustGraph());
 
-        $this->assertSame('HinduTemple', $payload['jsonLd']['@type'] ?? null);
+        $this->assertSame(['NGO', 'HinduTemple'], $payload['jsonLd']['@type'] ?? null);
         $this->assertSame('https://vsrsms.in', $payload['jsonLd']['url'] ?? null);
         $this->assertSame('https://vsrsms.in/icon-512.png', $payload['jsonLd']['logo'] ?? null);
 
@@ -217,8 +217,37 @@ final class SeoMetaBuilderTest extends TestCase
 
         $graph = $this->builder()->trustGraph();
 
-        $this->assertSame('HinduTemple', $graph['@type']);
+        $this->assertSame(['NGO', 'HinduTemple'], $graph['@type']);
         $this->assertArrayNotHasKey('url', $graph);
         $this->assertArrayNotHasKey('logo', $graph);
+        $this->assertArrayNotHasKey('potentialAction', $graph);
+    }
+
+    public function test_trust_graph_carries_ngo_identity_from_config(): void
+    {
+        $graph = $this->builder()->trustGraph();
+
+        $this->assertSame('sriramguruji@vsrsms.in', $graph['email']);
+        $this->assertSame(['https://www.instagram.com/vishwagurushishyavrundham.in/'], $graph['sameAs']);
+        $this->assertSame('2007', $graph['foundingDate']);
+        $this->assertSame(['@type' => 'Person', 'name' => 'Sri Ram Ram Das Guruji'], $graph['founder']);
+        $this->assertSame('DonateAction', $graph['potentialAction']['@type']);
+        $this->assertSame('https://vsrsms.in/donate', $graph['potentialAction']['target']);
+        $this->assertSame('PostalAddress', $graph['address']['@type']);
+        $this->assertSame('Nanjangud', $graph['address']['addressLocality']);
+        // No street address is invented when none is configured.
+        $this->assertArrayNotHasKey('streetAddress', $graph['address']);
+    }
+
+    public function test_title_and_description_fall_back_when_missing(): void
+    {
+        Config::set('app.name', '');
+
+        $payload = $this->builder()->forPage(title: '');
+        $names = $this->indexBy($payload['tags'], 'meta', 'name');
+
+        $this->assertNotSame('', $payload['title']);
+        $this->assertArrayHasKey('description', $names);
+        $this->assertArrayHasKey('twitter:title', $names);
     }
 }

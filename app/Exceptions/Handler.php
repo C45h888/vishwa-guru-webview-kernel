@@ -48,6 +48,21 @@ final class Handler extends ExceptionHandler
      */
     public function render($request, Throwable $e): Response
     {
+        $response = $this->renderResponse($request, $e);
+
+        // Error pages must never be indexed (Phase 1 SEO). The header
+        // covers every path — Inertia pages, Laravel's default views,
+        // JSON and plain-text fallbacks — including direct hits that
+        // never run the SPA.
+        if ($response->getStatusCode() >= 400) {
+            $response->headers->set('X-Robots-Tag', 'noindex, nofollow');
+        }
+
+        return $response;
+    }
+
+    private function renderResponse(Request $request, Throwable $e): Response
+    {
         // 1. Inertia requests: render an Inertia error page.
         if ($request->header('X-Inertia') && $this->shouldRenderInertiaError($e)) {
             return $this->renderInertiaError($request, $e);
@@ -146,6 +161,12 @@ final class Handler extends ExceptionHandler
             'status' => $status,
             'message' => $this->messageFor($e, $status),
             'authUser' => null, // set by the per-request render path
+            'seo' => [
+                'title' => '',
+                'tags' => [['tag' => 'meta', 'attrs' => ['name' => 'robots', 'content' => 'noindex, nofollow']]],
+                'jsonLd' => null,
+                'jsonLdString' => null,
+            ],
         ];
 
         // QueryException for connection failures already renders as 503

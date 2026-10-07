@@ -7,6 +7,8 @@ namespace Tests\Unit\Seo;
 use App\Campaigns\Contracts\CampaignsQueryContract;
 use App\Campaigns\Domain\DTOs\CampaignPagedResultDTO;
 use App\Campaigns\Domain\DTOs\CampaignSummaryDTO;
+use App\Cms\Contracts\StaticPageRendererContract;
+use App\Cms\Domain\DTOs\RenderedStaticPage;
 use App\Seo\Services\SitemapBuilder;
 use App\Seo\Services\SitemapUrl;
 use App\Events\Contracts\EventsQueryContract;
@@ -97,6 +99,11 @@ final class SitemapBuilderTest extends TestCase
         $this->assertSame('2025-10-20', $byLoc[$expected]->lastmod);
 
         $this->assertArrayHasKey(route('cms.public-page.show', ['slug' => 'privacy']), $byLoc);
+        $this->assertArrayNotHasKey(route('cms.public-page.show', ['slug' => 'trustee']), $byLoc);
+        $this->assertArrayNotHasKey(route('cms.public-page.show', ['slug' => 'mission']), $byLoc);
+        $this->assertArrayHasKey(route('donate.form'), $byLoc);
+        $this->assertArrayHasKey(route('cms.contact'), $byLoc);
+        $this->assertArrayHasKey(route('cms.legal'), $byLoc);
     }
 
     public function test_to_xml_omits_lastmod_when_null_and_escapes(): void
@@ -144,7 +151,16 @@ final class SitemapBuilderTest extends TestCase
             ->zeroOrMoreTimes()
             ->andReturn(new GalleryPagedResultDTO($galleries, count($galleries), 1, 100, false));
 
-        return new SitemapBuilder($campaignMock, $eventMock, $galleryMock);
+        // Only `privacy` is "published"; everything else resolves to null.
+        $pagesMock = Mockery::mock(StaticPageRendererContract::class);
+        $pagesMock->shouldReceive('renderBySlug')
+            ->zeroOrMoreTimes()
+            ->andReturnUsing(fn ($slug) => $slug->value() === 'privacy'
+                // Final readonly DTO: the builder only checks non-null.
+                ? (new \ReflectionClass(RenderedStaticPage::class))->newInstanceWithoutConstructor()
+                : null);
+
+        return new SitemapBuilder($campaignMock, $eventMock, $galleryMock, $pagesMock);
     }
 
     /**

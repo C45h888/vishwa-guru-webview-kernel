@@ -45,9 +45,9 @@ final class SeoMetaBuilder implements SeoMetaContract
         bool $appendTrustName = true,
         ?string $path = null,
     ): array {
-        $trustName = trim((string) config('app.name', 'Temple Trust'));
-        $description = $this->clean($description);
-        $image = $this->absoluteUrl($this->clean($imageUrl));
+        $trustName = $this->trustName();
+        $description = $this->clean($description) ?? $this->clean((string) config('trust.description', ''));
+        $image = $this->absoluteUrl($this->clean($imageUrl) ?? $this->clean((string) config('trust.default_share_image', '')));
         $imageAlt = $this->clean($imageAlt);
 
         $bareTitle = trim($title);
@@ -77,6 +77,7 @@ final class SeoMetaBuilder implements SeoMetaContract
         // iMessage link previews. All three read these server-side.
         $tags[] = $this->meta('og:site_name', $trustName, property: true);
         $tags[] = $this->meta('og:type', $type, property: true);
+        $tags[] = $this->meta('og:locale', 'en_IN', property: true);
         $tags[] = $this->meta('og:title', $fullTitle, property: true);
 
         if ($description !== null) {
@@ -132,16 +133,71 @@ final class SeoMetaBuilder implements SeoMetaContract
 
         $graph = [
             '@context' => 'https://schema.org',
-            '@type' => 'HinduTemple',
-            'name' => trim((string) config('app.name', 'Temple Trust')),
+            '@type' => ['NGO', 'HinduTemple'],
+            'name' => $this->trustName(),
         ];
+
+        if (($description = $this->clean((string) config('trust.description', ''))) !== null) {
+            $graph['description'] = $description;
+        }
 
         if ($base !== null) {
             $graph['url'] = $base;
             $graph['logo'] = $base.'/icon-512.png';
         }
 
+        if (($email = $this->clean((string) config('trust.email', ''))) !== null) {
+            $graph['email'] = $email;
+        }
+
+        if (($phone = $this->clean((string) config('trust.phone', ''))) !== null) {
+            $graph['telephone'] = $phone;
+        }
+
+        if (($founding = $this->clean((string) config('trust.founding_date', ''))) !== null) {
+            $graph['foundingDate'] = $founding;
+        }
+
+        if (($founder = $this->clean((string) config('trust.founder', ''))) !== null) {
+            $graph['founder'] = ['@type' => 'Person', 'name' => $founder];
+        }
+
+        $address = array_filter([
+            'streetAddress' => $this->clean((string) config('trust.address.street', '')),
+            'addressLocality' => $this->clean((string) config('trust.address.locality', '')),
+            'addressRegion' => $this->clean((string) config('trust.address.region', '')),
+            'postalCode' => $this->clean((string) config('trust.address.postal_code', '')),
+            'addressCountry' => $this->clean((string) config('trust.address.country', '')),
+        ], static fn ($v) => $v !== null);
+
+        if ($address !== []) {
+            $graph['address'] = ['@type' => 'PostalAddress'] + $address;
+        }
+
+        $sameAs = array_values(array_filter([
+            $this->clean((string) config('trust.instagram_url', '')),
+        ]));
+
+        if ($sameAs !== []) {
+            $graph['sameAs'] = $sameAs;
+        }
+
+        if ($base !== null) {
+            $graph['potentialAction'] = [
+                '@type' => 'DonateAction',
+                'target' => $base.'/donate',
+                'recipient' => ['@type' => 'NGO', 'name' => $this->trustName()],
+            ];
+        }
+
         return $graph;
+    }
+
+    private function trustName(): string
+    {
+        $name = trim((string) config('app.name', ''));
+
+        return $name !== '' ? $name : (string) config('trust.fallback_name', 'Temple Trust');
     }
 
     /**

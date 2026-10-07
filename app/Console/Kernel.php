@@ -15,7 +15,9 @@ class Kernel extends ConsoleKernel
      *
      * @var array<int, class-string<Command>>
      */
-    protected $commands = [];
+    protected $commands = [
+        \App\Console\Commands\ReplaceTrustEmail::class,
+    ];
 
     /**
      * Define the application's command schedule.

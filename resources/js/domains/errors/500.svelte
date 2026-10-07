@@ -13,6 +13,7 @@
 </script>
 
 <svelte:head>
+    <meta name="robots" content="noindex, nofollow" />
     <title>Server error — {appName}</title>
 </svelte:head>
 

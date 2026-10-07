@@ -9,6 +9,7 @@ use App\Cms\Services\PublicMediaPresentationService;
 use App\Seo\Contracts\SeoMetaContract;
 use App\Cms\Domain\ValueObjects\PageSlug;
 use Inertia\Inertia;
+use Illuminate\Http\RedirectResponse;
 use Inertia\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
@@ -23,13 +24,23 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
  */
 final class CmsPageController
 {
+    /** Slugs that 301 to /about when no published CMS page exists. */
+    public const ABOUT_REDIRECT_SLUGS = ['trustee', 'mission'];
+
     public function show(
         StaticPageRendererContract $renderer,
         PublicMediaPresentationService $media,
         SeoMetaContract $seo,
         string $slug,
-    ): Response {
+    ): Response|RedirectResponse {
         $rendered = $renderer->renderBySlug(new PageSlug($slug));
+
+        // /trustee and /mission are legacy/inbound URLs whose content
+        // lives on /about. Until a CMS page is published for them,
+        // permanently redirect instead of 404ing.
+        if ($rendered === null && in_array($slug, self::ABOUT_REDIRECT_SLUGS, true)) {
+            return redirect()->to('/about', 301);
+        }
 
         if ($rendered === null) {
             throw new NotFoundHttpException("Page [{$slug}] not found.");

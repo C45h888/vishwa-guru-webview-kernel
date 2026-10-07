@@ -56,6 +56,12 @@ final class HandleInertiaRequests extends Middleware
             // header does not require touching receipt templates.
             'appShortName' => (string) config('app.short_name'),
             'appUrl' => (string) config('app.url'),
+            // Public trust identity (config/trust.php) — single source for
+            // the footer, header and contact page social/email links.
+            'trust' => [
+                'email' => (string) config('trust.email'),
+                'instagramUrl' => (string) config('trust.instagram_url'),
+            ],
             // Phase 4: Admin Kernel — explicit CSRF token for Inertia forms.
             // Inertia's client normally reads this from the <meta name="csrf-token">
             // tag, but surfacing it via the shared-prop lets form components

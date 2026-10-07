@@ -13,6 +13,8 @@
      */
     import SiteNav from './SiteNav.svelte';
     import MandalaDecoration from './MandalaDecoration.svelte';
+    import { page } from '@inertiajs/svelte';
+    import { Instagram } from 'lucide-svelte';
 
     interface Props {
         appName?: string;
@@ -24,6 +26,9 @@
     // legal name remains available via appName for footers, meta tags, and
     // copy blocks that need the complete trust name.
     let { appShortName = 'VSRSMS' }: Props = $props();
+
+    // Shared prop from config/trust.php (HandleInertiaRequests).
+    const instagramUrl = $derived($page.props.trust?.instagramUrl ?? '');
 </script>
 
 <header class="sticky top-0 z-40">
@@ -54,7 +59,20 @@
 
                 <!-- Single SiteNav mount. The component branches on viewport
                      internally (see SiteNav.svelte). -->
-                <SiteNav />
+                <div class="flex items-center gap-3">
+                    <SiteNav />
+                    {#if instagramUrl}
+                        <a
+                            href={instagramUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            aria-label="Instagram (opens in a new tab)"
+                            class="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-foreground/80 transition-colors hover:bg-muted hover:text-primary"
+                        >
+                            <Instagram class="h-5 w-5" aria-hidden="true" />
+                        </a>
+                    {/if}
+                </div>
             </div>
         </div>
     </div>

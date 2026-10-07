@@ -15,6 +15,7 @@
     import { openRazorpayCheckout } from '$shared/lib/razorpay';
     import type { RazorpaySuccessResponse } from '$shared/lib/razorpay';
     import SeoHead from '$shared/components/SeoHead.svelte';
+    import { trackPurchaseOnce } from '$shared/lib/analytics';
 
     let {
         payment,
@@ -46,6 +47,19 @@
         | 'not_found';
 
     const pollState = $derived<PollState>(derivePollState());
+
+    // Conversion tracking: only on authoritative captured/settled state,
+    // once per order (sessionStorage dedupe inside trackPurchaseOnce).
+    $effect(() => {
+        const s = latestStatus.status;
+        if (s === 'captured' || s === 'settled') {
+            trackPurchaseOnce({
+                orderId: latestStatus.gateway_order_id,
+                amountMinor: latestStatus.amount_minor,
+                currency: latestStatus.currency_code,
+            });
+        }
+    });
 
     function derivePollState(): PollState {
         const s = latestStatus.status;
